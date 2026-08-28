@@ -13,6 +13,21 @@ a build will be automatically published in the [Playability Discord server][disc
 after enough feedback has been gathered, or no serious bugs have been reported in the build,
 the version will be released on [Modrinth], [CurseForge], and [GitHub].
 
+## 🌟 Custom Fork Features (Luca's Accessible Fork)
+
+This fork (`Nemex81/minecraft-access-forc`) includes advanced accessibility extensions developed for seamless keyboard-only play:
+- **AutoWalk & Smooth Pathfinder**: Continuous smooth rotation towards waypoints ($20^\circ$/tick), anti-chattering sprint hysteresis, and arrival chime.
+- **Radial Numpad Controls**: Full 8-direction radial scanning, eye/feet/jump altimetric telemetry, and instant XYZ readout.
+- **Enhanced Obstacle & Fall Detector**: Continuous path auto-step ($0.60\text{m}$), $45^\circ$ diagonal corner-pinching protection, and hazard proximity alerts.
+- **Recipe Book Focus Lock Fix**: Seamless ingredient inspection using the `X` key without focus traps.
+- **Native Italian Localization (I18N)**: Full, meticulously crafted Italian voice translations (`it_it.json`).
+
+## Architecture & Technical Documentation
+- [Architecture & Design Guide](docs/architecture.md)
+- [Public & Internal API Reference](docs/api.md)
+- [Changelog](docs/content/changelog.md)
+- [In-Game Testing Protocol](docs/manuali/PROTOCOLLO_COLLAUDO_E_SESSIONI_MONITORATE.md)
+
 ## Other Pages
 
 * [Basic Setup](https://docs.mcaccess.org/setup/basic)

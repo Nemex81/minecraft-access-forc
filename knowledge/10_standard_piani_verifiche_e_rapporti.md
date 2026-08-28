@@ -101,10 +101,16 @@ La conclusione di ogni sessione implementativa segue tassativamente una sequenza
 4. **Deploy Provvisorio nelle Istanze**: Copia e sovrascrittura del file `.jar` appena compilato nelle cartelle `mods/` delle istanze PrismLauncher attive del giocatore (per consentire l'apertura del gioco).
 5. **Rapporto e Consegna a Luca**: Presentazione del resoconto modifiche e avvio del test manuale in-game condotto secondo il manuale [`PROTOCOLLO_COLLAUDO_E_SESSIONI_MONITORATE.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/manuali/PROTOCOLLO_COLLAUDO_E_SESSIONI_MONITORATE.md). In questa fase il piano rimane attivo in `docs/piani/attivi/` e la cartella di backup rimane intatta.
 
-### Fase 3: Chiusura Ufficiale Simultanea (Solo dopo il test in-game di Luca)
-6. **Aggiornamento Backup PC Portatile**: Solo dopo il collaudo manuale positivo di Luca, promozione del JAR stabile nella cartella di backup:
+### Fase 3: Chiusura Ufficiale, Merge & Documentazione Viva (Solo dopo il test in-game di Luca)
+6. **Merge su `mymaster`**: Esecuzione di `git merge --no-ff feat/nome-feature` sul branch master personale.
+7. **Aggiornamento Documentazione Viva**:
+   - Aggiornamento di `docs/content/changelog.md` con il dettaglio delle modifiche.
+   - Allineamento di `docs/architecture.md` e `docs/api.md` (se modificate architetture o API).
+   - Aggiornamento di `README.md`, `keybindings.md` e `features.md` (se introdotti nuovi comandi/tasti).
+8. **Aggiornamento Backup PC Portatile**: Solo dopo il collaudo manuale positivo di Luca, promozione del JAR stabile nella cartella di backup:
    `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft archivio backup\minecraft backup\Minecraft 26.2 Access 1.12.0 pc portatile\minecraft\mods\`
-7. **Archiviazione del Piano Tecnico**: Spostamento del file del piano nella cartella `docs\piani\completati\` con marcatura `[COMPLETATO, COLLAUDATO E INTEGRATO]`.
+9. **Archiviazione del Piano Tecnico**: Spostamento del file del piano nella cartella `docs\piani\completati\` con marcatura `[COMPLETATO, COLLAUDATO E INTEGRATO]`.
+10. **Commit & Push su `origin/mymaster`**.
 
 ### Fase 4: Auto-Apprendimento Automatico Post-Chiusura (Trigger Sistematico)
 8. **Analisi Retrospettiva Autonoma**: Subito dopo la Fase 3, Antigravity avvia **automaticamente e senza richiesta esplicita** una sessione di analisi diagnostica retrospettiva sulle implementazioni svolte, sui problemi affrontati e sulle soluzioni fisiche/ergonomiche adottate.

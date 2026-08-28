@@ -85,3 +85,49 @@ Quando il repository ufficiale rilascia nuovi aggiornamenti su `upstream/dev`, l
    git rebase dev
    git push origin mymaster --force-with-lease
    ```
+
+---
+
+## 6. Standard dei Commit Semantici (Conventional Commits)
+
+Ogni commit nel repository deve seguire lo standard semantico:
+
+```text
+<tipo>(<ambito>): <titolo sintetico all'indicativo presente>
+
+[Corpo opzionale: spiegazione dettagliata del perché e della logica di modifica]
+```
+
+### Tipi Ammessi (*Types*):
+- **`feat`**: Nuova funzionalità (es. `feat(autowalk): implement continuous smooth rotation`).
+- **`fix`**: Risoluzione bug (es. `fix(recipe-book): resolve focus lock on key X`).
+- **`docs`**: Modifiche alla documentazione o alle regole (es. `docs: add architecture and api guides`).
+- **`refactor`**: Modifiche di codice che non alterano il comportamento esterno.
+- **`test`**: Aggiunta o aggiornamento di test unitari JUnit.
+- **`chore`**: Modifiche al build system Gradle, CI o dipendenze.
+
+### Regole di Formattazione:
+- Titolo conciso ($\le 72$ caratteri), senza punto finale.
+- Lingua Inglese obbligatoria per commit di codice Java, feature o fix destinati alla community.
+
+---
+
+## 7. Ciclo di Vita dei Feature Branch & Regola di Isolamento
+
+Per proteggere la stabilità del ramo `mymaster`:
+
+1. **Divieto di Sviluppo Diretto su `mymaster`**:
+   - Qualsiasi nuova funzionalità o refactor sostanziale richiede la creazione di un ramo dedicato:
+     ```powershell
+     git checkout -b feat/nome-feature mymaster
+     ```
+2. **Sviluppo & Collaudo Isolati**:
+   - Lo sviluppo, i test JUnit e la compilazione del `.jar` per il collaudo manuale di Luca (Fase 2) avvengono rimanendo all'interno del branch `feat/*`.
+3. **Merge su `mymaster` Post-Collaudo**:
+   - **Solo dopo il collaudo manuale positivo di Luca**, si effettua il merge con `--no-ff`:
+     ```powershell
+     git checkout mymaster
+     git merge --no-ff feat/nome-feature -m "feat(modulo): merge nome-feature into mymaster"
+     git push origin mymaster
+     ```
+

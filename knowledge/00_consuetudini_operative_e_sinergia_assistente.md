@@ -69,11 +69,18 @@ Il ciclo di vita di ogni modifica o nuova funzionalità segue tassativamente que
 - Copia del file `.jar` compilato nelle istanze attive di PrismLauncher.
 - Apertura del gioco da parte di Luca e svolgimento del collaudo pratico assistito da Antigravity (secondo il `PROTOCOLLO_COLLAUDO_E_SESSIONI_MONITORATE.md`).
 
-### Fase 3: Chiusura Ufficiale & Aggiornamento Backup
+### Fase 3: Chiusura Ufficiale, Merge & Documentazione Viva
 - **Solo dopo il collaudo manuale positivo di Luca**:
-  - Promozione del file `.jar` stabile nella cartella di backup:  
-    `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft archivio backup\minecraft backup\Minecraft 26.2 Access 1.12.0 pc portatile\minecraft\mods\`
-  - Spostamento del piano tecnico in `docs/piani/completati/` con marcatura `[COMPLETATO E COLLAUDATO]`.
+  1. **Merge su `mymaster`**: Esecuzione di `git merge --no-ff feat/nome-feature` sul branch master personale.
+  2. **Aggiornamento Documentazione Viva (*Living Documentation*)**:
+     - Registrazione delle modifiche in `docs/content/changelog.md`.
+     - Allineamento di `docs/architecture.md` e `docs/api.md` se sono state toccate strutture interne o API.
+     - Aggiornamento di `README.md`, `keybindings.md` e `features.md` se sono stati aggiunti tasti o comandi.
+  3. **Promozione Backup JAR Stabile**:
+     - Copia del JAR stabile in: `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft archivio backup\minecraft backup\Minecraft 26.2 Access 1.12.0 pc portatile\minecraft\mods\`
+  4. **Archiviazione Piano Tecnico**:
+     - Spostamento del piano in `docs/piani/completati/` con marcatura `[COMPLETATO E COLLAUDATO]`.
+  5. **Commit & Push su `origin/mymaster`**.
 
 ### Fase 4: Auto-Apprendimento Sistematico a 3 Dimensioni (Trigger Automatico & Proattivo)
 

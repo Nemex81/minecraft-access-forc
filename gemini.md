@@ -43,7 +43,7 @@ Questo file costituisce l'**Hub Centrale di Contesto** del progetto `minecraft-a
 8. **Ciclo di Vita dei Piani a 4 Fasi & Auto-Apprendimento Automatico**:
    - *Fase 1*: Build e test automatici Gradle (`.\gradlew.bat test shadowJar`).
    - *Fase 2*: Deploy provvisorio in PrismLauncher e collaudo manuale in-game di Luca ([`PROTOCOLLO_COLLAUDO_E_SESSIONI_MONITORATE.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/manuali/PROTOCOLLO_COLLAUDO_E_SESSIONI_MONITORATE.md)).
-   - *Fase 3*: Chiusura simultanea (aggiornamento backup PC Portatile + archiviazione del piano in `docs/piani/completati/`).
+   - *Fase 3*: Chiusura simultanea (merge del branch su `mymaster` + aggiornamento documentazione viva `changelog.md`/`architecture.md`/`api.md` + aggiornamento backup PC Portatile + archiviazione del piano in `docs/piani/completati/`).
    - *Fase 4 (Automatica)*: **Sessione Automatica di Auto-Apprendimento & Proposta Regole** $\rightarrow$ Subito dopo la Fase 3, Antigravity avvia autonomamente una riflessione retrospettiva, estrae le lezioni generali, definisce dove integrarle in `knowledge/` e in `gemini.md`, presenta a Luca il riepilogo e richiede la conferma prima di applicarle.
 
 ---
