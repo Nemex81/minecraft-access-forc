@@ -92,10 +92,11 @@ Ogni piano o soluzione tecnica deve essere convalidato rispetto a 7 criteri:
 
 La conclusione di ogni sessione implementativa segue tassativamente una sequenza a 4 fasi:
 
-### Fase 1: Build e Test Automatici
-1. **Verifica Compilazione**: Esecuzione di `.\gradlew.bat compileJava` e `compileTestJava`.
-2. **Esecuzione Test Unitari**: Esecuzione di `.\gradlew.bat :test` per confermare che tutti i test passino al 100%.
-3. **Generazione Pacchetto JAR**: Esecuzione di `.\gradlew.bat shadowJar`.
+### Fase 1: Pre-Flight Check, Build e Test Automatici
+1. **Pre-Flight Environment Check**: Verifica preliminare di conformità dell'ambiente (JDK 25, `$env:JAVA_HOME` e flag `--no-daemon` per evitare blocchi file di OneDrive).
+2. **Verifica Compilazione**: Esecuzione di `.\gradlew.bat --no-daemon compileJava` e `compileTestJava`.
+3. **Esecuzione Test Unitari**: Esecuzione di `.\gradlew.bat --no-daemon :test` per confermare che tutti i test passino al 100%.
+4. **Generazione Pacchetto JAR**: Esecuzione di `.\gradlew.bat --no-daemon shadowJar`.
 
 ### Fase 2: Deploy di Prova e Collaudo Manuale Utente
 4. **Deploy Provvisorio nelle Istanze**: Copia e sovrascrittura del file `.jar` appena compilato nelle cartelle `mods/` delle istanze PrismLauncher attive del giocatore (per consentire l'apertura del gioco).

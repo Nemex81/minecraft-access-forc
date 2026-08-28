@@ -41,3 +41,34 @@ Il codice risiede nel package radice `org.mcaccess.minecraftaccess`:
 - **`screen_reader/`**: Proxy di comunicazione verso NVDA e la sintesi vocale di sistema.
 - **`config/`**: Serializzazione e deserializzazione delle impostazioni (`config/minecraft_access/config.json`).
 - **`utils/`**: Funzioni pure di utilità e manipolazione dati.
+
+---
+
+## 4. Matrice dei Prerequisiti & Pre-Flight Environment Check
+
+Prima di avviare qualsiasi compilazione o test, l'ambiente locale deve soddisfare i seguenti prerequisiti vincolanti:
+
+### A. Prerequisiti Hard (Mandatori per compilare ed eseguire):
+1. **JDK 25 (Epsilon Runtime)**:
+   - Percorso: `C:\Users\nemex\AppData\Roaming\PrismLauncher\java\java-runtime-epsilon`
+   - Variabile d'Ambiente: `$env:JAVA_HOME = "C:\Users\nemex\AppData\Roaming\PrismLauncher\java\java-runtime-epsilon"`
+2. **Flag Gradle Anti-Daemon Lock**:
+   - Compilazione obbligatoria con flag `--no-daemon` per prevenire il blocco file `Access is denied` su Windows/OneDrive.
+3. **PrismLauncher & Istanza di Gioco**:
+   - Cartella `C:\Users\nemex\AppData\Roaming\PrismLauncher\instances\Minecraft 26.2 Access 1.12.0\`
+
+### B. Prerequisiti Soft (Qualità & Versioning):
+1. **Git 2.40+** per gestione rami `mymaster`, `dev` e Conventional Commits.
+2. **PowerShell 5.1+ / 7+** con policy di esecuzione script abilitata.
+
+### C. Script di Pre-Flight Check Rapido (PowerShell):
+```powershell
+# Pre-Flight Check: verifica preliminare dell'ambiente di compilazione
+$javaPath = "C:\Users\nemex\AppData\Roaming\PrismLauncher\java\java-runtime-epsilon"
+if (Test-Path "$javaPath\bin\javac.exe") {
+    $env:JAVA_HOME = $javaPath
+    Write-Host "✅ Pre-Flight OK: Java 25 impostato correttamente su $javaPath"
+} else {
+    Write-Error "❌ Pre-Flight FAILED: JDK 25 non trovato nel percorso PrismLauncher!"
+}
+```

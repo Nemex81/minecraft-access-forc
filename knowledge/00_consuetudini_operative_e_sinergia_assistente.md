@@ -60,10 +60,11 @@ Ogni proposta tecnica, architettura o piano implementativo deve superare prelimi
 
 Il ciclo di vita di ogni modifica o nuova funzionalità segue tassativamente questa sequenza:
 
-### Fase 1: Build e Test Automatici
-- Verifica della compilazione (`.\gradlew.bat compileJava compileTestJava`).
-- Esecuzione della suite di test unitari JUnit (`.\gradlew.bat test`).
-- Confezionamento del pacchetto mod (`.\gradlew.bat shadowJar`).
+### Fase 1: Pre-Flight Check, Build e Test Automatici
+- **Pre-Flight Environment Check**: Verifica preliminare di conformità dell'ambiente (JDK 25, `$env:JAVA_HOME` e flag `--no-daemon` per evitare blocchi file di OneDrive).
+- **Verifica Compilazione**: Esecuzione di `.\gradlew.bat --no-daemon compileJava compileTestJava`.
+- **Esecuzione Test Unitari**: Esecuzione della suite JUnit (`.\gradlew.bat --no-daemon test`).
+- **Confezionamento Pacchetto**: Creazione del JAR (`.\gradlew.bat --no-daemon shadowJar`).
 
 ### Fase 2: Deploy Provvisorio & Collaudo Manuale In-Game di Luca
 - Copia del file `.jar` compilato nelle istanze attive di PrismLauncher.
