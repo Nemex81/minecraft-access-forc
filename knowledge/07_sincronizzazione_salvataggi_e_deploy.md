@@ -14,18 +14,23 @@ La compilazione del progetto avviene tramite Gradle Wrapper e richiede Java 25:
 
 ---
 
-## 2. Auto-Rilevamento Macchina Corrente ($env:COMPUTERNAME)
+## 2. Auto-Rilevamento Trasparente dell'Identità Macchina ($env:COMPUTERNAME)
 
-Per evitare qualsiasi errore umano nel routing dei backup e dei salvataggi, l'assistente interroga dinamicamente la variabile di sistema `$env:COMPUTERNAME`:
+Per evitare qualsiasi errore manuale o richiesta superflua a Luca, l'assistente interroga automaticamente la variabile di ambiente `$env:COMPUTERNAME` all'inizio di ogni operazione di deploy, log analysis o configurazione:
 
 | Hostname di Sistema (`$env:COMPUTERNAME`) | Macchina Identificata | Cartella Backup OneDrive di Riferimento |
 |---|---|---|
 | **`MSI`** | **PC Portatile** | `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft archivio backup\minecraft backup\Minecraft 26.2 Access 1.12.0 pc portatile\` |
 | **`NEMEXMASTER`** | **PC Fisso Salotto** | `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft archivio backup\minecraft backup\Minecraft 26.2 Access 1.12.0 pc fisso Salotto\` |
 
-### Protocollo di Apprendimento Dinamico (Auto-Discover):
-- Se `$env:COMPUTERNAME` corrisponde a `MSI`, l'assistente opera automaticamente con i percorsi del **PC Portatile** (`Minecraft 26.2 Access 1.12.0`).
-- Se `$env:COMPUTERNAME` corrisponde a `NEMEXMASTER`, l'assistente opera automaticamente con i percorsi del **PC Fisso Salotto** (`Minecraft_26.2_Access_1.12.0`).
+### Protocollo di Routing Dinamico:
+- **Rilevamento Silenzioso**: Antigravity verifica l'hostname senza chiedere a Luca su quale PC si trova.
+- **Associazione Percorsi Istanza**:
+  - Su **`MSI`**: percorsi puntano a `c:\Users\nemex\AppData\Roaming\PrismLauncher\instances\Minecraft 26.2 Access 1.12.0\`.
+  - Su **`NEMEXMASTER`**: percorsi puntano a `c:\Users\nemex\AppData\Roaming\PrismLauncher\instances\Minecraft_26.2_Access_1.12.0\`.
+- **Associazione Hardware GPU & Shader**:
+  - `MSI`: Profilo display interno / GPU mobile (Iris shader tasto `F7`).
+  - `NEMEXMASTER`: Profilo TV salotto / GPU desktop ad alte prestazioni.
 
 ---
 

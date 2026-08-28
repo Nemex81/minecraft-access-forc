@@ -39,6 +39,8 @@ Per evitare di sovraccaricare il contesto o leggere inutilmente l'intera base di
      - **Collaudo In-Game & Analisi Log Live** -> `docs/manuali/PROTOCOLLO_COLLAUDO_E_SESSIONI_MONITORATE.md`
 2. **Consultazione Chirurgica (Livello 2 - On-Demand)**:
    - Antigravity accede direttamente ed esclusivamente al file e al paragrafo specifico necessario per risolvere il problema (tramite `view_file` mirato o `grep_search`), garantendo risposte rapide, focalizzate e prive di allucinazioni.
+3. **Auto-Rilevamento Trasparente dell'Identità Macchina (`$env:COMPUTERNAME`)**:
+   - Antigravity interroga automaticamente l'hostname di sistema per risolvere i percorsi locali di deploy, istanze e profili hardware (`MSI` per PC Portatile, `NEMEXMASTER` per PC Salotto) senza richiedere conferme manuali a Luca.
 
 ---
 
