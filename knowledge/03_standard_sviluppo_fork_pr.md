@@ -57,3 +57,31 @@ Il repository personale (`Nemex81/minecraft-access-forc`) è organizzato secondo
 3. **Rami Feature & Fix (`feat/*`, `fix/*`)**:
    - Creati per lo sviluppo isolato di nuove feature o fix mirati.
    - Una volta testati e stabili, vengono uniti in `mymaster`. Se destinati alla community, la PR viene aperta direttamente dal branch specifico verso `upstream/dev`.
+
+---
+
+## 5. Protocollo di Sincronizzazione con Upstream & Rebase Sicuro
+
+Quando il repository ufficiale rilascia nuovi aggiornamenti su `upstream/dev`, l'allineamento di `mymaster` segue una sequenza rigorosamente protetta:
+
+1. **Aggiornamento Specchio `dev` (Fast-Forward)**:
+   ```powershell
+   git checkout dev
+   git fetch upstream dev
+   git merge --ff-only upstream/dev
+   git push origin dev
+   ```
+
+2. **Simulazione Preventiva 3-Way Merge (Zero Conflitti)**:
+   - Prima di applicare modifiche, simulare il merge in memoria senza toccare il working tree:
+   ```powershell
+   git merge-tree $(git merge-base mymaster dev) mymaster dev
+   ```
+   - Se l'output non presenta marcatori di conflitto (`<<<<<<<`), il rebase è garantito al 100% pulito.
+
+3. **Rebase di `mymaster` su `dev`**:
+   ```powershell
+   git checkout mymaster
+   git rebase dev
+   git push origin mymaster --force-with-lease
+   ```

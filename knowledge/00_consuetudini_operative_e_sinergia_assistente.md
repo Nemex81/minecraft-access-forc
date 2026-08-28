@@ -33,6 +33,8 @@ Per evitare di sovraccaricare il contesto o leggere inutilmente l'intera base di
      - **Controlli da Tastiera, Tasti Rapidi, Categorie** -> `knowledge/06_controlli_avanzati_e_bridge_chatgpt.md`
      - **Traduzioni, Ordinamento JSON, I18N, Branch Fork** -> `knowledge/03_standard_sviluppo_fork_pr.md`
      - **Compilazione, Versioni Macchine, Deploy Hardware** -> `knowledge/07_sincronizzazione_salvataggi_e_deploy.md`
+     - **Audio 3D, Priorità Narrazione Tolk, Decibel** -> `knowledge/11_audio_3d_e_gerarchia_vocale.md`
+     - **Integrità Mondi, Snapshot Preventivi, Recovery** -> `knowledge/12_integrita_mondi_e_disaster_recovery.md`
      - **Standard dei Piani & Pipeline a 4 Fasi** -> `knowledge/10_standard_piani_verifiche_e_rapporti.md`
      - **Collaudo In-Game & Analisi Log Live** -> `docs/manuali/PROTOCOLLO_COLLAUDO_E_SESSIONI_MONITORATE.md`
 2. **Consultazione Chirurgica (Livello 2 - On-Demand)**:
