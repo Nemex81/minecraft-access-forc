@@ -103,8 +103,8 @@ La conclusione di ogni sessione implementativa segue tassativamente una sequenza
 
 ### Fase 3: Chiusura Ufficiale Simultanea (Solo dopo il test in-game di Luca)
 6. **Aggiornamento Backup PC Portatile**: Solo dopo il collaudo manuale positivo di Luca, promozione del JAR stabile nella cartella di backup:
-   `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft\minecraft backup\Minecraft 26.2 Access 1.12.0 pc portatile\minecraft\mods\`
-7. **Archiviazione del Piano Tecnico**: Spostamento del file del piano nella sottocartella `archivio completati/` con marcatura `[COMPLETATO, COLLAUDATO E INTEGRATO]`.
+   `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft archivio backup\minecraft backup\Minecraft 26.2 Access 1.12.0 pc portatile\minecraft\mods\`
+7. **Archiviazione del Piano Tecnico**: Spostamento del file del piano nella cartella `docs\piani\completati\` con marcatura `[COMPLETATO, COLLAUDATO E INTEGRATO]`.
 
 ### Fase 4: Auto-Apprendimento Automatico Post-Chiusura (Trigger Sistematico)
 8. **Analisi Retrospettiva Autonoma**: Subito dopo la Fase 3, Antigravity avvia **automaticamente e senza richiesta esplicita** una sessione di analisi diagnostica retrospettiva sulle implementazioni svolte, sui problemi affrontati e sulle soluzioni fisiche/ergonomiche adottate.

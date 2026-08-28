@@ -20,8 +20,8 @@ Per evitare qualsiasi errore umano nel routing dei backup e dei salvataggi, l'as
 
 | Hostname di Sistema (`$env:COMPUTERNAME`) | Macchina Identificata | Cartella Backup OneDrive di Riferimento |
 |---|---|---|
-| **`MSI`** | **PC Portatile** | `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft\minecraft backup\Minecraft 26.2 Access 1.12.0 pc portatile\` |
-| **`NEMEXMASTER`** | **PC Fisso Salotto** | `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft\minecraft backup\Minecraft 26.2 Access 1.12.0 pc fisso Salotto\` |
+| **`MSI`** | **PC Portatile** | `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft archivio backup\minecraft backup\Minecraft 26.2 Access 1.12.0 pc portatile\` |
+| **`NEMEXMASTER`** | **PC Fisso Salotto** | `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft archivio backup\minecraft backup\Minecraft 26.2 Access 1.12.0 pc fisso Salotto\` |
 
 ### Protocollo di Apprendimento Dinamico (Auto-Discover):
 - Se `$env:COMPUTERNAME` corrisponde a `MSI`, l'assistente opera automaticamente con i percorsi del **PC Portatile** (`Minecraft 26.2 Access 1.12.0`).

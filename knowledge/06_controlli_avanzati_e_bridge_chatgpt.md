@@ -21,7 +21,7 @@ La mod implementa una mappatura completa per eliminare qualsiasi uso del mouse:
 ## 2. Protocollo del Canale Persistente con ChatGPT
 
 Per scambiare dati tecnici, specifiche di codice e coordinamento senza ingombrare la chat di Luca, l'ambiente adotta due file di canale situati esclusivamente nella cartella operativa:  
-📁 `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft\`
+📁 `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft archivio backup\`
 
 ### A. `ANTIGRAVITY_SCRIVE_A_CHATGPT.md`
 - **Mittente**: Antigravity (tu).

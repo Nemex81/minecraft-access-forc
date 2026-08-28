@@ -65,7 +65,7 @@ L'obiettivo è consentire a **Luca** di agganciare qualsiasi bersaglio (Blocco, 
     - `Minecraft 26.2 Access 1.12.0`
     - `Minecraft 26.2 Access - Server Tenuta`
   - [x] Deploy nella cartella backup di OneDrive per la macchina corrente (**PC Portatile**):
-    - `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft\minecraft backup\Minecraft 26.2 Access 1.12.0 pc portatile\minecraft\mods\`
+    - `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft archivio backup\minecraft backup\Minecraft 26.2 Access 1.12.0 pc portatile\minecraft\mods\`
   - [x] Aggiornamento e sincronizzazione della scheda di conoscenza `knowledge/07_sincronizzazione_salvataggi_e_deplo- [x] **Fase 7: Perfezionamento Corsa Fluida, Isteresi Anti-Chattering & Rotazione Continua (`AutoWalkController.java`)**
   - [x] **Isteresi Anti-Chattering dello Sprint (Zero Tremolio FOV)**: Timer di stabilizzazione a 20 tick (1 secondo) durante e dopo le virate, evitando continui attacca-stacca di sprint.
   - [x] **Rotazione Angolare Continua ($20^\circ$/tick)**: Sterzata fluida e decisa a $20^\circ$ per tick senza sottosterzo né correzioni a zig-zag.
@@ -170,5 +170,5 @@ Nuove chiavi (disposte in ordine alfabetico):
 3. **Ordinamento I18N**: Validazione automatizzata superata al 100% su tutti i file `.json`.
 4. **Deploy & Backup Eseguiti**:
    - Istanze PrismLauncher: `Minecraft 26.2 Access 1.12.0` e `Minecraft 26.2 Access - Server Tenuta` (Allineate).
-   - Backup OneDrive: `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft\minecraft backup\Minecraft 26.2 Access 1.12.0 pc portatile\minecraft\mods\` (Allineato).
+   - Backup OneDrive: `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft archivio backup\minecraft backup\Minecraft 26.2 Access 1.12.0 pc portatile\minecraft\mods\` (Allineato).
 5. **Collaudo In-Game**: Convalidato al 100% da Luca in data **27 Agosto 2026**. Progetto archiviato con successo.

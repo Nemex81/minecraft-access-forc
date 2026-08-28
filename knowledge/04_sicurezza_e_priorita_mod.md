@@ -28,7 +28,7 @@ La gestione dei file rispetta una separazione netta e ordinata tra sviluppo oper
 │       ├── idee/ (Promemoria e spunti futuri)
 │       └── manuali/ (Manuali in-game)
 │
-└── C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft\ <-- CARTELLA ARCHIVIO, BACKUP & PROGETTI IN-GAME
+└── C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft archivio backup\ <-- CARTELLA ARCHIVIO, BACKUP & PROGETTI IN-GAME
     ├── gemini.md & knowledge/ (Copia di sicurezza sincronizzata)
     ├── archivio completati/ (Archivio storico)
     ├── progetto casa personale/ & mappa originale del server vecchio/
@@ -45,7 +45,7 @@ La gestione dei file rispetta una separazione netta e ordinata tra sviluppo oper
 - **Scopo**: È la **SEDE PRIMARIA DI SVILUPPO**: codice sorgente, build Gradle, rami Git (`mymaster`, `dev`), piani e documentazione tecnica strutturata in `docs/`.
 - **Regola**: Qualsiasi nuovo piano tecnico attivo va creato in `docs\piani\attivi\`.
 
-### B. Cartella Master Archivio & Progetti In-Game (`accessible games\minecraft\`)
+### B. Cartella Master Archivio & Progetti In-Game (`accessible games\minecraft archivio backup\`)
 - **Scopo**: È la sede per i progetti edilizi/planimetrie in gioco, archivio storico, prompt di configurazione e canali di dialogo persistenti con ChatGPT.
 - **Sincronizzazione**: Mantiene una copia specchiata di sicurezza di `knowledge/` e `gemini.md`.
 
