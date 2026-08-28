@@ -10,31 +10,47 @@ Il file `.jar` di `minecraft-access` viene iniettato nel runtime di Minecraft co
 
 ---
 
-## 2. Regola Tassativa: Separazione tra Cartella Operativa e Cartella Backup
+## 2. Regola Tassativa: Gerarchia e Ruoli delle Cartelle
 
-La gestione dei file rispetta una separazione netta e inviolabile tra i documenti di lavoro e i dati binari di backup:
+La gestione dei file rispetta una separazione netta e ordinata tra sviluppo operativo, documentazione e backup:
 
 ```
-├── C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft\   <-- CARTELLA OPERATIVA UNICA
-│   ├── GEMINI.md
-│   ├── knowledge/
-│   ├── Export_Progressi.txt
-│   ├── MANUALE_COMANDI_MINECRAFT_26.2.md
-│   ├── ANTIGRAVITY_SCRIVE_A_CHATGPT.md
-│   ├── CHATGPT_SCRIVE_AD_ANTIGRAVITY.md
-│   │
-│   └── minecraft backup\                                                   <-- CARTELLA BACKUP ESCLUSIVA
-│       ├── Minecraft 26.2 Access 1.12.0 pc fisso Salotto\
-│       ├── Minecraft 26.2 Access 1.12.0 pc portatile\
-│       └── scuola_di_sopravvivenza_mondo_2_backup_*.zip
+├── C:\Users\nemex\OneDrive\Documenti\GitHub\minecraft-access\             <-- CARTELLA OPERATIVA PRIMARIA & SVILUPPO
+│   ├── src/ (Codice Java Mod Fabric/NeoForge)
+│   ├── gemini.md (Hub Master di Contesto)
+│   ├── knowledge/ (Schede Architetturali 01..10)
+│   └── docs/ (Documentazione Tecnica e Organizzativa)
+│       ├── piani/
+│       │   ├── attivi/ (Piani in lavorazione/da collaudare)
+│       │   └── completati/ (Piani collaudati e integrati)
+│       ├── strategie/ (Documenti strategici e architetturali)
+│       ├── report/ (Rapporti di collaudo e verifiche)
+│       ├── idee/ (Promemoria e spunti futuri)
+│       └── manuali/ (Manuali in-game)
+│
+└── C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft\ <-- CARTELLA ARCHIVIO, BACKUP & PROGETTI IN-GAME
+    ├── gemini.md & knowledge/ (Copia di sicurezza sincronizzata)
+    ├── archivio completati/ (Archivio storico)
+    ├── progetto casa personale/ & mappa originale del server vecchio/
+    ├── prompts/ (Prompt specifici per macchine)
+    ├── CHATGPT.md, ANTIGRAVITY_SCRIVE_A_CHATGPT.md (Canali ChatGPT)
+    │
+    └── minecraft backup\                                                  <-- CARTELLA BACKUP ESCLUSIVA
+        ├── Minecraft 26.2 Access 1.12.0 pc fisso Salotto\
+        ├── Minecraft 26.2 Access 1.12.0 pc portatile\
+        └── scuola_di_sopravvivenza_mondo_2_backup_*.zip
 ```
 
-### A. Cartella Operativa Ufficiale (`minecraft\`)
-- **Scopo**: È l'**UNICA SEDE UFFICIALE** per tutti i file di lavoro correnti: istruzioni, report di verifica, registri progressi, manuali e canali di comunicazione persistenti con ChatGPT.
-- **Regola**: Prima di creare o modificare qualsiasi documento di testo, verificare sempre che il percorso sia `...\accessible games\minecraft\`.
+### A. Cartella Operativa Primaria (`Documenti\GitHub\minecraft-access\`)
+- **Scopo**: È la **SEDE PRIMARIA DI SVILUPPO**: codice sorgente, build Gradle, rami Git (`mymaster`, `dev`), piani e documentazione tecnica strutturata in `docs/`.
+- **Regola**: Qualsiasi nuovo piano tecnico attivo va creato in `docs\piani\attivi\`.
 
-### B. Cartella Backup (`minecraft\minecraft backup\`)
-- **Scopo**: È riservata **esclusivamente** ai backup compressi dei mondi di gioco (`.zip`), agli archivi delle istanze PrismLauncher e ai `.jar` di rilascio.
+### B. Cartella Master Archivio & Progetti In-Game (`accessible games\minecraft\`)
+- **Scopo**: È la sede per i progetti edilizi/planimetrie in gioco, archivio storico, prompt di configurazione e canali di dialogo persistenti con ChatGPT.
+- **Sincronizzazione**: Mantiene una copia specchiata di sicurezza di `knowledge/` e `gemini.md`.
+
+### C. Cartella Backup Esclusiva (`minecraft backup\`)
+- **Scopo**: Riservata **esclusivamente** ai backup compressi dei mondi di gioco (`.zip`), agli archivi delle istanze PrismLauncher e ai `.jar` di rilascio stabili.
 - **Divieto Assoluto**: **NON creare, NON modificare e NON duplicare documenti operativi o note di lavoro all'interno di questa cartella**.
 
 ---

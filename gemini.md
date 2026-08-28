@@ -13,10 +13,10 @@ Questo file costituisce l'**Hub Centrale di Contesto** del progetto `minecraft-a
    Nessuna funzionalità, interfaccia grafica o comando deve richiedere il mouse o indicatori visivi. Ogni interazione deve essere gestibile al 100% da tastiera e vocalizzata chiaramente tramite lo Screen Reader Proxy (`MainClass.narrate`).
 2. **Rigore I18N Focus su Italiano e Inglese & Ordinamento Alfabetico JSON**:
    Nello sviluppo ci occupiamo unicamente delle localizzazioni in Italiano (`it_it.json`) e Inglese (`en_us.json`), delegando le restanti lingue alla community tramite la piattaforma Weblate. In tutti i file `.json` modificati in `src/main/resources/assets/minecraft_access/lang/`, le chiavi devono essere **rigorosamente disposte in ordine alfabetico crescente** per superare i test di CI GitHub (`jq -e "keys != keys_unsorted"`).
-3. **Separazione Tassativa tra Cartella Operativa e Cartella Backup**:
-   - Cartella Operativa Ufficiale per TUTTI i documenti: `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft\`
-   - Cartella Backup ESCLUSIVA per file `.zip` e istanze: `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft\minecraft backup\` (backup PC corrente: `Minecraft 26.2 Access 1.12.0 pc portatile\`).
-   - **Regola di Protezione**: Il backup del PC corrente viene aggiornato con la nuova build `.jar` solo DOPO il superamento del test manuale in-game di Luca.
+3. **Gerarchia Cartelle: Workspace di Sviluppo vs Archivio e Backup**:
+   - **Cartella Operativa Primaria di Sviluppo & Hub Documentale**: `C:\Users\nemex\OneDrive\Documenti\GitHub\minecraft-access\` (Sede centrale del codice Java, build Gradle, rami Git `mymaster`/`dev`, schede `knowledge/` 01..10, `gemini.md` e sottocartelle documentali in `docs/`).
+   - **Cartella Master Archivio, Backup & Progetti Speciali**: `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft\` (Sede dei backup compressi dei mondi e istanze in `minecraft backup/`, archivio storico `archivio completati/`, progetti di gioco in `progetto casa personale/`, `prompts/` e canali ChatGPT).
+   - **Regola di Protezione Deploy**: Il backup del PC corrente viene aggiornato con la nuova build `.jar` stabile solo DOPO il superamento del test manuale in-game di Luca.
 4. **Regole Geometriche Voxel & Anti-Ridondanza Comandi**:
    - Non incassare mai torce nei muri distruggendo blocchi solidi; posizionare le torce a muro su blocchi d'aria adiacenti con il facing corretto e le torce ritte a quota $Y+1$. Omettere sistematicamente comandi ridondanti per evitare il falso errore parlato *"Impossibile posizionare il blocco"*.
    - **Contatto Diretto Voxel Parziali**: Nei raycast non escludere il blocco del giocatore (`playerPosBlock`), campionando da $d \ge 0.1\text{ m}$ per intercettare staccionate, vetri e muretti a contatto.
@@ -24,8 +24,15 @@ Questo file costituisce l'**Hub Centrale di Contesto** del progetto `minecraft-a
    - **Corner Pinching & Diagonali**: Nei raycast a $45^\circ$, arrestare il raggio se uno dei due vicini ortogonali è una barriera per rispettare la hitbox del giocatore ($0.6\text{ m}$).
    - **Strutture Scale & Sottoscala**: Riconoscere la campata della scala sia dai gradini d'atterraggio sia dai gradini sovrastanti lungo la colonna verticale.
    - **Arresto su Davanzali/Ostacoli**: Arrestare all'istante il look-ahead (`break;`) su blocchi solidi $\ge 1.0\text{ m}$ con ostacolo o vetro a quota testa.
-5. **Sede Unica per Documenti, Regole & Piani**:
-   Tutti i file di prompt, piani tecnici, strategie, rapporti, canali ChatGPT e schede di `knowledge/` risiedono ESCLUSIVAMENTE nella cartella operativa: `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft\`. Il repository Git `minecraft-access` è riservato al solo codice sorgente della mod. Qualsiasi modifica strutturale apportata a `GEMINI.md` o alle schede di `knowledge/` deve essere sincronizzata in entrambi i percorsi.
+5. **Organizzazione Documentale in `docs/` & Sincronizzazione Schede**:
+   - Tutti i piani tecnici, le strategie, i report, le idee e i manuali risiedono nelle sottocartelle dedicate all'interno del repository GitHub in `docs/`:
+     * Piani attivi: `docs/piani/attivi/`
+     * Piani completati: `docs/piani/completati/`
+     * Strategie & Metodologie: `docs/strategie/`
+     * Report & Collaudi: `docs/report/`
+     * Idee & Promemoria futuri: `docs/idee/`
+     * Manuali d'uso: `docs/manuali/`
+   - Le schede di `knowledge/` (01..10) e `gemini.md` risiedono nel repository e vengono sistematicamente sincronizzate anche in `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft\` per ridondanza di sicurezza.
 6. **Automatismi di Mobilità, Non-Interferenza Posturale & Adattività Cognitiva**:
    - Evitare `Shift Sinistro` per comandi nel mondo aperto (per prevenire l'accovacciamento/sneak involontario). Raggruppare per famiglie logiche (`Home/End` per POI, `V` per vista).
    - Quando esistono molteplici formulazioni cognitive valide, offrire opzioni multiple configurabili con Enum in GUI.
@@ -34,7 +41,7 @@ Questo file costituisce l'**Hub Centrale di Contesto** del progetto `minecraft-a
 8. **Ciclo di Vita dei Piani a 4 Fasi & Auto-Apprendimento Automatico**:
    - *Fase 1*: Build e test automatici Gradle (`.\gradlew.bat test shadowJar`).
    - *Fase 2*: Deploy provvisorio in PrismLauncher e collaudo manuale in-game di Luca.
-   - *Fase 3*: Chiusura simultanea (aggiornamento backup PC Portatile + archiviazione del piano in `archivio completati/`).
+   - *Fase 3*: Chiusura simultanea (aggiornamento backup PC Portatile + archiviazione del piano in `docs/piani/completati/`).
    - *Fase 4 (Automatica)*: **Sessione Automatica di Auto-Apprendimento & Proposta Regole** $\rightarrow$ Subito dopo la Fase 3, Antigravity avvia autonomamente una riflessione retrospettiva, estrae le lezioni generali, definisce dove integrarle in `knowledge/` e in `gemini.md`, presenta a Luca il riepilogo e richiede la conferma prima di applicarle.
 
 ---
@@ -45,13 +52,14 @@ Questo file costituisce l'**Hub Centrale di Contesto** del progetto `minecraft-a
 |---|---|---|
 | [`01_accessibilita_nvda.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/knowledge/01_accessibilita_nvda.md) | **Accessibilità Vocale & Tastiera** | Standard di sintesi vocale, audio 3D posizionale, navigazione a gruppi e celle (zero mouse). |
 | [`02_architettura_e_versioni.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/knowledge/02_architettura_e_versioni.md) | **Architettura & Runtime** | Minecraft 26.2 / 1.21.x, Fabric + NeoForge, Architectury Loom, SpongePowered Mixin, Java 25. |
-| [`03_standard_sviluppo_fork_pr.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/knowledge/03_standard_sviluppo_fork_pr.md) | **Fork, PR Upstream & I18N** | Inglese puro per commit/PR upstream, focus IT/EN e ordinamento alfabetico tassativo JSON. |
-| [`04_sicurezza_e_priorita_mod.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/knowledge/04_sicurezza_e_priorita_mod.md) | **Sicurezza & Separazione Cartelle** | Regole di isolamento test, cartella operativa vs cartella backup per salvataggi e istanze. |
+| [`03_standard_sviluppo_fork_pr.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/knowledge/03_standard_sviluppo_fork_pr.md) | **Fork, PR Upstream & I18N** | Architettura branch (`dev`, `mymaster`, feature), inglese per upstream, focus IT/EN e JSON ordinato. |
+| [`04_sicurezza_e_priorita_mod.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/knowledge/04_sicurezza_e_priorita_mod.md) | **Sicurezza & Gerarchia Cartelle** | Sviluppo primario su repo GitHub, backup/archivio su cartella frati, isolamento istanze. |
 | [`05_specifiche_dominio_voxel_e_comandi.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/knowledge/05_specifiche_dominio_voxel_e_comandi.md) | **Dominio 1: Voxel & Comandi In-Game** | Posizionamento torce, integrità pareti, verifiche MCA/NBT e regole anti-ridondanza comandi. |
 | [`06_controlli_avanzati_e_bridge_chatgpt.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/knowledge/06_controlli_avanzati_e_bridge_chatgpt.md) | **Dominio 2: Controlli & Bridge ChatGPT** | Mappa completa tasti (`C`, `U`, `X`, `È`, `V`) e canali persistenti Antigravity <-> ChatGPT. |
 | [`07_sincronizzazione_salvataggi_e_deploy.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/knowledge/07_sincronizzazione_salvataggi_e_deploy.md) | **Sync Macchine & Deploy** | Auto-rilevamento hardware PC (MSI / Salotto), deploy multi-istanza e backup OneDrive. |
 | [`08_protocollo_automiglioramento.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/knowledge/08_protocollo_automiglioramento.md) | **Auto-Miglioramento Continuo** | Algoritmo operativo in 4 passi (Rilevamento -> Diagnosi -> Risoluzione -> Registrazione & Sync). |
 | [`09_registro_bug_e_soluzioni.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/knowledge/09_registro_bug_e_soluzioni.md) | **Registro Bug & Soluzioni Tecniche** | Memoria tecnica dei casi complessi risolti (focus tasto `X`, ricettari 26.2, linting CI). |
+| [`10_standard_piani_verifiche_e_rapporti.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/knowledge/10_standard_piani_verifiche_e_rapporti.md) | **Piani, Verifiche & Accessibilità** | Metodologia piani a 4 fasi, standard 7 assi, validazione non vedenti e cartelle docs. |
 
 ---
 
