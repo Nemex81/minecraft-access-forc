@@ -18,6 +18,8 @@ Antigravity opera sempre secondo una rigida separazione tra fase consultiva ed e
    - Le modifiche vengono eseguite solo a seguito di comandi operativi diretti (es. *"procedi"*, *"applica"*, *"esegui"*, *"compila"* o approvazione formale del piano).
 3. **Nessun Bisogno di Promemoria**:
    - Luca non ha bisogno di specificare *"non modificare nulla, stiamo solo discutendo"*: questa regola è attiva e vincolante per impostazione predefinita in ogni interazione.
+4. **Riconoscimento Semantico delle Richieste Consultive**:
+   - Qualsiasi richiesta contenente espressioni di confronto, parere, interrogazione o valutazione aperta (es. *"cosa ne pensi?"*, *"come lo vedi?"*, *"come imposteresti?"*, *"valuta se..."*, *"secondo te..."*, *"analizza"*, *"esegui una verifica"*) impone tassativamente ad Antigravity di limitarsi a riflessioni, analisi, verifiche, diagnostica ed elaborazione di strategie o piani tecnici, **con divieto assoluto di modificare file o codice**.
 
 ---
 
@@ -52,7 +54,7 @@ Ogni proposta tecnica, architettura o piano implementativo deve superare prelimi
 
 ---
 
-## 4. Pipeline Operativa a 4 Fasi & Auto-Apprendimento Continuo
+## 4. Pipeline a 4 Fasi & Auto-Apprendimento Integrato a 3 Dimensioni
 
 Il ciclo di vita di ogni modifica o nuova funzionalità segue tassativamente questa sequenza:
 
@@ -71,6 +73,14 @@ Il ciclo di vita di ogni modifica o nuova funzionalità segue tassativamente que
     `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft archivio backup\minecraft backup\Minecraft 26.2 Access 1.12.0 pc portatile\minecraft\mods\`
   - Spostamento del piano tecnico in `docs/piani/completati/` con marcatura `[COMPLETATO E COLLAUDATO]`.
 
-### Fase 4: Auto-Apprendimento Automatico Post-Chiusura (Trigger Sistematico)
-- **Subito dopo la Fase 3**, Antigravity avvia in autonomia una riflessione retrospettiva sulle lezioni apprese.
-- Se emergono pattern generali (geometrici, ergonomici o di sistema), Antigravity formula la proposta di integrazione in `knowledge/` e `gemini.md`, la presenta a Luca e attende la sua conferma prima di aggiornare le regole.
+### Fase 4: Auto-Apprendimento Sistematico a 3 Dimensioni (Trigger Automatico & Proattivo)
+
+L'auto-apprendimento si articola su tre dimensioni fondamentali:
+1. **Dimensione Tecnica & Voxel**: Regole geometriche, raycast 3D, collisioni, costanti fisiche e Mixin (`knowledge/05`, `06`, `09`).
+2. **Dimensione Operativa & Metodologica**: Standard di lavoro, organizzazione dei piani in `docs/piani/`, validazione preventiva e deploy (`knowledge/00`, `10`).
+3. **Dimensione Comunicativa & Cognitiva**: Formattazione lineare per screen reader, rimozione di formule ridondanti e riduzione del carico cognitivo per NVDA (`knowledge/00`, `01`, `08`).
+
+#### Trigger Proattivo in Calce (Proactive Suggestion Box)
+Quando durante una conversazione Antigravity rileva un pattern, una preferenza o una procedura che può ottimizzare le interazioni future:
+- Risponde prima esaustivamente alla richiesta dell'utente.
+- In calce alla risposta inserisce un box **"💡 Proposta Regola di Auto-Apprendimento"**, indicando dove codificare la consuetudine e attendendo l'approvazione di Luca prima di applicarla.

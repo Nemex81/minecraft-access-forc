@@ -27,3 +27,18 @@ Il Protocollo di Auto-Miglioramento garantisce che l'assistente AI evolva contin
 ### Passo 4: Registrazione & Sincronizzazione Multi-Workspace
 - Aggiungere immediatamente un nuovo record strutturato nella scheda [`09_registro_bug_e_soluzioni.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/knowledge/09_registro_bug_e_soluzioni.md).
 - Se la soluzione introduce una nuova regola o vincolo generale, aggiornare `GEMINI.md` e le schede pertinenti, sincronizzando i file in tutte le cartelle collegate.
+
+---
+
+## 3. Le 3 Dimensioni dell'Auto-Miglioramento & Trigger Proattivo
+
+L'auto-apprendimento si sviluppa sistematicamente su tre assi coordinati (come definito nella scheda [`00_consuetudini_operative_e_sinergia_assistente.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/knowledge/00_consuetudini_operative_e_sinergia_assistente.md)):
+
+1. **Dimensione Tecnica & Voxel**: Raffinamento di raycast, collisioni, debouncing e Mixin.
+2. **Dimensione Operativa & Metodologica**: Strutturazione delle fasi, organizzazione dei piani in `docs/piani/` e standard di validazione a 7 assi.
+3. **Dimensione Comunicativa & Cognitiva per NVDA**: Perfezionamento del linguaggio lineare, sintesi e riduzione del carico cognitivo per lo screen reader.
+
+### Trigger Proattivo di Proposta Nuove Regole
+Quando Antigravity individua una preferenza o procedura ricorrente che ottimizza il lavoro futuro:
+- Risponde prima alla richiesta operativa di Luca.
+- Inserisce in calce un box di proposta per formalizzare la regola in `knowledge/00` o nella scheda di riferimento, attendendo sempre l'approvazione esplicita prima di applicarla.
