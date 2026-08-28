@@ -26,7 +26,7 @@ Questo file costituisce l'**Hub Centrale di Contesto** del progetto `minecraft-a
    - **Corner Pinching & Diagonali**: Nei raycast a $45^\circ$, arrestare il raggio se uno dei due vicini ortogonali è una barriera per rispettare la hitbox del giocatore ($0.6\text{ m}$).
    - **Strutture Scale & Sottoscala**: Riconoscere la campata della scala sia dai gradini d'atterraggio sia dai gradini sovrastanti lungo la colonna verticale.
    - **Arresto su Davanzali/Ostacoli**: Arrestare all'istante il look-ahead (`break;`) su blocchi solidi $\ge 1.0\text{ m}$ con ostacolo o vetro a quota testa.
-5. **Organizzazione Documentale in `docs/` & Sincronizzazione Schede**:
+5. **Organizzazione Documentale in `docs/` & Sede Esclusiva delle Regole (Zero Copie in Backup)**:
    - Tutti i piani tecnici, le strategie, i report, le idee e i manuali risiedono nelle sottocartelle dedicate all'interno del repository GitHub in `docs/`:
      * Piani attivi: `docs/piani/attivi/`
      * Piani completati: `docs/piani/completati/`
@@ -34,7 +34,7 @@ Questo file costituisce l'**Hub Centrale di Contesto** del progetto `minecraft-a
      * Report & Collaudi: `docs/report/`
      * Idee & Promemoria futuri: `docs/idee/`
      * Manuali d'uso: `docs/manuali/` (compreso il [`PROTOCOLLO_COLLAUDO_E_SESSIONI_MONITORATE.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/manuali/PROTOCOLLO_COLLAUDO_E_SESSIONI_MONITORATE.md))
-   - Le schede di `knowledge/` (00..10) e `gemini.md` risiedono nel repository e vengono sistematicamente sincronizzate anche in `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft archivio backup\` per ridondanza di sicurezza.
+   - **Sede Unica ed Esclusiva**: Le schede di `knowledge/` (00..10) e `gemini.md` risiedono **UNICAMENTE ED ESCLUSIVAMENTE** all'interno del repository Git (`C:\Users\nemex\OneDrive\Documenti\GitHub\minecraft-access\`). È fatto **divieto assoluto** ad Antigravity di copiare, duplicare o sincronizzare file di regole o documentazione nella cartella `minecraft archivio backup\`.
 6. **Automatismi di Mobilità, Non-Interferenza Posturale & Adattività Cognitiva**:
    - Evitare `Shift Sinistro` per comandi nel mondo aperto (per prevenire l'accovacciamento/sneak involontario). Raggruppare per famiglie logiche (`Home/End` per POI, `V` per vista).
    - Quando esistono molteplici formulazioni cognitive valide, offrire opzioni multiple configurabili con Enum in GUI.

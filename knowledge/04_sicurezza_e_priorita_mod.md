@@ -29,10 +29,9 @@ La gestione dei file rispetta una separazione netta e ordinata tra sviluppo oper
 │       └── manuali/ (Manuali in-game)
 │
 └── C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft archivio backup\ <-- CARTELLA ARCHIVIO, BACKUP & PROGETTI IN-GAME
-    ├── gemini.md & knowledge/ (Copia di sicurezza sincronizzata)
     ├── archivio completati/ (Archivio storico)
     ├── progetto casa personale/ & mappa originale del server vecchio/
-    ├── prompts/ (Prompt specifici per macchine)
+    ├── prompts/ (Prompt specifici per macchine - Privati)
     ├── CHATGPT.md, ANTIGRAVITY_SCRIVE_A_CHATGPT.md (Canali ChatGPT)
     │
     └── minecraft backup\                                                  <-- CARTELLA BACKUP ESCLUSIVA
@@ -42,12 +41,12 @@ La gestione dei file rispetta una separazione netta e ordinata tra sviluppo oper
 ```
 
 ### A. Cartella Operativa Primaria (`Documenti\GitHub\minecraft-access\`)
-- **Scopo**: È la **SEDE PRIMARIA DI SVILUPPO**: codice sorgente, build Gradle, rami Git (`mymaster`, `dev`), piani e documentazione tecnica strutturata in `docs/`.
+- **Scopo**: È la **SEDE PRIMARIA ED ESCLUSIVA DI SVILUPPO E REGOLE**: codice sorgente, build Gradle, rami Git (`mymaster`, `dev`), `gemini.md`, schede `knowledge/` (00..10) e documentazione tecnica strutturata in `docs/`.
 - **Regola**: Qualsiasi nuovo piano tecnico attivo va creato in `docs\piani\attivi\`.
 
 ### B. Cartella Master Archivio & Progetti In-Game (`accessible games\minecraft archivio backup\`)
-- **Scopo**: È la sede per i progetti edilizi/planimetrie in gioco, archivio storico, prompt di configurazione e canali di dialogo persistenti con ChatGPT.
-- **Sincronizzazione**: Mantiene una copia specchiata di sicurezza di `knowledge/` e `gemini.md`.
+- **Scopo**: È la sede per i progetti edilizi/planimetrie in gioco, archivio storico, prompt di configurazione hardware privati e canali di dialogo persistenti con ChatGPT.
+- **Divieto di Duplicazione**: **Nessun file di regole (`gemini.md`) o scheda (`knowledge/`) deve essere duplicato o copiato in questa cartella**.
 
 ### C. Cartella Backup Esclusiva (`minecraft backup\`)
 - **Scopo**: Riservata **esclusivamente** ai backup compressi dei mondi di gioco (`.zip`), agli archivi delle istanze PrismLauncher e ai `.jar` di rilascio stabili.

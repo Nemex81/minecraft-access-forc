@@ -84,3 +84,13 @@ L'auto-apprendimento si articola su tre dimensioni fondamentali:
 Quando durante una conversazione Antigravity rileva un pattern, una preferenza o una procedura che può ottimizzare le interazioni future:
 - Risponde prima esaustivamente alla richiesta dell'utente.
 - In calce alla risposta inserisce un box **"💡 Proposta Regola di Auto-Apprendimento"**, indicando dove codificare la consuetudine e attendendo l'approvazione di Luca prima di applicarla.
+
+---
+
+## 5. Sede Unica ed Esclusiva nel Repository Git (Zero Copie in Backup)
+
+Tutte le regole operative (`gemini.md`), le schede architetturali (`knowledge/00..10`), i piani e i manuali (`docs/`) risiedono **unicamente ed esclusivamente** nel repository Git:
+👉 `C:\Users\nemex\OneDrive\Documenti\GitHub\minecraft-access\`
+
+- **Divieto Assoluto di Duplicazione**: È fatto esplicito divieto ad Antigravity di copiare, esportare o sincronizzare file di regole o schede markdown nella cartella `minecraft archivio backup`.
+- **Versioning Puro**: Qualsiasi aggiornamento di regole o documentazione vive esclusivamente sotto il controllo di versione Git (`git commit` e `git push` su `origin/mymaster`).

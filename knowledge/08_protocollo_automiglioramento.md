@@ -24,9 +24,9 @@ Il Protocollo di Auto-Miglioramento garantisce che l'assistente AI evolva contin
 - Eseguire la compilazione con `.\gradlew.bat shadowJar`.
 - Verificare che il fix rispetti i principi di accessibilità vocale al 100%.
 
-### Passo 4: Registrazione & Sincronizzazione Multi-Workspace
+### Passo 4: Registrazione & Commit Git nel Repository
 - Aggiungere immediatamente un nuovo record strutturato nella scheda [`09_registro_bug_e_soluzioni.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/knowledge/09_registro_bug_e_soluzioni.md).
-- Se la soluzione introduce una nuova regola o vincolo generale, aggiornare `GEMINI.md` e le schede pertinenti, sincronizzando i file in tutte le cartelle collegate.
+- Se la soluzione introduce una nuova regola o vincolo generale, aggiornare `GEMINI.md` e le schede pertinenti **esclusivamente all'interno del repository Git**, committando e inviando le modifiche al branch remoto `origin/mymaster` (senza alcuna copia in cartelle esterne).
 
 ---
 
