@@ -99,7 +99,7 @@ La conclusione di ogni sessione implementativa segue tassativamente una sequenza
 
 ### Fase 2: Deploy di Prova e Collaudo Manuale Utente
 4. **Deploy Provvisorio nelle Istanze**: Copia e sovrascrittura del file `.jar` appena compilato nelle cartelle `mods/` delle istanze PrismLauncher attive del giocatore (per consentire l'apertura del gioco).
-5. **Rapporto e Consegna a Luca**: Presentazione del resoconto modifiche e notifica a Luca per l'avvio del test manuale in-game. In questa fase il piano rimane attivo nella radice operativa e la cartella di backup rimane intatta.
+5. **Rapporto e Consegna a Luca**: Presentazione del resoconto modifiche e avvio del test manuale in-game condotto secondo il manuale [`PROTOCOLLO_COLLAUDO_E_SESSIONI_MONITORATE.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/manuali/PROTOCOLLO_COLLAUDO_E_SESSIONI_MONITORATE.md). In questa fase il piano rimane attivo in `docs/piani/attivi/` e la cartella di backup rimane intatta.
 
 ### Fase 3: Chiusura Ufficiale Simultanea (Solo dopo il test in-game di Luca)
 6. **Aggiornamento Backup PC Portatile**: Solo dopo il collaudo manuale positivo di Luca, promozione del JAR stabile nella cartella di backup:

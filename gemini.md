@@ -7,14 +7,16 @@ Questo file costituisce l'**Hub Centrale di Contesto** del progetto `minecraft-a
 
 ---
 
-## 🌟 Le 8 Regole Auree Inviolabili del Progetto
+## 🌟 Le 9 Regole Auree Inviolabili del Progetto
 
+0. **Consuetudini Operative & Dialogo a 2 Tempi (Default Consultivo)**:
+   Antigravity assume per default la modalità esplorativa/consultiva: analizza, verifica i log, consulta chirurgicamente le schede di riferimento e **attende sempre la conferma esplicita di Luca prima di modificare file, codice o documentazione**. Standard di validazione preventiva a 7 assi e routing intelligente codificati nella scheda [`00_consuetudini_operative_e_sinergia_assistente.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/knowledge/00_consuetudini_operative_e_sinergia_assistente.md).
 1. **Accessibilità Vocale Assoluta (Zero Mouse)**:
    Nessuna funzionalità, interfaccia grafica o comando deve richiedere il mouse o indicatori visivi. Ogni interazione deve essere gestibile al 100% da tastiera e vocalizzata chiaramente tramite lo Screen Reader Proxy (`MainClass.narrate`).
 2. **Rigore I18N Focus su Italiano e Inglese & Ordinamento Alfabetico JSON**:
    Nello sviluppo ci occupiamo unicamente delle localizzazioni in Italiano (`it_it.json`) e Inglese (`en_us.json`), delegando le restanti lingue alla community tramite la piattaforma Weblate. In tutti i file `.json` modificati in `src/main/resources/assets/minecraft_access/lang/`, le chiavi devono essere **rigorosamente disposte in ordine alfabetico crescente** per superare i test di CI GitHub (`jq -e "keys != keys_unsorted"`).
 3. **Gerarchia Cartelle: Workspace di Sviluppo vs Archivio e Backup**:
-   - **Cartella Operativa Primaria di Sviluppo & Hub Documentale**: `C:\Users\nemex\OneDrive\Documenti\GitHub\minecraft-access\` (Sede centrale del codice Java, build Gradle, rami Git `mymaster`/`dev`, schede `knowledge/` 01..10, `gemini.md` e sottocartelle documentali in `docs/`).
+   - **Cartella Operativa Primaria di Sviluppo & Hub Documentale**: `C:\Users\nemex\OneDrive\Documenti\GitHub\minecraft-access\` (Sede centrale del codice Java, build Gradle, rami Git `mymaster`/`dev`, schede `knowledge/` 00..10, `gemini.md` e sottocartelle documentali in `docs/`).
    - **Cartella Master Archivio, Backup & Progetti Speciali**: `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft archivio backup\` (Sede dei backup compressi dei mondi e istanze in `minecraft backup/`, archivio storico `archivio completati/`, progetti di gioco in `progetto casa personale/`, `prompts/` e canali ChatGPT).
    - **Regola di Protezione Deploy**: Il backup del PC corrente viene aggiornato con la nuova build `.jar` stabile solo DOPO il superamento del test manuale in-game di Luca.
 4. **Regole Geometriche Voxel & Anti-Ridondanza Comandi**:
@@ -31,8 +33,8 @@ Questo file costituisce l'**Hub Centrale di Contesto** del progetto `minecraft-a
      * Strategie & Metodologie: `docs/strategie/`
      * Report & Collaudi: `docs/report/`
      * Idee & Promemoria futuri: `docs/idee/`
-     * Manuali d'uso: `docs/manuali/`
-   - Le schede di `knowledge/` (01..10) e `gemini.md` risiedono nel repository e vengono sistematicamente sincronizzate anche in `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft archivio backup\` per ridondanza di sicurezza.
+     * Manuali d'uso: `docs/manuali/` (compreso il [`PROTOCOLLO_COLLAUDO_E_SESSIONI_MONITORATE.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/manuali/PROTOCOLLO_COLLAUDO_E_SESSIONI_MONITORATE.md))
+   - Le schede di `knowledge/` (00..10) e `gemini.md` risiedono nel repository e vengono sistematicamente sincronizzate anche in `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft archivio backup\` per ridondanza di sicurezza.
 6. **Automatismi di Mobilità, Non-Interferenza Posturale & Adattività Cognitiva**:
    - Evitare `Shift Sinistro` per comandi nel mondo aperto (per prevenire l'accovacciamento/sneak involontario). Raggruppare per famiglie logiche (`Home/End` per POI, `V` per vista).
    - Quando esistono molteplici formulazioni cognitive valide, offrire opzioni multiple configurabili con Enum in GUI.
@@ -40,7 +42,7 @@ Questo file costituisce l'**Hub Centrale di Contesto** del progetto `minecraft-a
    Divieto assoluto di diagrammi grafici, disegni 2D, box ASCII complessi o frecce multidirezionali che risultano inaccessibili con la lettura riga per riga. Tutta l'informazione deve essere strutturata linearmente con logiche sequenziali ("Se... Allora"), elenchi puntati semantici e descrizioni spaziali matematico-verbali.
 8. **Ciclo di Vita dei Piani a 4 Fasi & Auto-Apprendimento Automatico**:
    - *Fase 1*: Build e test automatici Gradle (`.\gradlew.bat test shadowJar`).
-   - *Fase 2*: Deploy provvisorio in PrismLauncher e collaudo manuale in-game di Luca.
+   - *Fase 2*: Deploy provvisorio in PrismLauncher e collaudo manuale in-game di Luca ([`PROTOCOLLO_COLLAUDO_E_SESSIONI_MONITORATE.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/manuali/PROTOCOLLO_COLLAUDO_E_SESSIONI_MONITORATE.md)).
    - *Fase 3*: Chiusura simultanea (aggiornamento backup PC Portatile + archiviazione del piano in `docs/piani/completati/`).
    - *Fase 4 (Automatica)*: **Sessione Automatica di Auto-Apprendimento & Proposta Regole** $\rightarrow$ Subito dopo la Fase 3, Antigravity avvia autonomamente una riflessione retrospettiva, estrae le lezioni generali, definisce dove integrarle in `knowledge/` e in `gemini.md`, presenta a Luca il riepilogo e richiede la conferma prima di applicarle.
 
@@ -50,6 +52,7 @@ Questo file costituisce l'**Hub Centrale di Contesto** del progetto `minecraft-a
 
 | Scheda | Titolo | Contenuto e Scopo |
 |---|---|---|
+| [`00_consuetudini_operative_e_sinergia_assistente.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/knowledge/00_consuetudini_operative_e_sinergia_assistente.md) | **Consuetudini & Dialogo a 2 Tempi** | Dialogo consultivo a 2 tempi, routing modulare intelligente, validazione a 7 assi e pipeline a 4 fasi. |
 | [`01_accessibilita_nvda.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/knowledge/01_accessibilita_nvda.md) | **Accessibilità Vocale & Tastiera** | Standard di sintesi vocale, audio 3D posizionale, navigazione a gruppi e celle (zero mouse). |
 | [`02_architettura_e_versioni.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/knowledge/02_architettura_e_versioni.md) | **Architettura & Runtime** | Minecraft 26.2 / 1.21.x, Fabric + NeoForge, Architectury Loom, SpongePowered Mixin, Java 25. |
 | [`03_standard_sviluppo_fork_pr.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/knowledge/03_standard_sviluppo_fork_pr.md) | **Fork, PR Upstream & I18N** | Architettura branch (`dev`, `mymaster`, feature), inglese per upstream, focus IT/EN e JSON ordinato. |
