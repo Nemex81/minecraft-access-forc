@@ -132,6 +132,10 @@ public class SlotsGroup {
         }
     }
 
+    public String getGroupKey() {
+        return groupKey;
+    }
+
     public String getGroupName() {
         String key = String.format("minecraft_access.slot_group.%s", groupKey);
         String translation = groupName == null || Language.getInstance().has(key) ? I18n.get(key) : groupName;

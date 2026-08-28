@@ -195,7 +195,6 @@
         <module name="ExecutableStatementCount"/>
         <module name="JavadocMethod"/>
         <module name="JavadocParagraph"/>
-        <module name="JavadocStyle"/>
         <module name="JavadocType"/>
         <module name="JavaNCSS"/>
         <module name="SummaryJavadoc"/>
@@ -225,11 +224,6 @@
         </module>
         <module name="JavadocParagraph">
             <property name="id" value="api"/>
-        </module>
-        <module name="JavadocStyle">
-            <property name="id" value="api"/>
-            <property name="checkEmptyJavadoc" value="true"/>
-            <property name="scope" value="protected"/>
         </module>
         <module name="JavadocType">
             <property name="id" value="api"/>

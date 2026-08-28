@@ -114,7 +114,7 @@ public class PlayerStatus implements BalmClientModule {
         }
     }
 
-    private void narratePlayerStatus(boolean hasAltDown) {
+    public static void narratePlayerStatus(boolean hasAltDown) {
         Minecraft client = Minecraft.getInstance();
 
         List<Status> statuses = Arrays.stream(Config.getInstance().playerWarnings.statuses)

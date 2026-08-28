@@ -41,6 +41,11 @@ public class NarrateCrosshair implements BalmClientModule {
     private final SessionLocal<@Nullable Vec3> previousSoundPos = new SessionLocal<>(() -> null);
     private final Interval repetitionInterval = Interval.defaultDelay();
     private static final Config.NarrateCrosshair CONFIG = Config.getInstance().narrateCrosshair;
+    private static long suppressUntil = 0;
+
+    public static void suppressNarration(long durationMillis) {
+        suppressUntil = System.currentTimeMillis() + durationMillis;
+    }
 
     @Override
     public @NotNull Identifier getId() {
@@ -55,6 +60,7 @@ public class NarrateCrosshair implements BalmClientModule {
     private void tick(Minecraft client, Player player, Level level) {
         if (client.gui.screen() != null) return;
         if (!CONFIG.enabled) return;
+        if (System.currentTimeMillis() < suppressUntil) return;
         repetitionInterval.setDelay(CONFIG.repetitionInterval, Interval.Unit.MILLISECOND);
 
         WorldNarrator narrator = MainClass.registry(WorldNarrator.class).get(CONFIG.narrator);

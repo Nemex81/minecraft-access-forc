@@ -14,6 +14,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.NarratorStatus;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.ServerList;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.resources.Identifier;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
@@ -32,6 +33,8 @@ import org.mcaccess.minecraftaccess.features.MenuFix;
 import org.mcaccess.minecraftaccess.features.MouseSimulation;
 import org.mcaccess.minecraftaccess.features.NarrateCrosshair;
 import org.mcaccess.minecraftaccess.features.NarrateHeldItem;
+import org.mcaccess.minecraftaccess.features.NumpadControls;
+import org.mcaccess.minecraftaccess.features.ObstacleDetector;
 import org.mcaccess.minecraftaccess.features.PlayerStatus;
 import org.mcaccess.minecraftaccess.features.PositionNarrator;
 import org.mcaccess.minecraftaccess.features.TimeIndicator;
@@ -50,8 +53,11 @@ public final class MainClass {
     private static ScreenReaderInterface screenReader = null;
     private static final Map<Class<?>, Map<Identifier, Object>> REGISTRY = new HashMap<>();
     private static boolean frozen = false;
+    @Getter
+    private static String lastNarrationText = "";
 
     public static POIManager poiManager = null;
+    public static org.mcaccess.minecraftaccess.features.autowalk.AutoWalkManager autoWalkManager = null;
 
     private MainClass() {
     }
@@ -139,6 +145,8 @@ public final class MainClass {
         registrars.registerModule(new MouseSimulation());
         registrars.registerModule(new NarrateCrosshair());
         registrars.registerModule(new NarrateHeldItem());
+        registrars.registerModule(new NumpadControls());
+        registrars.registerModule(new ObstacleDetector());
         registrars.registerModule(new PlayerStatus());
         poiManager = new POIManager();
         registrars.registerModule(poiManager.lockingHandler);
@@ -146,9 +154,12 @@ public final class MainClass {
         registrars.registerModule(poiManager.poiBlocks);
         registrars.registerModule(poiManager.poiEntities);
         registrars.registerModule(poiManager.poiMarking);
+        registrars.registerModule(poiManager.waypointManager);
+        registrars.registerModule(poiManager.poiWaypoints);
         registrars.registerModule(new PositionNarrator());
         registrars.registerModule(new TimeIndicator());
         registrars.registerModule(new XPIndicator());
+        registrars.registerModule(autoWalkManager = new org.mcaccess.minecraftaccess.features.autowalk.AutoWalkManager());
     }
 
     /**
@@ -185,8 +196,18 @@ public final class MainClass {
             return;
         }
 
+        lastNarrationText = text;
+
         if (client.options.narrator().get() != NarratorStatus.OFF) {
             ((GameNarratorAccessor) client.getNarrator()).invokeNarrateMessage(text, interrupt);
+        }
+    }
+
+    public static void repeatLastNarration() {
+        if (Strings.isEmpty(lastNarrationText)) {
+            narrate(I18n.get("minecraft_access.other.no_previous_narration"), true);
+        } else {
+            narrate(lastNarrationText, true);
         }
     }
 

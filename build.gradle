@@ -65,6 +65,8 @@ dependencies {
     testImplementation libs.junitJupiter
     testImplementation libs.junitJupiterParams
     testRuntimeOnly libs.junitPlatformLauncher
+    testImplementation libs.clothConfigCommon
+    testImplementation libs.balmCommon
 
     testImplementation libs.assertjCore
 

@@ -1,6 +1,9 @@
 package org.mcaccess.minecraftaccess.features.inventory_controls;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -23,6 +26,8 @@ import net.minecraft.client.gui.screens.inventory.CraftingScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
+import net.minecraft.client.gui.screens.recipebook.RecipeButton;
+import net.minecraft.client.gui.screens.recipebook.RecipeCollection;
 import net.minecraft.client.gui.screens.recipebook.SearchRecipeBookCategory;
 import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.resources.language.I18n;
@@ -32,9 +37,13 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
+import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.inventory.AbstractFurnaceMenu;
 import net.minecraft.world.inventory.BrewingStandMenu;
+import net.minecraft.world.inventory.FurnaceResultSlot;
+import net.minecraft.world.inventory.ResultContainer;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.inventory.TransientCraftingContainer;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item.TooltipContext;
@@ -42,6 +51,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.crafting.ExtendedRecipeBookCategory;
+import net.minecraft.world.item.crafting.display.FurnaceRecipeDisplay;
+import net.minecraft.world.item.crafting.display.RecipeDisplay;
+import net.minecraft.world.item.crafting.display.ShapedCraftingRecipeDisplay;
+import net.minecraft.world.item.crafting.display.ShapelessCraftingRecipeDisplay;
+import net.minecraft.world.item.crafting.display.SlotDisplay;
+import net.minecraft.world.item.crafting.display.SlotDisplayContext;
+import net.minecraft.world.item.crafting.display.SmithingRecipeDisplay;
+import net.minecraft.world.item.crafting.display.StonecutterRecipeDisplay;
 import net.minecraft.world.level.block.entity.BrewingStandBlockEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -90,6 +107,14 @@ public class InventoryControls implements BalmClientModule {
     private SlotItem currentSlotItem = null;
     private RecipeBookComponent<?> currentRecipeBookWidget = null;
     private String previousSlotText = "";
+    private int previousQueuedCrafts = 0;
+    private int previousCarriedCount = 0;
+    private ItemStack previousResultStack = ItemStack.EMPTY;
+    private static long lastActionNarrationTime = 0;
+
+    public static boolean isActionRecentlyNarrated() {
+        return System.currentTimeMillis() - lastActionNarrationTime < 1500;
+    }
 
     public InventoryControls() {
         loadConfig();
@@ -129,7 +154,7 @@ public class InventoryControls implements BalmClientModule {
                 .overrideCategory(KeyMappingCategories.INVENTORY_CONTROLS)
                 .handleScreenInput(_ -> {
                     log.debug("Switch Tab key pressed");
-                    if (currentScreen instanceof InventoryScreen || currentScreen instanceof CraftingScreen) {
+                    if (currentScreen instanceof AbstractRecipeBookScreen<?>) {
                         changeRecipeTab(false);
                         return true;
                     } else if (currentScreen instanceof CreativeModeInventoryScreen) {
@@ -145,7 +170,7 @@ public class InventoryControls implements BalmClientModule {
                 .overrideCategory(KeyMappingCategories.INVENTORY_CONTROLS)
                 .handleScreenInput(_ -> {
                     log.debug("Switch Tab key pressed");
-                    if (currentScreen instanceof InventoryScreen || currentScreen instanceof CraftingScreen) {
+                    if (currentScreen instanceof AbstractRecipeBookScreen<?>) {
                         changeRecipeTab(true);
                         return true;
                     } else if (currentScreen instanceof CreativeModeInventoryScreen) {
@@ -289,6 +314,16 @@ public class InventoryControls implements BalmClientModule {
                     return false;
                 })
                 .build();
+
+        Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "inventory_controls.recipe_info"))
+                .withDefault(InputBinding.key(InputConstants.KEY_X))
+                .overrideCategory(KeyMappingCategories.INVENTORY_CONTROLS)
+                .ignoreScreenFocus()
+                .handleScreenInput(_ -> {
+                    log.debug("Recipe info key pressed");
+                    return narrateRecipeInfo();
+                })
+                .build();
     }
 
     private void tick(Minecraft client) {
@@ -301,6 +336,9 @@ public class InventoryControls implements BalmClientModule {
             currentGroupIndex = 0;
             currentGroup = null;
             currentRecipeBookWidget = null;
+            previousQueuedCrafts = 0;
+            previousCarriedCount = 0;
+            previousResultStack = ItemStack.EMPTY;
             return;
         }
         if (!(client.gui.screen() instanceof AbstractContainerScreen)) return;
@@ -313,11 +351,18 @@ public class InventoryControls implements BalmClientModule {
         currentRecipeBookWidget = getRecipeBookWidget(client.gui.screen());
         currentSlotsGroupList = GroupGenerator.generateGroupsFromSlots(currentScreen);
 
+        if (!isSearchBoxFocused() && client.gui.screen() != null && client.gui.screen().getFocused() != null) {
+            client.gui.screen().setFocused(null);
+        }
+
         interval.adjustNextReadyTimeBy(keyListener());
 
         // On screen open
         if (previousScreen != currentScreen) {
             previousScreen = currentScreen;
+            previousQueuedCrafts = 0;
+            previousCarriedCount = 0;
+            previousResultStack = ItemStack.EMPTY;
             if (currentScreen instanceof AnvilScreen anvilScreen) {
                 setSearchBoxFocus(((AnvilScreenAccessor) anvilScreen).getName(), false);
             }
@@ -340,13 +385,95 @@ public class InventoryControls implements BalmClientModule {
 
         if (currentSlotsGroupList.isEmpty()) return;
 
-        if (config.narrateFocusedSlotChanges) {
+        int currentQueuedCrafts = getQueuedCraftsCount(currentScreen);
+        ItemStack currentResultStack = getResultSlotItem(currentScreen);
+        ItemStack currentCarried = currentScreen.getMenu().getCarried();
+        int currentCarriedCount = currentCarried.getCount();
+
+        boolean isRecipesGroup = currentGroup != null && "recipes".equals(currentGroup.getGroupKey());
+        boolean isCraftingOutputGroup = currentGroup != null && "crafting_output".equals(currentGroup.getGroupKey());
+        boolean customNarrationHandled = false;
+
+        if (isRecipesGroup && currentQueuedCrafts > 0 && currentQueuedCrafts != previousQueuedCrafts) {
+            if (!currentResultStack.isEmpty()) {
+                int totalItems = currentQueuedCrafts * currentResultStack.getCount();
+                String itemName = currentResultStack.getHoverName().getString();
+                String narration = I18n.get("minecraft_access.inventory_controls.crafting_queued", currentQueuedCrafts, totalItems, itemName);
+                previousSlotText = getCurrentSlotNarrationText();
+                MainClass.narrate(narration, true);
+                customNarrationHandled = true;
+            }
+        } else if (isCraftingOutputGroup) {
+            if (currentCarriedCount > previousCarriedCount && !currentCarried.isEmpty()) {
+                int craftedAmount = currentCarriedCount - previousCarriedCount;
+                String itemName = currentCarried.getHoverName().getString();
+                String narration = I18n.get("minecraft_access.inventory_controls.crafted_items", craftedAmount, itemName, currentCarriedCount);
+                previousSlotText = getCurrentSlotNarrationText();
+                MainClass.narrate(narration, true);
+                customNarrationHandled = true;
+            } else if (currentQueuedCrafts < previousQueuedCrafts && currentCarriedCount == previousCarriedCount) {
+                int batchesCrafted = previousQueuedCrafts - currentQueuedCrafts;
+                int perBatchCount = !previousResultStack.isEmpty() ? previousResultStack.getCount()
+                        : (!currentResultStack.isEmpty() ? currentResultStack.getCount() : 1);
+                int craftedAmount = batchesCrafted * perBatchCount;
+                String itemName = !previousResultStack.isEmpty() ? previousResultStack.getHoverName().getString()
+                        : (!currentResultStack.isEmpty() ? currentResultStack.getHoverName().getString() : "");
+                if (!itemName.isEmpty()) {
+                    String narration = I18n.get("minecraft_access.inventory_controls.crafted_items_to_inventory", craftedAmount, itemName);
+                    previousSlotText = getCurrentSlotNarrationText();
+                    MainClass.narrate(narration, true);
+                    customNarrationHandled = true;
+                }
+            }
+        }
+
+        if (customNarrationHandled) {
+            lastActionNarrationTime = System.currentTimeMillis();
+        }
+
+        previousQueuedCrafts = currentQueuedCrafts;
+        previousCarriedCount = currentCarriedCount;
+        if (!currentResultStack.isEmpty()) {
+            previousResultStack = currentResultStack.copy();
+        } else if (currentQueuedCrafts == 0) {
+            previousResultStack = ItemStack.EMPTY;
+        }
+
+        if (!customNarrationHandled && config.narrateFocusedSlotChanges) {
             String slotNarrationText = getCurrentSlotNarrationText();
             if (!previousSlotText.equals(slotNarrationText)) {
                 previousSlotText = slotNarrationText;
                 MainClass.narrate(previousSlotText, true);
             }
         }
+    }
+
+    private int getQueuedCraftsCount(@NotNull AbstractContainerScreenAccessor screen) {
+        int minCount = Integer.MAX_VALUE;
+        boolean hasIngredients = false;
+        for (Slot slot : screen.getMenu().slots) {
+            if (slot.container instanceof TransientCraftingContainer) {
+                if (slot.hasItem()) {
+                    hasIngredients = true;
+                    int count = slot.getItem().getCount();
+                    if (count < minCount) {
+                        minCount = count;
+                    }
+                }
+            }
+        }
+        return hasIngredients ? minCount : 0;
+    }
+
+    private @NotNull ItemStack getResultSlotItem(@NotNull AbstractContainerScreenAccessor screen) {
+        for (Slot slot : screen.getMenu().slots) {
+            if (slot.container instanceof ResultContainer && !(slot instanceof FurnaceResultSlot)) {
+                if (slot.hasItem()) {
+                    return slot.getItem();
+                }
+            }
+        }
+        return ItemStack.EMPTY;
     }
 
     private @Nullable RecipeBookComponent<?> getRecipeBookWidget(Screen screen) {
@@ -413,6 +540,28 @@ public class InventoryControls implements BalmClientModule {
 
     private boolean isRecipeBookOpen() {
         return currentRecipeBookWidget != null && currentRecipeBookWidget.isVisible();
+    }
+
+    private boolean isSearchBoxFocused() {
+        if (isRecipeBookOpen()) {
+            EditBox searchBox = ((RecipeBookComponentAccessor) currentRecipeBookWidget).getSearchBox();
+            if (searchBox.canConsumeInput()) {
+                return true;
+            }
+        }
+        if (currentScreen instanceof CreativeModeInventoryScreen creativeInventoryScreen) {
+            EditBox searchBox = ((CreativeModeInventoryScreenAccessor) creativeInventoryScreen).getSearchBox();
+            if (searchBox.canConsumeInput()) {
+                return true;
+            }
+        }
+        if (currentScreen instanceof AnvilScreen anvilScreen) {
+            EditBox searchBox = ((AnvilScreenAccessor) anvilScreen).getName();
+            if (searchBox.canConsumeInput()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void clickPreviousRecipeBookPage() {
@@ -626,6 +775,9 @@ public class InventoryControls implements BalmClientModule {
     }
 
     private void selectGroup(boolean interrupt) {
+        if (!isSearchBoxFocused() && Minecraft.getInstance().gui.screen() != null && Minecraft.getInstance().gui.screen().getFocused() != null) {
+            Minecraft.getInstance().gui.screen().setFocused(null);
+        }
         currentGroup = currentSlotsGroupList.get(currentGroupIndex);
         log.debug("Group(name:{}) {}/{} selected", currentGroup.getGroupName(), currentGroupIndex + 1, currentSlotsGroupList.size());
         MainClass.narrate(I18n.get("minecraft_access.inventory_controls.group_selected",
@@ -677,6 +829,91 @@ public class InventoryControls implements BalmClientModule {
 
         ExtendedRecipeBookCategory category = recipeBookComponentAccessor.getSelectedTab().getCategory();
         log.debug("Change tab to {}", ((SearchRecipeBookCategory) category).name());
+    }
+
+    private boolean narrateRecipeInfo() {
+        if (currentRecipeBookWidget == null || !currentRecipeBookWidget.isVisible()) {
+            return false;
+        }
+        if (currentGroup == null || !"recipes".equals(currentGroup.getGroupKey())) {
+            return false;
+        }
+
+        RecipeBookComponentAccessor recipeBookAccessor = (RecipeBookComponentAccessor) currentRecipeBookWidget;
+        RecipeBookPageAccessor pageAccessor = (RecipeBookPageAccessor) recipeBookAccessor.getRecipeBookPage();
+        List<RecipeButton> buttons = pageAccessor.getButtons();
+        int focusIndex = currentGroup.slotItems.indexOf(currentSlotItem);
+        if (focusIndex < 0 || focusIndex >= buttons.size()) {
+            return false;
+        }
+
+        RecipeButton button = buttons.get(focusIndex);
+        if (!button.visible) {
+            return false;
+        }
+
+        RecipeCollection collection = button.getCollection();
+        if (collection == null) {
+            return false;
+        }
+
+        ItemStack displayStack = button.getDisplayStack();
+        String productName = displayStack.getHoverName().getString();
+
+        var recipes = collection.getRecipes();
+        if (recipes.isEmpty()) {
+            return false;
+        }
+
+        ContextMap context = SlotDisplayContext.fromLevel(Minecraft.getInstance().level);
+        RecipeDisplay display = recipes.getFirst().display();
+        for (var entry : recipes) {
+            ItemStack resultStack = entry.display().result().resolveForFirstStack(context);
+            if (ItemStack.isSameItem(resultStack, displayStack)) {
+                display = entry.display();
+                break;
+            }
+        }
+
+        List<SlotDisplay> ingredients = new ArrayList<>();
+        if (display instanceof ShapedCraftingRecipeDisplay shaped) {
+            ingredients.addAll(shaped.ingredients());
+        } else if (display instanceof ShapelessCraftingRecipeDisplay shapeless) {
+            ingredients.addAll(shapeless.ingredients());
+        } else if (display instanceof FurnaceRecipeDisplay furnace) {
+            ingredients.add(furnace.ingredient());
+        } else if (display instanceof StonecutterRecipeDisplay stonecutter) {
+            ingredients.add(stonecutter.input());
+        } else if (display instanceof SmithingRecipeDisplay smithing) {
+            ingredients.add(smithing.template());
+            ingredients.add(smithing.base());
+            ingredients.add(smithing.addition());
+        }
+        Map<String, Integer> ingredientCounts = new LinkedHashMap<>();
+        for (SlotDisplay slotDisplay : ingredients) {
+            if (slotDisplay == null) {
+                continue;
+            }
+            ItemStack stack = slotDisplay.resolveForFirstStack(context);
+            if (!stack.isEmpty()) {
+                String ingredientName = stack.getHoverName().getString();
+                ingredientCounts.put(ingredientName, ingredientCounts.getOrDefault(ingredientName, 0) + 1);
+            }
+        }
+
+        if (ingredientCounts.isEmpty()) {
+            return false;
+        }
+
+        List<String> formattedIngredients = new ArrayList<>();
+        for (Map.Entry<String, Integer> entryItem : ingredientCounts.entrySet()) {
+            formattedIngredients.add("%d %s".formatted(entryItem.getValue(), entryItem.getKey()));
+        }
+
+        String ingredientsString = String.join(", ", formattedIngredients);
+        String narration = I18n.get("minecraft_access.inventory_controls.recipe_requirements", productName, ingredientsString);
+        MainClass.narrate(narration, true);
+        return true;
     }
 
     /**

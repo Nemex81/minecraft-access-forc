@@ -38,6 +38,8 @@ import org.jetbrains.annotations.NotNull;
 import org.mcaccess.minecraftaccess.Config;
 import org.mcaccess.minecraftaccess.MainClass;
 import org.mcaccess.minecraftaccess.api.WorldNarrator;
+import org.mcaccess.minecraftaccess.features.point_of_interest.waypoints.Waypoint;
+import org.mcaccess.minecraftaccess.features.point_of_interest.waypoints.WaypointUtils;
 import org.mcaccess.minecraftaccess.utils.KeyMappingCategories;
 import org.mcaccess.minecraftaccess.utils.NarrationUtils;
 import org.mcaccess.minecraftaccess.utils.PlayerUtils;
@@ -53,6 +55,7 @@ public class LockingHandler implements BalmClientModule {
     private final Config.POI.Locking config = Config.getInstance().poi.locking;
     private Entity lockedOnEntity = null;
     private BlockPos3d lockedOnBlockPos = null;
+    private Waypoint lockedOnWaypoint = null;
     private boolean isLockedOnWhereEyeOfEnderDisappears = false;
     private Set<Property.Value<?>> entriesOfLockedOnBlock;
     private boolean aimAssistActive = false;
@@ -75,6 +78,7 @@ public class LockingHandler implements BalmClientModule {
         ClientLifecycleCallback.ConnectedToServer.EVENT.register(_ -> {
             lockedOnEntity = null;
             lockedOnBlockPos = null;
+            lockedOnWaypoint = null;
             isLockedOnWhereEyeOfEnderDisappears = false;
             entriesOfLockedOnBlock = null;
             aimAssistActive = false;
@@ -154,6 +158,13 @@ public class LockingHandler implements BalmClientModule {
                 unlock(true, true);
             }
         }
+
+        if (lockedOnWaypoint != null) {
+            Vec3 targetVec = WaypointUtils.getTargetVectorForPlayer(lockedOnWaypoint, client.player, Config.getInstance().poi.waypoints.crossDimensionConversion);
+            if (targetVec != null) {
+                client.player.lookAt(EntityAnchorArgument.Anchor.EYES, targetVec);
+            }
+        }
     }
 
     /**
@@ -214,13 +225,14 @@ public class LockingHandler implements BalmClientModule {
     }
 
     public boolean isPlayerLocked() {
-        return lockedOnBlockPos != null || lockedOnEntity != null;
+        return lockedOnBlockPos != null || lockedOnEntity != null || lockedOnWaypoint != null;
     }
 
-    private void unlock(boolean narrate, boolean isStillValid) {
+    public void unlock(boolean narrate, boolean isStillValid) {
         lockedOnEntity = null;
         entriesOfLockedOnBlock = null;
         lockedOnBlockPos = null;
+        lockedOnWaypoint = null;
         isLockedOnWhereEyeOfEnderDisappears = false;
         if (!isStillValid) MainClass.poiManager.objectTracker.clearCurrentObject();
 
@@ -229,7 +241,7 @@ public class LockingHandler implements BalmClientModule {
         }
     }
 
-    private void relock() {
+    public void relock() {
         Object target = MainClass.poiManager.objectTracker.getCurrentObject();
         if (target == null) {
             MainClass.narrate(I18n.get("minecraft_access.point_of_interest.not_selected"), true);
@@ -238,8 +250,31 @@ public class LockingHandler implements BalmClientModule {
         switch (target) {
             case Entity entity -> lockOnEntity(entity);
             case BlockPos blockPos -> lockOnBlock(blockPos);
+            case Waypoint waypoint -> lockOnWaypoint(waypoint);
             default -> throw new IllegalStateException("Unexpected locking target type: " + target);
         }
+    }
+
+    public boolean lockOnWaypoint(Waypoint waypoint) {
+        unlock(false, true);
+        lockedOnWaypoint = waypoint;
+
+        StringBuilder narration = new StringBuilder(waypoint.name());
+
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player != null && Config.getInstance().poi.narrateDistance) {
+            Identifier currentDim = player.level().dimension().identifier();
+            if (currentDim.equals(waypoint.dimension())) {
+                narration.append(' ')
+                        .append(NarrationUtils.narrateRelativePositionOfPlayerAnd(waypoint.pos()));
+            } else if (Config.getInstance().poi.waypoints.crossDimensionConversion && WaypointUtils.isOverworldNetherPair(currentDim, waypoint.dimension())) {
+                BlockPos convertedPos = WaypointUtils.convertCoordinates(waypoint.pos(), waypoint.dimension(), currentDim);
+                narration.append(' ')
+                        .append(NarrationUtils.narrateRelativePositionOfPlayerAnd(convertedPos));
+            }
+        }
+        MainClass.narrate(I18n.get("minecraft_access.point_of_interest.locking.locked", narration), true);
+        return true;
     }
 
     /**

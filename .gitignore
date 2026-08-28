@@ -9,6 +9,9 @@ run/
 
 # Java
 replay_pid*.log
+gradle.properties
+logs/
+*.log
 
 # eclipse
 *.launch

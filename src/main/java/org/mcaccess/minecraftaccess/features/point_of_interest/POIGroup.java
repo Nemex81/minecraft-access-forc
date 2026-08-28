@@ -92,6 +92,14 @@ public class POIGroup<T> {
                 assert player != null;
                 yield player.getEyePosition().distanceTo(Vec3.atCenterOf(blockPos));
             }
+            case org.mcaccess.minecraftaccess.features.point_of_interest.waypoints.Waypoint waypoint -> {
+                assert player != null;
+                Vec3 target = org.mcaccess.minecraftaccess.features.point_of_interest.waypoints.WaypointUtils.getTargetVectorForPlayer(waypoint, player, true);
+                if (target != null) {
+                    yield player.getEyePosition().distanceTo(target);
+                }
+                yield Double.MAX_VALUE;
+            }
             default -> Double.MAX_VALUE;
         };
     }

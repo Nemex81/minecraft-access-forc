@@ -12,6 +12,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import org.mcaccess.minecraftaccess.MainClass;
+import org.mcaccess.minecraftaccess.features.inventory_controls.InventoryControls;
 import org.mcaccess.minecraftaccess.utils.condition.Interval;
 import org.mcaccess.minecraftaccess.utils.system.MouseUtils;
 
@@ -35,7 +36,10 @@ abstract class RecipeButtonMixin {
         String itemName = itemStack.getHoverName().getString();
 
         boolean sameItem = itemName.equalsIgnoreCase(previousItemName);
-        if (!sameItem || interval.isReady()) {
+        if (InventoryControls.isActionRecentlyNarrated()) {
+            previousItemName = itemName;
+            interval.reset();
+        } else if (!sameItem || interval.isReady()) {
             String craftable = collection.hasCraftable() ? "craftable" : "not_craftable";
             craftable = I18n.get("minecraft_access.other." + craftable);
             String narration = "%s %d %s".formatted(craftable, itemStack.getCount(), itemName);

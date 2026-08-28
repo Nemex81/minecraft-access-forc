@@ -21,11 +21,11 @@ Per evitare qualsiasi errore umano nel routing dei backup e dei salvataggi, l'as
 | Hostname di Sistema (`$env:COMPUTERNAME`) | Macchina Identificata | Cartella Backup OneDrive di Riferimento |
 |---|---|---|
 | **`MSI`** | **PC Portatile** | `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft\minecraft backup\Minecraft 26.2 Access 1.12.0 pc portatile\` |
-| *[In attesa di primo rilevamento]* | **PC Fisso Salotto** | `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft\minecraft backup\Minecraft 26.2 Access 1.12.0 pc fisso Salotto\` |
+| **`NEMEXMASTER`** | **PC Fisso Salotto** | `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft\minecraft backup\Minecraft 26.2 Access 1.12.0 pc fisso Salotto\` |
 
 ### Protocollo di Apprendimento Dinamico (Auto-Discover):
-- Se `$env:COMPUTERNAME` corrisponde a `MSI`, l'assistente opera automaticamente con i percorsi del **PC Portatile**.
-- Se l'assistente rileva un hostname diverso da `MSI` (es. prima sessione dal Salotto), interroga l'hostname, chiede conferma vocale a Luca (*"Rilevato hostname XYZ: confermi che stiamo lavorando sul PC Fisso Salotto?"*), memorizza l'hostname in questa tabella e applica i percorsi del PC Salotto.
+- Se `$env:COMPUTERNAME` corrisponde a `MSI`, l'assistente opera automaticamente con i percorsi del **PC Portatile** (`Minecraft 26.2 Access 1.12.0`).
+- Se `$env:COMPUTERNAME` corrisponde a `NEMEXMASTER`, l'assistente opera automaticamente con i percorsi del **PC Fisso Salotto** (`Minecraft_26.2_Access_1.12.0`).
 
 ---
 
@@ -35,13 +35,16 @@ Una volta generato il file `.jar`, il deploy e la messa in sicurezza seguono una
 
 ### Fase 1: Deploy Immediato nelle Istanze di Test
 Copia simultanea del file `.jar` compilato in tutte le istanze operative locali di PrismLauncher per permettere a Luca di eseguire i test in gioco:
-- `c:\Users\nemex\AppData\Roaming\PrismLauncher\instances\Minecraft 26.2 Access 1.12.0\minecraft\mods\minecraft-access-1.12.0-SNAPSHOT.jar`
-- `c:\Users\nemex\AppData\Roaming\PrismLauncher\instances\Minecraft 26.2 Access - Server Tenuta\minecraft\mods\minecraft-access-1.12.0-SNAPSHOT.jar`
+- Su PC Portatile (`MSI`):
+  - `c:\Users\nemex\AppData\Roaming\PrismLauncher\instances\Minecraft 26.2 Access 1.12.0\minecraft\mods\minecraft-access-1.12.0.jar`
+  - `c:\Users\nemex\AppData\Roaming\PrismLauncher\instances\Minecraft 26.2 Access - Server Tenuta\minecraft\mods\minecraft-access-1.12.0.jar`
+- Su PC Fisso Salotto (`NEMEXMASTER`):
+  - `c:\Users\nemex\AppData\Roaming\PrismLauncher\instances\Minecraft_26.2_Access_1.12.0\minecraft\mods\minecraft-access-1.12.0.jar`
 
 ### Fase 2: Backup Ufficiale OneDrive & Chiusura Piano (Solo Post-Convalida Utente)
 **TASSATIVO**: L'aggiornamento della cartella backup su OneDrive e la spunta delle voci nel Piano Tecnico avvengono **esclusivamente DOPO che Luca ha effettuato il test in-game e ha convalidato e confermato con successo le modifiche**:
 - Su **PC Portatile** (`MSI`): `.../minecraft backup/Minecraft 26.2 Access 1.12.0 pc portatile/minecraft/mods/`
-- Su **PC Fisso Salotto**: `.../minecraft backup/Minecraft 26.2 Access 1.12.0 pc fisso Salotto/minecraft/mods/`
+- Su **PC Fisso Salotto** (`NEMEXMASTER`): `.../minecraft backup/Minecraft 26.2 Access 1.12.0 pc fisso Salotto/minecraft/mods/`
 - Aggiornamento contestuale delle caselle di verifica `[x]` nel file del piano tecnico su OneDrive.
 3. **Allineamento Configurazione Comandi & Codifica Tassativa `UTF-8 No-BOM` (`options.txt`)**:
    - **Regola di Codifica**: Qualsiasi file `.txt` o `.properties` modificato via script (in particolare `options.txt`) deve essere scritto rigorosamente in **UTF-8 puro senza BOM** (`[System.Text.UTF8Encoding]($false)`). La presenza del BOM (`\uFEFF`) corrompe la lettura del token `version:` da parte del DataFixerUpper di Minecraft provocando il reset integrale delle opzioni.
@@ -65,3 +68,13 @@ Per garantire la perfetta parità e massime prestazioni tra il PC fisso e il por
   ```
 - **Parità Configurazioni**: Le configurazioni collaudate dell'istanza e i file mod vengono sincronizzati nelle rispettive sottocartelle di `minecraft backup\`.
 - Prima di avviare una sessione sul PC opposto, verificare la presenza del `.jar` aggiornato e sincronizzare i salvataggi `.zip`.
+
+---
+
+## 5. Regola di Sincronizzazione Salvataggi & Waypoint POI
+
+- **Dualità dei Dati**: In Minecraft Access, i blocchi e il terreno risiedono in `minecraft/saves/<mondo>/`, mentre i **Punti di Interesse (Waypoint)** sono serializzati in `minecraft/config/minecraft-access/waypoints/singleplayer_<mondo>.json`.
+- **Regola di Migrazione**: Quando si trasferisce o sincronizza una partita tra PC Portatile e PC Salotto, è **tassativo copiare congiuntamente**:
+  1. La cartella del mondo: `minecraft/saves/<mondo>/`
+  2. Il file dei waypoints: `minecraft/config/minecraft-access/waypoints/singleplayer_<mondo>.json`
+- **Prevenzione Reset POI**: Se il file JSON dei waypoints non viene copiato insieme al salvataggio, il modulo `WaypointManager` inizializza la lista vuota e il primo evento di morte (`autoSaveDeathPoint`) sovrascriverà la lista cancellando i POI storici.

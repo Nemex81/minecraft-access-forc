@@ -16,6 +16,8 @@ import net.blay09.mods.kuma.api.KeyModifiers;
 import net.blay09.mods.kuma.api.Kuma;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.language.I18n;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
@@ -30,6 +32,8 @@ import org.jetbrains.annotations.NotNull;
 import org.mcaccess.minecraftaccess.Config;
 import org.mcaccess.minecraftaccess.MainClass;
 import org.mcaccess.minecraftaccess.api.WorldNarrator;
+import org.mcaccess.minecraftaccess.features.point_of_interest.waypoints.Waypoint;
+import org.mcaccess.minecraftaccess.features.point_of_interest.waypoints.WaypointUtils;
 import org.mcaccess.minecraftaccess.utils.KeyMappingCategories;
 import org.mcaccess.minecraftaccess.utils.NarrationUtils;
 import org.mcaccess.minecraftaccess.utils.events.ClientPlayingTick;
@@ -126,6 +130,24 @@ public class ObjectTracker implements BalmClientModule {
                 })
                 .build();
 
+        Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "object_tracker.look_at_current_object"))
+                .withDefault(InputBinding.key(InputConstants.KEY_HOME, KeyModifiers.of(KeyModifier.CONTROL)))
+                .overrideCategory(KeyMappingCategories.OBJECT_TRACKER)
+                .handleWorldInput(_ -> {
+                    lookAtCurrentObject();
+                    return true;
+                })
+                .build();
+
+        Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "object_tracker.narrate_coordinates_current_object"))
+                .withDefault(InputBinding.key(InputConstants.KEY_HOME, KeyModifiers.of(KeyModifier.ALT)))
+                .overrideCategory(KeyMappingCategories.OBJECT_TRACKER)
+                .handleWorldInput(_ -> {
+                    narrateCoordinatesOfCurrentObject();
+                    return true;
+                })
+                .build();
+
         Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "object_tracker.move_group/next"))
                 .withDefault(InputBinding.key(InputConstants.KEY_PAGEDOWN, KeyModifiers.of(KeyModifier.CONTROL)))
                 .overrideCategory(KeyMappingCategories.OBJECT_TRACKER)
@@ -137,18 +159,12 @@ public class ObjectTracker implements BalmClientModule {
     }
 
     private List<POIGroup<?>> getPOIGroups() {
-        List<POIGroup<?>> groupList = Stream.concat(
-                Arrays.stream(MainClass.poiManager.poiEntities.groups),
-                Arrays.stream(MainClass.poiManager.poiBlocks.groups)
-        ).toList();
-
         List<POIGroup<?>> result = new ArrayList<>();
+        result.addAll(Arrays.asList(MainClass.poiManager.poiEntities.groups));
+        result.addAll(Arrays.asList(MainClass.poiManager.poiBlocks.groups));
+        result.addAll(Arrays.asList(MainClass.poiManager.poiWaypoints.groups));
 
-        for (POIGroup<?> group : groupList) {
-            if (!group.isEmpty()) result.add(group);
-        }
-
-        return result;
+        return result.stream().filter(group -> !group.isEmpty()).toList();
     }
 
     private void tick(Minecraft client, Player player, Level level) {
@@ -219,10 +235,132 @@ public class ObjectTracker implements BalmClientModule {
                     1.0f,
                     true
             );
+            return;
+        }
+
+        if (currentObject instanceof Waypoint waypoint) {
+            LocalPlayer player = Minecraft.getInstance().player;
+            if (player == null) return;
+
+            Identifier currentDim = player.level().dimension().identifier();
+            Identifier targetDim = waypoint.dimension();
+
+            StringBuilder narration = new StringBuilder(waypoint.name());
+
+            if (currentDim.equals(targetDim)) {
+                if (narrateDistance) {
+                    narration.append(' ')
+                            .append(NarrationUtils.narrateRelativePositionOfPlayerAnd(waypoint.pos()));
+                }
+            } else {
+                if (Config.getInstance().poi.waypoints.crossDimensionConversion && WaypointUtils.isOverworldNetherPair(currentDim, targetDim)) {
+                    BlockPos convertedPos = WaypointUtils.convertCoordinates(waypoint.pos(), targetDim, currentDim);
+                    String dimName = WaypointUtils.getDimensionName(currentDim);
+                    narration.append(' ')
+                            .append(I18n.get(
+                                    "minecraft_access.point_of_interest.cross_dimension_narration",
+                                    WaypointUtils.getDimensionName(targetDim),
+                                    NarrationUtils.narrateRelativePositionOfPlayerAnd(convertedPos),
+                                    dimName,
+                                    NarrationUtils.narrateCoordinatesOf(convertedPos)
+                            ));
+                } else {
+                    narration.append(' ')
+                            .append(I18n.get("minecraft_access.point_of_interest.other_dimension", WaypointUtils.getDimensionName(targetDim)));
+                }
+            }
+
+            MainClass.narrate(narration.toString(), interrupt);
+
+            Vec3 targetVec = WaypointUtils.getTargetVectorForPlayer(waypoint, player, Config.getInstance().poi.waypoints.crossDimensionConversion);
+            if (targetVec != null && Minecraft.getInstance().level != null) {
+                Vec3 soundPos = WaypointUtils.getAudioBeaconPosition(targetVec, player);
+                if (soundPos != null) {
+                    Minecraft.getInstance().level.playLocalSound(
+                            soundPos.x,
+                            soundPos.y,
+                            soundPos.z,
+                            SoundEvents.NOTE_BLOCK_BELL.value(),
+                            SoundSource.BLOCKS,
+                            1.0f,
+                            1.0f,
+                            true
+                    );
+                }
+            }
         }
     }
 
-    private void moveGroup(int step) {
+    public void setCurrentObject(Object object) {
+        this.currentObject = object;
+        for (POIGroup<?> group : groups) {
+            if (group.getItems().contains(object)) {
+                this.currentGroup = group;
+                break;
+            }
+        }
+    }
+
+    public void lookAtCurrentObject() {
+        if (!isObjectValid(currentObject)) {
+            MainClass.narrate(I18n.get("minecraft_access.point_of_interest.not_selected"), true);
+            return;
+        }
+
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player == null) return;
+
+        switch (currentObject) {
+            case Entity entity -> {
+                player.lookAt(EntityAnchorArgument.Anchor.EYES, entity.getEyePosition());
+                String name = MainClass.registry(WorldNarrator.class).get(Config.getInstance().narrateCrosshair.narrator).narrate(entity);
+                MainClass.narrate(I18n.get("minecraft_access.point_of_interest.look_at", name), true);
+            }
+            case BlockPos blockPos -> {
+                player.lookAt(EntityAnchorArgument.Anchor.EYES, Vec3.atCenterOf(blockPos));
+                String name = MainClass.registry(WorldNarrator.class).get(Config.getInstance().narrateCrosshair.narrator).narrate(blockPos);
+                MainClass.narrate(I18n.get("minecraft_access.point_of_interest.look_at", name), true);
+            }
+            case Waypoint waypoint -> {
+                Vec3 targetVec = WaypointUtils.getTargetVectorForPlayer(waypoint, player, Config.getInstance().poi.waypoints.crossDimensionConversion);
+                if (targetVec != null) {
+                    player.lookAt(EntityAnchorArgument.Anchor.EYES, targetVec);
+                    MainClass.narrate(I18n.get("minecraft_access.point_of_interest.look_at", waypoint.name()), true);
+                } else {
+                    MainClass.narrate(I18n.get("minecraft_access.point_of_interest.other_dimension", WaypointUtils.getDimensionName(waypoint.dimension())), true);
+                }
+            }
+            default -> {}
+        }
+    }
+
+    public void narrateCoordinatesOfCurrentObject() {
+        if (!isObjectValid(currentObject)) {
+            MainClass.narrate(I18n.get("minecraft_access.point_of_interest.not_selected"), true);
+            return;
+        }
+
+        switch (currentObject) {
+            case Entity entity -> {
+                String name = MainClass.registry(WorldNarrator.class).get(Config.getInstance().narrateCrosshair.narrator).narrate(entity);
+                String coords = NarrationUtils.narrateCoordinatesOf(entity.blockPosition());
+                MainClass.narrate(I18n.get("minecraft_access.point_of_interest.coordinates", name, coords), true);
+            }
+            case BlockPos blockPos -> {
+                String name = MainClass.registry(WorldNarrator.class).get(Config.getInstance().narrateCrosshair.narrator).narrate(blockPos);
+                String coords = NarrationUtils.narrateCoordinatesOf(blockPos);
+                MainClass.narrate(I18n.get("minecraft_access.point_of_interest.coordinates", name, coords), true);
+            }
+            case Waypoint waypoint -> {
+                String coords = NarrationUtils.narrateCoordinatesOf(waypoint.pos());
+                String dim = WaypointUtils.getDimensionName(waypoint.dimension());
+                MainClass.narrate(I18n.get("minecraft_access.point_of_interest.coordinates_with_dimension", waypoint.name(), dim, coords), true);
+            }
+            default -> {}
+        }
+    }
+
+    public void moveGroup(int step) {
         if (checkAndNarrateIfAllGroupsEmpty()) return;
 
         int currentGroupIndex = groups.indexOf(currentGroup);
@@ -282,11 +420,12 @@ public class ObjectTracker implements BalmClientModule {
                     yield !(Minecraft.getInstance().level.getBlockState(pos).getBlock() instanceof AirBlock);
                 }
             }
+            case Waypoint waypoint -> true;
             default -> false;
         };
     }
 
-    private void moveObject(int step) {
+    public void moveObject(int step) {
         if (checkAndNarrateIfAllGroupsEmpty()) return;
         if (currentGroup != null && currentGroup.isEmpty()) clearCurrentObject();
 
@@ -332,7 +471,7 @@ public class ObjectTracker implements BalmClientModule {
         }
     }
 
-    private void targetNearestAny() {
+    public void targetNearestAny() {
         Minecraft client = Minecraft.getInstance();
         assert client.player != null;
 
@@ -366,7 +505,7 @@ public class ObjectTracker implements BalmClientModule {
         narrateCurrentObject(false);
     }
 
-    private void targetNearestBlock() {
+    public void targetNearestBlock() {
         Minecraft client = Minecraft.getInstance();
         assert client.player != null;
 
@@ -385,7 +524,7 @@ public class ObjectTracker implements BalmClientModule {
         narrateCurrentObject(false);
     }
 
-    private void targetNearestEntity() {
+    public void targetNearestEntity() {
         Minecraft client = Minecraft.getInstance();
         assert client.player != null;
 

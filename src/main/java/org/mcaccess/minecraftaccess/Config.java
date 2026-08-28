@@ -11,6 +11,7 @@ import net.minecraft.resources.Identifier;
 import org.mcaccess.minecraftaccess.api.AccessMenuFunction;
 import org.mcaccess.minecraftaccess.api.Status;
 import org.mcaccess.minecraftaccess.api.WorldNarrator;
+import org.mcaccess.minecraftaccess.features.ObstacleDetectionUtils.NarrationStyle;
 import org.mcaccess.minecraftaccess.utils.config.ConfigExtension;
 
 @me.shedaniel.autoconfig.annotation.Config(name = "minecraft-access")
@@ -46,15 +47,24 @@ public final class Config implements ConfigData {
     @ConfigEntry.Category("fallDetector")
     @ConfigEntry.Gui.TransitiveObject
     public FallDetector fallDetector = new FallDetector();
+    @ConfigEntry.Category("obstacleDetector")
+    @ConfigEntry.Gui.TransitiveObject
+    public ObstacleDetector obstacleDetector = new ObstacleDetector();
     @ConfigEntry.Category("narrateCrosshair")
     @ConfigEntry.Gui.TransitiveObject
     public NarrateCrosshair narrateCrosshair = new NarrateCrosshair();
     @ConfigEntry.Category("accessMenu")
     @ConfigEntry.Gui.TransitiveObject
     public AccessMenu accessMenu = new AccessMenu();
+    @ConfigEntry.Category("numpadControls")
+    @ConfigEntry.Gui.TransitiveObject
+    public NumpadControls numpadControls = new NumpadControls();
     @ConfigEntry.Category("speechSettings")
     @ConfigEntry.Gui.TransitiveObject
     public SpeechSettings speechSettings = new SpeechSettings();
+    @ConfigEntry.Category("autoWalk")
+    @ConfigEntry.Gui.TransitiveObject
+    public AutoWalk autoWalk = new AutoWalk();
 
     private Config() {
     }
@@ -63,6 +73,10 @@ public final class Config implements ConfigData {
         ConfigExtension.apply(AutoConfigClient.getGuiRegistry(Config.class));
         AutoConfig.register(Config.class, ConfigExtension::serializer);
         instance = AutoConfig.getConfigHolder(Config.class).get();
+    }
+
+    public static void saveConfig() {
+        AutoConfig.getConfigHolder(Config.class).save();
     }
 
     @Override
@@ -129,6 +143,46 @@ public final class Config implements ConfigData {
         }
     }
 
+    public static final class NumpadControls {
+        public boolean enabled = true;
+
+        @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
+        public HandednessPreset preset = HandednessPreset.RIGHT_HANDED;
+
+        @ConfigEntry.BoundedDiscrete(min = 1, max = 90)
+        public float normalRotatingAngle = 15.0f;
+
+        @ConfigEntry.BoundedDiscrete(min = 5, max = 180)
+        public float modifiedRotatingAngle = 45.0f;
+
+        public boolean continuousRotation = true;
+
+        @ConfigEntry.BoundedDiscrete(min = 1, max = 5)
+        public float continuousRotationSpeed = 1.0f;
+
+        public boolean invertYAxis = false;
+        public boolean narrateFacingOnChange = true;
+        public boolean enableContinuousHold = true;
+
+        @ConfigEntry.BoundedDiscrete(min = 50, max = 500)
+        public int scrollDelayMilliseconds = 150;
+
+        public boolean narrateDistanceOnSelect = true;
+        public boolean autoLookOnLock = true;
+        public boolean playCardinalSnapSound = true;
+
+        @ConfigEntry.BoundedDiscrete(min = 0, max = 1)
+        public float audioCueVolume = 1.0f;
+
+        public NumpadControls() {
+        }
+
+        public enum HandednessPreset {
+            RIGHT_HANDED,
+            LEFT_HANDED
+        }
+    }
+
     public static final class POI {
         public boolean narrateDistance = true;
         @ConfigEntry.Gui.CollapsibleObject
@@ -139,8 +193,23 @@ public final class Config implements ConfigData {
         public Locking locking = new Locking();
         @ConfigEntry.Gui.CollapsibleObject
         public Marking marking = new Marking();
+        @ConfigEntry.Gui.CollapsibleObject
+        public Waypoints waypoints = new Waypoints();
 
         private POI() {
+        }
+
+        public static final class Waypoints {
+            public boolean enabled = true;
+            public boolean autoSaveDeathPoint = true;
+            public boolean autoSaveBedPoint = true;
+            public boolean playAudioBeacon = true;
+            public int beaconInterval = 2500;
+            public float beaconVolume = 0.35f;
+            public boolean crossDimensionConversion = true;
+
+            private Waypoints() {
+            }
         }
 
         public static final class Blocks {
@@ -231,8 +300,27 @@ public final class Config implements ConfigData {
         public int depth = 4;
         public float volume = 0.25f;
         public int delay = 2500;
+        public boolean autoSlowdown = true;
+        public int slowdownDistance = 3;
+        public boolean autoRestoreSprint = true;
+        public boolean voiceWarning = true;
 
         private FallDetector() {
+        }
+    }
+
+    public static final class ObstacleDetector {
+        public boolean enabled = true;
+        public boolean playAudioCues = true;
+        public float volume = 0.5f;
+        public boolean voiceWarning = true;
+        public boolean lookAtObstacleOnInspection = true;
+        public int delay = 500;
+        public int detectionRange = 1;
+        @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
+        public NarrationStyle narrationStyle = NarrationStyle.BLOCK;
+
+        private ObstacleDetector() {
         }
     }
 
@@ -306,6 +394,9 @@ public final class Config implements ConfigData {
                 Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "refresh_screen_reader"),
                 Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "config"),
                 Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "weather"),
+                Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "save_waypoint"),
+                Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "manage_waypoints"),
+                Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "auto_walk"),
         };
         @ConfigEntry.Gui.CollapsibleObject
         public ShortcutBar shortcutBar = new ShortcutBar();
@@ -342,6 +433,28 @@ public final class Config implements ConfigData {
             public Identifier key9 = Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "refresh_screen_reader");
             @ConfigExtension.Registry(registry = AccessMenuFunction.class, i18n = "access_menu_function")
             public Identifier key0 = Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "config");
+        }
+    }
+
+    public static final class AutoWalk {
+        public boolean enabled = true;
+
+        @ConfigEntry.BoundedDiscrete(min = 16, max = 128)
+        public int maxRange = 64;
+
+        public boolean autoJump = true;
+        public boolean autoSwim = true;
+        public boolean sprint = true;
+        public boolean stopOnManualInput = true;
+        public boolean voiceFeedback = true;
+        public boolean playNodeSoundCue = true;
+
+        @ConfigEntry.BoundedDiscrete(min = 0, max = 1)
+        public float audioCueVolume = 0.25f;
+
+        public boolean lookAtTargetOnArrival = true;
+
+        public AutoWalk() {
         }
     }
 

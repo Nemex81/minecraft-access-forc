@@ -707,15 +707,20 @@ public final class GroupGenerator {
             recipesGroup.isScrollable = true;
             recipesGroup.mapTheGroupList(5);
 
-            // Put recipe book group behind the crafting output group,
-            // so user can easily access crafting output after clicking on recipe book.
-            if (screen instanceof CraftingScreen) {
-                // player_inventory, hotbar, crafting_input, crafting_output <put here>
-                foundGroups.add(recipesGroup);
+            // Put recipe book group right before output group (crafting_output or item_output for furnace),
+            // so user can easily navigate: input -> recipes -> output with C key.
+            int outputIndex = -1;
+            for (int i = 0; i < foundGroups.size(); i++) {
+                String key = foundGroups.get(i).getGroupKey();
+                if ("crafting_output".equals(key) || "item_output".equals(key)) {
+                    outputIndex = i;
+                    break;
+                }
+            }
+            if (outputIndex != -1) {
+                foundGroups.add(outputIndex, recipesGroup);
             } else {
-                // screen instanceof InventoryScreen
-                // player_inventory, hotbar, crafting_input, crafting_output, <put here>, armour, off_hand
-                foundGroups.add(foundGroups.size() - 2, recipesGroup);
+                foundGroups.add(recipesGroup);
             }
         }
 

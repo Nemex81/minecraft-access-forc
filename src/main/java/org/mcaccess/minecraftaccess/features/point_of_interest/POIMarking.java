@@ -50,7 +50,7 @@ public class POIMarking implements BalmClientModule {
                 .build();
     }
 
-    private void mark() {
+    public void mark() {
         if (markedObject.value != null) return;
 
         Object currentObject = MainClass.poiManager.objectTracker.getCurrentObject();
@@ -71,7 +71,7 @@ public class POIMarking implements BalmClientModule {
         MainClass.narrate(I18n.get("minecraft_access.point_of_interest.marking.marked", name), true);
     }
 
-    private void unmark() {
+    public void unmark() {
         if (markedObject.value == null) return;
         markedObject.value = null;
         MainClass.narrate(I18n.get("minecraft_access.point_of_interest.marking.unmarked"), true);

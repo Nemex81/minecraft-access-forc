@@ -96,6 +96,9 @@ public class CoreAddon implements MinecraftAccessAddon {
         registry.register("refresh_screen_reader", new RefreshScreenReader());
         registry.register("config", new OpenConfig());
         registry.register("weather", new Weather());
+        registry.register("save_waypoint", new org.mcaccess.minecraftaccess.addon.accessmenu.SaveWaypoint());
+        registry.register("manage_waypoints", new org.mcaccess.minecraftaccess.addon.accessmenu.ManageWaypoints());
+        registry.register("auto_walk", new org.mcaccess.minecraftaccess.addon.accessmenu.AutoWalk());
 
         registry.register("minecraft_access", new MinecraftAccess());
         if (Balm.platform().isModLoaded("jade")) {

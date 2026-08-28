@@ -28,7 +28,7 @@ import org.mcaccess.minecraftaccess.utils.events.ChangeDetector;
 import org.mcaccess.minecraftaccess.utils.events.ServerChangeDetector;
 
 public class HUDStatus implements BalmClientModule {
-    private final SessionLocal<Integer> bossIndex = new SessionLocal<>(() -> 0);
+    private static final SessionLocal<Integer> bossIndex = new SessionLocal<>(() -> 0);
 
     @Override
     public @NotNull Identifier getId() {
@@ -73,7 +73,7 @@ public class HUDStatus implements BalmClientModule {
         level.playPlayerSound(SoundEvents.NOTE_BLOCK_HAT.value(), SoundSource.PLAYERS, 0.6f, 1.0f);
     }
 
-    private void narrateBossBars(boolean isShiftDown) {
+    public static void narrateBossBars(boolean isShiftDown) {
         List<LerpingBossEvent> bosses = new ArrayList<>(
                 ((BossHealthOverlayAccessor) Minecraft.getInstance().gui.hud.getBossOverlay()).getEvents().values()
         );
