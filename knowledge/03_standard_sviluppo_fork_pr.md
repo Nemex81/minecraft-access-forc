@@ -112,22 +112,34 @@ Ogni commit nel repository deve seguire lo standard semantico:
 
 ---
 
-## 7. Ciclo di Vita dei Feature Branch & Regola di Isolamento
+## 7. Ciclo di Vita dei Feature Branch & Criterio di Proporzionalità
 
-Per proteggere la stabilità del ramo `mymaster`:
+Per conciliare rigore architetturale, stabilità di `mymaster` e agilità operativa senza burocrazia:
 
-1. **Divieto di Sviluppo Diretto su `mymaster`**:
-   - Qualsiasi nuova funzionalità o refactor sostanziale richiede la creazione di un ramo dedicato:
-     ```powershell
-     git checkout -b feat/nome-feature mymaster
-     ```
-2. **Sviluppo & Collaudo Isolati**:
-   - Lo sviluppo, i test JUnit e la compilazione del `.jar` per il collaudo manuale di Luca (Fase 2) avvengono rimanendo all'interno del branch `feat/*`.
+### A. Quando Creare un Ramo Dedicato (`feat/*`, `fix/*`):
+- **Nuove Funzionalità Complesse**: Sviluppo di nuovi moduli Java (es. sonar subacqueo, nuovi filtri POI, menu avanzati).
+- **Piani Tecnici Strutturati**: Qualsiasi modifica legata a un piano attivo in `docs/piani/attivi/`.
+- **Refactoring Architetturali Rilevanti**: Modifiche a Mixin o strutture dati centrali.
+- **Contributi per Upstream**: Qualsiasi PR destinata alla community ufficiale.
+- **Richiesta Esplicita di Luca**: Quando Luca richiede specificamente di isolare l'intervento.
+
+### Procedura Feature Branch:
+1. **Creazione Ramo**: `git checkout -b feat/nome-feature mymaster`
+2. **Sviluppo & Collaudo Isolati**: Lo sviluppo, i test JUnit e la compilazione del `.jar` per il collaudo di Luca (Fase 2) avvengono rimanendo all'interno del branch `feat/*`.
 3. **Merge su `mymaster` Post-Collaudo**:
-   - **Solo dopo il collaudo manuale positivo di Luca**, si effettua il merge con `--no-ff`:
+   - **Solo dopo la conferma positiva di Luca**, si effettua il merge con `--no-ff`:
      ```powershell
      git checkout mymaster
      git merge --no-ff feat/nome-feature -m "feat(modulo): merge nome-feature into mymaster"
      git push origin mymaster
      ```
+
+---
+
+### B. Fast Path Diretto su `mymaster` (Senza Creare Branch):
+È consentito e raccomandato lavorare direttamente su `mymaster` per interventi rapidi che non giustificano l'overhead di un branch:
+- **Aggiornamento Documentazione Viva**: Modifiche a `docs/content/changelog.md`, `README.md`, `docs/architecture.md`, `docs/api.md`, schede di `knowledge/` e manuali in `docs/manuali/`.
+- **Piccoli Ritocchi Numerici**: Modifica mirata di una costante numerica (es. volume audio `0.7f -> 0.6f`, velocità di rotazione o delay).
+- **Traduzioni e Refusi I18N**: Correzione o inserimento di poche chiavi nei file `.json` di lingua.
+- **Fix Minori One-Line**: Piccole correzioni puntuali già verificate e approvate da Luca.
 
