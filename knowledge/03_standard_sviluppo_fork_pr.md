@@ -41,3 +41,19 @@ Tutte le stringhe vocalizzate o mostrate a schermo sono internazionalizzate nei 
    - Chiavi di binding tasti: `key.minecraft_access.<modulo>.<azione>`
    - Categorie tasti: `category.minecraft_access.<modulo>`
    - Stringhe parlate/UI: `minecraft_access.<modulo>.<descrizione>`
+
+---
+
+## 4. Architettura dei Branch del Fork Personale
+
+Il repository personale (`Nemex81/minecraft-access-forc`) è organizzato secondo la seguente gerarchia:
+
+1. **`dev` (Specchio Upstream)**:
+   - Mantenuto identico al branch principale della community ufficiale (`upstream/dev`).
+   - Viene aggiornato periodicamente con `git pull upstream dev` senza modifiche manuali dirette.
+2. **`mymaster` (Master Stabile Personale)**:
+   - Ramo centrale "tutto incluso" contenente tutte le funzionalità stabili e collaudate (AutoWalk, Numpad, Waypoint, Ricettario, traduzioni IT e fix).
+   - È il ramo ufficiale da cui si compila il `.jar` per l'istanza di gioco PrismLauncher.
+3. **Rami Feature & Fix (`feat/*`, `fix/*`)**:
+   - Creati per lo sviluppo isolato di nuove feature o fix mirati.
+   - Una volta testati e stabili, vengono uniti in `mymaster`. Se destinati alla community, la PR viene aperta direttamente dal branch specifico verso `upstream/dev`.
