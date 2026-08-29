@@ -116,6 +116,22 @@ class NumpadControlsTest {
             // Repeat at 150ms -> Allowed
             assertTrue((1150 - lastScroll) >= delayMs, "Scroll event after 150ms should be allowed");
         }
+
+        @Test
+        @DisplayName("Verify continuous cardinal direction transition detection (hysteresis)")
+        void testContinuousCardinalTransitions() {
+            Orientation lastFacing = Orientation.EAST;
+
+            // Minor rotation within EAST (247.5° to 292.5°)
+            Orientation nextFacingSame = Orientation.ofHorizontal(275);
+            assertEquals(Orientation.EAST, nextFacingSame);
+            assertSame(lastFacing, nextFacingSame, "No transition should trigger when within same sector");
+
+            // Rotated to SOUTH_EAST (292.5° to 337.5°)
+            Orientation nextFacingNew = Orientation.ofHorizontal(320);
+            assertEquals(Orientation.SOUTH_EAST, nextFacingNew);
+            assertNotSame(lastFacing, nextFacingNew, "Transition to SOUTH_EAST must be detected");
+        }
     }
 
     // =========================================================================
@@ -276,6 +292,11 @@ class NumpadControlsTest {
                     "text.autoconfig.minecraft-access.option.numpadControls.enabled",
                     "text.autoconfig.minecraft-access.option.numpadControls.preset",
                     "text.autoconfig.minecraft-access.option.numpadControls.continuousRotation",
+                    "text.autoconfig.minecraft-access.option.numpadControls.continuousFeedbackMode",
+                    "text.autoconfig.minecraft-access.option.numpadControls.continuousFeedbackMode.SOUND_ONLY",
+                    "text.autoconfig.minecraft-access.option.numpadControls.continuousFeedbackMode.VOICE_ONLY",
+                    "text.autoconfig.minecraft-access.option.numpadControls.continuousFeedbackMode.SOUND_AND_VOICE",
+                    "text.autoconfig.minecraft-access.option.numpadControls.continuousFeedbackMode.OFF",
                     "text.autoconfig.minecraft-access.option.numpadControls.enableContinuousHold"
             };
 

@@ -78,19 +78,22 @@ public enum Orientation {
             normalised += 360;
         }
 
-        // Ordinal Directions
-        if (normalised >= 11.25 && normalised < 78.75) {        // SW quadrant
+        if (normalised >= 22.5 && normalised < 67.5) {
             return SOUTH_WEST;
-        } else if (normalised >= 101.25 && normalised < 168.75) { // NW quadrant
+        } else if (normalised >= 67.5 && normalised < 112.5) {
+            return WEST;
+        } else if (normalised >= 112.5 && normalised < 157.5) {
             return NORTH_WEST;
-        } else if (normalised >= 191.25 && normalised < 258.75) { // NE quadrant
+        } else if (normalised >= 157.5 && normalised < 202.5) {
+            return NORTH;
+        } else if (normalised >= 202.5 && normalised < 247.5) {
             return NORTH_EAST;
-        } else if (normalised >= 281.25 && normalised < 348.75) { // SE quadrant
+        } else if (normalised >= 247.5 && normalised < 292.5) {
+            return EAST;
+        } else if (normalised >= 292.5 && normalised < 337.5) {
             return SOUTH_EAST;
         } else {
-            // Cardinal Directions
-            assert Minecraft.getInstance().player != null;
-            return of(Minecraft.getInstance().player.getDirection());
+            return SOUTH;
         }
     }
 

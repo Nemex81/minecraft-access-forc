@@ -15,12 +15,24 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import org.mcaccess.minecraftaccess.MainClass;
+import org.mcaccess.minecraftaccess.utils.NarrationPriority;
 import org.mcaccess.minecraftaccess.utils.NarrationUtils;
 
 @Mixin(ToastManager.class)
 abstract class ToastManagerMixin {
+    private static final long RECIPE_TOAST_DEBOUNCE_MS = 2000;
+    private static long lastRecipeToastTime = 0;
+
     @Inject(method = "addToast", at = @At("TAIL"))
     private void narrateToast(Toast toast, CallbackInfo ci) {
+        if (toast instanceof RecipeToast) {
+            long now = System.currentTimeMillis();
+            if (now - lastRecipeToastTime < RECIPE_TOAST_DEBOUNCE_MS) {
+                return;
+            }
+            lastRecipeToastTime = now;
+        }
+
         StringBuilder toastTextBuilder = new StringBuilder();
         toastTextBuilder.append(I18n.get("minecraft_access.toast.shown"))
                 .append(I18n.get("minecraft_access.other.words_connection"));
@@ -46,6 +58,12 @@ abstract class ToastManagerMixin {
                     .collect(Collectors.joining(" ")));
             default -> toastTextBuilder.append(I18n.get("minecraft_access.toast.unknown"));
         }
-        MainClass.narrate(toastTextBuilder.toString(), false);
+
+        String text = toastTextBuilder.toString();
+        if (NarrationPriority.isShieldActive()) {
+            NarrationPriority.narrateSalientQueued(text, 1500);
+        } else {
+            NarrationPriority.narrateSalient(text, 1500);
+        }
     }
 }

@@ -114,3 +114,19 @@ Questo registro documenta i problemi tecnici complessi risolti nel tempo, preser
     - Mappatura completa dei tasti `7`, `9`, `1`, `3` nel Layer 0 come diagonali 2D atomiche $(\Delta H, \Delta V)$ con architettura Dual-Mode (tap discreto di $15^\circ$ e hold continuo $\ge 200\text{ ms}$ a $4.5^\circ/\text{tick}$).
     - Ricollocazione di `Look Nadir` e `Look Zenith` su `Alt + 1` e `Alt + 3` nel Layer 3.
 
+---
+
+### Record 13 — Narration Shield Centralizzato (Raccolta Oggetti & Toast Ricette) e Bussola Acustica Tattile per Rotazione Continua (Tasti 4 e 6)
+- **Problema**:
+  1. Durante il recupero delle prede o blocchi, le notifiche di raccolta oggetti e i Toast di sblocco ricette venivano regolarmente zittiti o troncati a metà dal mirino (`NarrateCrosshair`) o dallo scanner ostacoli mentre il giocatore camminava.
+  2. Durante la rotazione continua con i tasti `4` o `6` del tastierino numerico, la rapida successione di annunci vocali a $45^\circ$ (uno ogni 400ms con `interrupt: true`) causava il troncamento a raffica delle sillabe di NVDA, dando la sensazione che la voce non parlasse o si zittisse fino allo stop.
+- **Causa Radice**:
+  1. `ClientPacketListenerMixin` e `ToastManagerMixin` inviavano le notifiche con `interrupt: false` senza uno shield protettivo temporaneo contro le continue chiamate con `interrupt: true` emesse dal mirino a ogni cambio di blocco a terra.
+  2. A $90^\circ/\text{s}$ di rotazione continua, una parola parlata richiede 600–800 ms per essere pronunciata per intero, mentre i cambi di settore a $45^\circ$ scattano ogni 400 ms, tagliando costantemente la parola precedente a metà.
+- **Soluzione Definitiva**:
+  - Creazione del modulo centralizzato `NarrationPriority.java` con finestra protetta ("Narration Shield") di 1.5 secondi per zittire le scansioni ambientali e accodare in sequenza pulita eventi salienti concorrenti (es. *Oggetto Raccolto* + *Ricetta Sbloccata*).
+  - Introdotto debouncing di 2.0s sui `RecipeToast` per evitare lo spam di toast multipli scatenati dallo stesso item.
+  - Sviluppo della Bussola Acustica Tattile in `NumpadControls.java`: durante l'hold continuo, il mirino tace ed emette un click audio leggero (`NOTE_BLOCK_HAT`) a ogni $45^\circ$ con pitch differenziato ($1.2\text{f}$ sui 4 cardinali principali, $0.9\text{f}$ sugli 8 ordinali); al rilascio del tasto (stop), vocalizza chiaramente la direzione finale precisa raggiunta (*"Sud-Est"*).
+  - Introduzione dell'Enum `ContinuousFeedbackMode` (`SOUND_ONLY` default, `VOICE_ONLY`, `SOUND_AND_VOICE`, `OFF`) configurabile in GUI.
+  - Conversione di `Orientation.ofHorizontal(angle)` a risoluzione puramente geometrica a 8 settori di $45^\circ$, priva di dipendenze da istanze client nulle.
+

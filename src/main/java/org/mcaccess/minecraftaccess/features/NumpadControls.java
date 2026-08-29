@@ -34,6 +34,7 @@ import org.mcaccess.minecraftaccess.Config;
 import org.mcaccess.minecraftaccess.MainClass;
 import org.mcaccess.minecraftaccess.api.WorldNarrator;
 import org.mcaccess.minecraftaccess.utils.KeyMappingCategories;
+import org.mcaccess.minecraftaccess.utils.NarrationPriority;
 import org.mcaccess.minecraftaccess.utils.NarrationUtils;
 import org.mcaccess.minecraftaccess.utils.PlayerUtils;
 import org.mcaccess.minecraftaccess.utils.position.Orientation;
@@ -67,6 +68,8 @@ public class NumpadControls implements BalmClientModule {
     private long holdStartLookUpRight = 0;
     private long holdStartLookDownLeft = 0;
     private long holdStartLookDownRight = 0;
+    private Orientation lastContinuousFacing = null;
+    private boolean wasContinuouslyRotating = false;
 
     // Mouse button key mappings for tick-based hold detection
     private ManagedKeyMapping keyLeftClick;
@@ -756,6 +759,11 @@ public class NumpadControls implements BalmClientModule {
                 } else {
                     holdStartLookDownRight = 0;
                 }
+
+                if (holdStartLookUp == 0 && holdStartLookDown == 0 && holdStartLookLeft == 0 && holdStartLookRight == 0
+                        && holdStartLookUpLeft == 0 && holdStartLookUpRight == 0 && holdStartLookDownLeft == 0 && holdStartLookDownRight == 0) {
+                    checkContinuousRotationRelease();
+                }
             } else {
                 resetHoldTimers();
             }
@@ -798,6 +806,18 @@ public class NumpadControls implements BalmClientModule {
         holdStartLookUpRight = 0;
         holdStartLookDownLeft = 0;
         holdStartLookDownRight = 0;
+        checkContinuousRotationRelease();
+    }
+
+    private void checkContinuousRotationRelease() {
+        if (wasContinuouslyRotating) {
+            wasContinuouslyRotating = false;
+            lastContinuousFacing = null;
+            if (Config.getInstance().numpadControls.narrateFacingOnChange) {
+                NarrationPriority.suppressBackgroundScanners(350);
+                MainClass.narrate(PlayerPositionUtils.getHorizontalFacingDirectionInWords(), true);
+            }
+        }
     }
 
     private boolean hasAnyModifierDown(Minecraft client) {
@@ -871,7 +891,37 @@ public class NumpadControls implements BalmClientModule {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return;
 
+        wasContinuouslyRotating = true;
+
+        // Suppress background ambient scanners (crosshair & obstacles) during continuous rotation
+        NarrationPriority.suppressBackgroundScanners(350);
+
         player.turn(deltaH, deltaV);
+
+        if (horizontalWeight != 0 && config.continuousFeedbackMode != Config.NumpadControls.ContinuousFeedbackMode.OFF) {
+            Orientation currentFacing = PlayerPositionUtils.getHorizontalFacing();
+            if (currentFacing != lastContinuousFacing) {
+                lastContinuousFacing = currentFacing;
+                boolean isCardinal = currentFacing == Orientation.NORTH
+                        || currentFacing == Orientation.EAST
+                        || currentFacing == Orientation.SOUTH
+                        || currentFacing == Orientation.WEST;
+
+                // Sound feedback (hat sound at 45° sectors, higher pitch on 4 cardinal points)
+                if (config.continuousFeedbackMode == Config.NumpadControls.ContinuousFeedbackMode.SOUND_ONLY
+                        || config.continuousFeedbackMode == Config.NumpadControls.ContinuousFeedbackMode.SOUND_AND_VOICE) {
+                    float pitch = isCardinal ? 1.2f : 0.9f;
+                    player.level().playLocalSound(player.blockPosition(), SoundEvents.NOTE_BLOCK_HAT.value(), SoundSource.PLAYERS, 0.35f * config.audioCueVolume, pitch, false);
+                }
+
+                // Voice feedback during rotation (only on major 4 cardinal points to avoid speech truncation)
+                if ((config.continuousFeedbackMode == Config.NumpadControls.ContinuousFeedbackMode.VOICE_ONLY
+                        || config.continuousFeedbackMode == Config.NumpadControls.ContinuousFeedbackMode.SOUND_AND_VOICE)
+                        && isCardinal) {
+                    MainClass.narrate(PlayerPositionUtils.getHorizontalFacingDirectionInWords(), true);
+                }
+            }
+        }
     }
 
     private void rotateCameraTo(Orientation direction, boolean narrateChange) {

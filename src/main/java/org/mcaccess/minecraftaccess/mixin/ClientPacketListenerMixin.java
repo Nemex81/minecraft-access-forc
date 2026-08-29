@@ -21,6 +21,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import org.mcaccess.minecraftaccess.Config;
 import org.mcaccess.minecraftaccess.MainClass;
+import org.mcaccess.minecraftaccess.utils.NarrationPriority;
 
 @Slf4j
 @Mixin(ClientPacketListener.class)
@@ -47,10 +48,13 @@ abstract class ClientPacketListenerMixin implements TickablePacketListener, Clie
                 // This item might be an ExperienceOrbEntity and we don't want to narrate this sort of thing.
                 if (entity instanceof ItemEntity itemEntity) {
                     String name = I18n.get(itemEntity.getItem().getItem().getDescriptionId());
-                    log.debug("Fishing harvest: {}", name);
-                    // Have observed this narrate will interrupt adventure achievement, level up notification or so,
-                    // it should be at low priority.
-                    MainClass.narrate(I18n.get("minecraft_access.other.picked_up_item", name), false);
+                    log.debug("Picked up item: {}", name);
+                    String text = I18n.get("minecraft_access.other.picked_up_item", name);
+                    if (NarrationPriority.isShieldActive()) {
+                        NarrationPriority.narrateSalientQueued(text, 1500);
+                    } else {
+                        NarrationPriority.narrateSalient(text, 1500);
+                    }
                 }
             }
         }

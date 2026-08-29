@@ -164,6 +164,9 @@ public final class Config implements ConfigData {
         public boolean narrateFacingOnChange = true;
         public boolean enableContinuousHold = true;
 
+        @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
+        public ContinuousFeedbackMode continuousFeedbackMode = ContinuousFeedbackMode.SOUND_ONLY;
+
         @ConfigEntry.BoundedDiscrete(min = 50, max = 500)
         public int scrollDelayMilliseconds = 150;
 
@@ -180,6 +183,13 @@ public final class Config implements ConfigData {
         public enum HandednessPreset {
             RIGHT_HANDED,
             LEFT_HANDED
+        }
+
+        public enum ContinuousFeedbackMode {
+            SOUND_ONLY,
+            VOICE_ONLY,
+            SOUND_AND_VOICE,
+            OFF
         }
     }
 
