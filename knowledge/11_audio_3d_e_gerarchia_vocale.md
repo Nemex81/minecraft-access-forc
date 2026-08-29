@@ -42,3 +42,38 @@ La sintesi vocale di NVDA è il canale informativo primario. I suoni sintetizzat
    - **Discesa / Quota Inferiore**: Pitch grave ($< 1.0\text{f}$, es. $0.5\text{f} - 0.8\text{f}$) per buche, gradini a scendere o discese.
    - **Conferma / Successo**: Tono armonico puro ($1.0\text{f}$).
    - **Errore / Blocco**: Tono grave e secco ($0.5\text{f}$).
+
+---
+
+## 4. Architettura Narration Shield (Finestra Protetta per Notifiche Salienti)
+
+Per garantire che eventi salienti non vengano troncati dal campionamento continuo del mirino (`NarrateCrosshair`) o dagli allarmi ostacoli (`ObstacleDetector`):
+
+1. **Finestra Protetta (`NarrationPriority`)**:
+   - All'emissione di una notifica saliente (raccolta oggetto, sblocco ricette, avanzamenti, arrivo a destinazione), si attiva una finestra di soppressione temporanea di **$1500\text{ ms}$** per i sensori ambientali passivi.
+2. **Zittimento del Sottofondo & Accodamento Protetto**:
+   - Il primo evento saliente zittisce il mirino pregresso (`interrupt: true`).
+   - Eventi salienti concorrenti generati nello stesso tick o durante lo Shield (es. *Oggetto Raccolto* + *Nuova Ricetta Sbloccata*) vengono inviati con `interrupt: false` (accodati), estendendo la durata dello Shield. In questo modo NVDA pronuncia entrambe le frasi per intero in sequenza.
+
+---
+
+## 5. Principio di Separazione Acustico/Vocale nei Moti Rapidi (Bussola Acustica Tattile)
+
+Durante movimenti o rotazioni continue ad alta velocità (es. rotazione della visuale a $90^\circ/\text{s}$):
+
+1. **Divieto di Troncamento Vocale ad Alta Frequenza**:
+   - Una parola parlata richiede $600\text{--}800\text{ ms}$ per essere completata; l'attraversamento di settori a $45^\circ$ avviene ogni $400\text{ ms}$. È **vietato inviare notifiche vocali continue ad ogni settore**, poiché genererebbero troncamenti e sillabe smozzicate.
+2. **Bussola Acustica Tattile**:
+   - Il moto continuo in tempo reale è affidato a un **click acustico discreto** (`NOTE_BLOCK_HAT` a volume $0.35\text{f}$ su `SoundSource.PLAYERS`) con pitch differenziato:
+     - **Punti Cardinali Principali (Nord, Est, Sud, Ovest)**: Pitch alto $1.2\text{f}$ (*TOCK*).
+     - **Punti Diagonali Intermedi (NE, NO, SE, SO)**: Pitch morbido $0.9\text{f}$ (*tick*).
+3. **Annuncio Vocale Finale all'Arresto**:
+   - All'arresto del movimento (rilascio del tasto), il sistema vocalizza immediatamente e con priorità la direzione finale esatta raggiunta, prima che il mirino riprenda la scansione ordinaria.
+
+---
+
+## 6. Regola Geometrica di Manipolazione Monoassiale della Visuale
+
+Quando si modifica un singolo asse della visuale (es. azzeramento Pitch all'orizzonte o puntamento Zenith/Nadir a $\pm 90^\circ$):
+- **Divieto Assoluto di `player.lookAt` con Vettori Verticali**: `lookAt` ricalcola entrambi gli angoli introducendo la singolarità $\text{atan2}(0,0)-90^\circ = -90^\circ$ (forzando lo Yaw a Est) o forzando snap a griglia dello Yaw continuo.
+- **Applicazione Diretta**: Le modifiche di pitch devono avvenire esclusivamente tramite `player.setXRot(pitchDegrees)` e `player.xRotO = pitchDegrees`.

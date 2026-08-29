@@ -1,4 +1,4 @@
-﻿# 00 — Consuetudini Operative, Dialogo a 2 Tempi & Sinergia Assistente
+# 00 — Consuetudini Operative, Dialogo a 2 Tempi & Sinergia Assistente
 
 Questa scheda definisce le consuetudini comportamentali, metodologiche e operative che **Antigravity** (Senior AI Pair Programmer) applica sistematicamente in ogni interazione con **Luca** (sviluppatore e giocatore non vedente).
 
@@ -106,3 +106,18 @@ Tutte le regole operative (`gemini.md`), le schede architetturali (`knowledge/00
 
 - **Divieto Assoluto di Duplicazione**: È fatto esplicito divieto ad Antigravity di copiare, esportare o sincronizzare file di regole o schede markdown nella cartella `minecraft archivio backup`.
 - **Versioning Puro**: Qualsiasi aggiornamento di regole o documentazione vive esclusivamente sotto il controllo di versione Git (`git commit` e `git push` su `origin/mymaster`).
+
+---
+
+## 6. Standard Tassativo di Scrittura File in PowerShell (UTF-8 No-BOM)
+
+Nei sistemi operativi Windows, molti comandi nativi di PowerShell (come `Set-Content -Encoding UTF8` o `Out-File -Encoding utf8`) inseriscono automaticamente il marcatore d'ordine dei byte Unicode **BOM (`\ufeff`)** in testa al file:
+
+1. **Impatto & Anomalie Prevenute**:
+   - Nei file sorgente Java, il BOM corrompe il primo token del file scatenando l'errore del compilatore: `error: illegal character: '\ufeff'`.
+   - Nei file di configurazione (`options.txt`, `.json`, `.toml`), il BOM fa fallire i controlli di intestazione (es. `line.startsWith("version:")`) azzerando le preferenze e i tasti personalizzati di gioco.
+2. **Standard di Scrittura Obbligatorio**:
+   - Qualsiasi generazione o scrittura programmatica di file deve impiegare esplicitamente la classe .NET senza BOM:
+   ```powershell
+   [System.IO.File]::WriteAllText($filePath, $content, (New-Object System.Text.UTF8Encoding($false)))
+   ```
