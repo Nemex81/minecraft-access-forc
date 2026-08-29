@@ -1,4 +1,4 @@
-﻿# Minecraft Access — Hub di Contesto Master (GEMINI.md)
+# Minecraft Access — Hub di Contesto Master (GEMINI.md)
 # Autore: Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA)
 # Target AI: Antigravity (Senior AI Pair Programmer & Software Engineer)
 # Eredita da:
@@ -59,11 +59,13 @@ Questo file costituisce l'**Hub Centrale di Contesto** del progetto `minecraft-a
 7. **Accessibilità Cognitiva & Formattazione Lineare per Screen Reader**:
    - Divieto assoluto di diagrammi grafici, disegni 2D, box ASCII complessi o frecce multidirezionali che risultano inaccessibili con la lettura riga per riga. Tutta l'informazione deve essere strutturata linearmente con logiche sequenziali ("Se... Allora"), elenchi puntati semantici e descrizioni spaziali matematico-verbali.
 
-8. **Ciclo di Vita dei Piani a 4 Fasi & Auto-Apprendimento Automatico**:
+8. **Ciclo di Vita dei Piani a 4 Fasi & Protocollo di Transizione per la Fase 4**:
    - *Fase 1*: Build e test automatici Gradle (`.\gradlew.bat --no-daemon test shadowJar`).
    - *Fase 2*: Deploy provvisorio in PrismLauncher e collaudo manuale in-game di Luca ([`PROTOCOLLO_COLLAUDO_E_SESSIONI_MONITORATE.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/manuali/PROTOCOLLO_COLLAUDO_E_SESSIONI_MONITORATE.md)).
    - *Fase 3*: Chiusura simultanea (merge del branch su `mymaster` + aggiornamento documentazione viva `changelog.md`/`architecture.md`/`api.md` + aggiornamento backup PC Portatile + archiviazione del piano in `docs/piani/completati/`).
-   - *Fase 4 (Automatica)*: **Sessione Automatica di Auto-Apprendimento & Proposta Regole** $\rightarrow$ Subito dopo la Fase 3, Antigravity avvia autonomamente una riflessione retrospettiva, estrae le lezioni generali, definisce dove integrarle in `knowledge/`, in `GEMINI.md` e nel **Master Hub Universale** (`$env:OneDrive\progetti dei frati\antigravity master governance e jolly universali`), presenta a Luca il riepilogo e richiede la conferma prima di applicarle.
+   - *Fase 4 (Transizione & Esecuzione Formale)*:
+     * **Al termine della Fase 3**: L'assistente elenca in sintesi le 3 lezioni salienti (Tecnica, Metodologica, Comunicativa) e chiude **tassativamente con la Domanda Ponte Formale**: *"Vuoi che avviamo ora la sessione formale di Auto-Apprendimento (Fase 4) per elaborare la bozza dettagliata delle regole e aggiornare le schede di conoscenza e governance?"*. Divieto assoluto di congedarsi a vuoto.
+     * **Su via libera di Luca**: L'assistente entra in Fase 4 formale, mappa i file target (`knowledge/`, `GEMINI.md`, Master Hub), redige i testi completi pronti per l'inserimento e richiede la convalida finale prima di applicarli.
 
 ---
 

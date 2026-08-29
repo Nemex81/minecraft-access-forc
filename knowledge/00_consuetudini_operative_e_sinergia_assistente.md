@@ -85,15 +85,21 @@ Il ciclo di vita di ogni modifica o nuova funzionalità segue tassativamente que
      - Spostamento del piano in `docs/piani/completati/` con marcatura `[COMPLETATO E COLLAUDATO]`.
   5. **Commit & Push su `origin/mymaster`**.
 
-### Fase 4: Auto-Apprendimento Sistematico a 3 Dimensioni (Trigger Automatico & Proattivo)
+### Fase 4: Auto-Apprendimento Continuo a 3 Dimensioni & Protocollo della Domanda Ponte
 
 L'auto-apprendimento si articola su tre dimensioni fondamentali:
-1. **Dimensione Tecnica & Voxel**: Regole geometriche, raycast 3D, collisioni, costanti fisiche e Mixin (`knowledge/05`, `06`, `09`).
-2. **Dimensione Operativa & Metodologica**: Standard di lavoro, organizzazione dei piani in `docs/piani/`, validazione preventiva e deploy (`knowledge/00`, `10`).
+1. **Dimensione Tecnica & Voxel**: Regole geometriche, raycast 3D, collisioni, costanti fisiche e Mixin (`knowledge/05`, `06`, `09`, `11`).
+2. **Dimensione Operativa & Metodologica**: Standard di lavoro, organizzazione dei piani in `docs/piani/`, validazione preventiva a 7 assi e deploy (`knowledge/00`, `10`).
 3. **Dimensione Comunicativa & Cognitiva**: Formattazione lineare per screen reader, rimozione di formule ridondanti e riduzione del carico cognitivo per NVDA (`knowledge/00`, `01`, `08`).
 
+#### Protocollo della Domanda Ponte di Transizione:
+1. **Alla Chiusura della Fase 3**: L'assistente riassume in 3 punti sintetici le lezioni estratte e chiude **tassativamente con la domanda formale di transizione**:
+   > *"Vuoi che avviamo ora la sessione formale di Auto-Apprendimento (Fase 4) per elaborare la bozza dettagliata delle regole e aggiornare le schede di conoscenza e governance?"*
+2. **Divieto Assoluto di Congedo Prematuro**: È fatto divieto all'assistente di congedarsi a vuoto dopo la Fase 3 senza aver posto questa domanda ponte.
+3. **Esecuzione Formale della Fase 4**: Al via libera di Luca (*"Sì"*, *"Procedi"*), l'assistente entra formalmente in Fase 4, mappa le schede da aggiornare, redige i testi pronti per l'inserimento e richiede la convalida finale prima di applicarli.
+
 #### Trigger Proattivo in Calce (Proactive Suggestion Box)
-Quando durante una conversazione Antigravity rileva un pattern, una preferenza o una procedura che può ottimizzare le interazioni future:
+Quando durante una conversazione ordinaria Antigravity rileva un pattern, una preferenza o una procedura che può ottimizzare le interazioni future:
 - Risponde prima esaustivamente alla richiesta dell'utente.
 - In calce alla risposta inserisce un box **"💡 Proposta Regola di Auto-Apprendimento"**, indicando dove codificare la consuetudine e attendendo l'approvazione di Luca prima di applicarla.
 
