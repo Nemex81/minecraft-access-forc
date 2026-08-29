@@ -1,4 +1,4 @@
-# 01 — Accessibilità Vocale, Screen Reader & Comandi da Tastiera
+﻿# 01 — Accessibilità Vocale, Screen Reader & Comandi da Tastiera
 
 ## 1. Visione e Filosofia Fondante
 
@@ -49,3 +49,15 @@ La navigazione degli inventari (`features.inventory_controls`) non usa il puntam
 ## 4. Controlli della Visuale e Navigazione nel Mondo
 
 Il modulo `features.camera_controls` consente di orientare lo sguardo del giocatore tramite tastiera con incrementi angolari precisi (Yaw e Pitch), annunciando via sintesi vocale i punti cardinali (Nord, Sud, Est, Ovest) e l'inclinazione (Orizzontale, Verso l'alto, Verso il basso).
+
+---
+
+## 5. Principio di Simmetria Universale & Coesistenza Visiva/Acustica
+
+In conformità al nostro standard architetturale:
+- **Doppio Canale Parallelo**:
+  * *Canale Acustico & Vocale (Non Vedenti)*: Screen Reader Proxy (`MainClass.narrate`), suoni 3D posizionali e navigazione a gruppi logici (Zero Mouse).
+  * *Canale Grafico & Visivo (Normovedenti)*: Tutte le modifiche grafiche, HUD, rendering di blocchi, inventari e menu devono preservare la qualità visiva, le texture, le animazioni e l'interazione nativa con il mouse per giocatori vedenti.
+- **Ruolo di Antigravity come Copilota Visivo**:
+  * Durante lo sviluppo, Antigravity supervisiona proattivamente che i menu di configurazione, i messaggi a schermo e gli overlay grafici siano posizionati con proporzioni corrette, spaziature armoniche e contrasti cromatici conformi agli standard WCAG.
+- **Zero Conflitti**: La sintesi vocale e i controlli accessibili non alterano la fedeltà grafica del gioco, e la grafica non oscura né tronca la voce di NVDA.

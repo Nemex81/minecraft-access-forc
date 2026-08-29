@@ -1,4 +1,4 @@
-# 00 — Consuetudini Operative, Dialogo a 2 Tempi & Sinergia Assistente
+﻿# 00 — Consuetudini Operative, Dialogo a 2 Tempi & Sinergia Assistente
 
 Questa scheda definisce le consuetudini comportamentali, metodologiche e operative che **Antigravity** (Senior AI Pair Programmer) applica sistematicamente in ogni interazione con **Luca** (sviluppatore e giocatore non vedente).
 
