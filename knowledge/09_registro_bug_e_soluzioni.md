@@ -94,3 +94,23 @@ Questo registro documenta i problemi tecnici complessi risolti nel tempo, preser
   - **Scrittura UTF-8 No-BOM Tassativa**: Qualsiasi modifica a `options.txt` deve usare `[System.IO.File]::WriteAllLines(..., New-Object System.Text.UTF8Encoding($false))` garantendo il primo byte `0x76` (`v`).
   - **Mapping Tasti Protetto**: Iris shader toggle assegnato al tasto libero **`F7`** (`key_key.iris.toggleShaders:key.keyboard.f7`) e selezione pacchetto disattivata (`key_key.iris.shaderPackSelection:key.keyboard.unknown`).
   - **Adattività Topologia GPU (Auto-Detect)**: In `instance.cfg`, analizzare dinamicamente le schede grafiche installate su qualsiasi macchina (PC Portatile o Fisso Salotto) e abilitare l'adattatore più prestante disponibile (es. GPU discreta/dedicata) con `UseDiscreteGpu=true` e `LaunchMaximized=true`.
+
+---
+
+### Record 12 — Diagonali 2D Tastierino Numerico (7, 9, 1, 3), Risoluzione Snap Yaw al Centraggio (Tasto 5) e Singolarità Nadir/Zenith
+- **Problema**:
+  1. Spostando lo sguardo in diagonale e ricentrando all'orizzonte con `5` del tastierino numerico, alla ripresa del movimento la visuale subiva un salto/reset all'indietro alla posizione angolare precedente.
+  2. L'uso di Nadir (Piedi, $+90^\circ$) e Zenith (Cielo, $-90^\circ$) corrompeva istantaneamente l'orientamento orizzontale reale forzando lo Yaw a Est ($-90^\circ$).
+  3. I tasti fisici `7`, `9`, `1`, `3` nel Layer 0 erano limitati a pitch puro o nadir/zenith invece di consentire un moto vettoriale 2D fluido a 8 direzioni.
+- **Causa Radice**:
+  1. `centerCameraHorizon()` (Tasto 5) invocava `rotateCameraTo(PlayerPositionUtils.getHorizontalFacing())`, che tramite `player.lookAt` ricalcolava e forzava lo snap dello Yaw alla griglia cardinale/ordinale discreta ($0^\circ, 45^\circ, \dots$), distruggendo lo Yaw continuo reale.
+  2. `rotateCameraTo` applicato ai vettori verticali puri $(0, \pm 1, 0)$ di Nadir/Zenith scatenava la singolarità matematica $\text{atan2}(0, 0) - 90^\circ = -90^\circ$ (Est).
+  3. Il crossing dell'orizzonte in `rotateCameraBy` richiamava `rotateCameraTo` forzando uno snap orizzontale ad ogni attraversamento dello $0^\circ$ di pitch.
+- **Soluzione Definitiva**:
+  - In `NumpadControls.java` e `CameraControls.java`:
+    - `centerCameraHorizon()` azzera **esclusivamente il Pitch** (`player.setXRot(0.0f); player.xRotO = 0.0f;`), preservando intatto al 100% lo Yaw orizzontale reale del giocatore.
+    - Creazione del metodo `rotateCameraToPitch(pitchDegrees)` per impostare direttamente il Pitch a $\pm 90^\circ$ senza passare da `lookAt`, eliminando alla radice la singolarità verso Est.
+    - In `rotateCameraBy`, al crossing dell'orizzonte azzeramento atomico di `setXRot(0.0f)` senza invocare `rotateCameraTo`.
+    - Mappatura completa dei tasti `7`, `9`, `1`, `3` nel Layer 0 come diagonali 2D atomiche $(\Delta H, \Delta V)$ con architettura Dual-Mode (tap discreto di $15^\circ$ e hold continuo $\ge 200\text{ ms}$ a $4.5^\circ/\text{tick}$).
+    - Ricollocazione di `Look Nadir` e `Look Zenith` su `Alt + 1` e `Alt + 3` nel Layer 3.
+

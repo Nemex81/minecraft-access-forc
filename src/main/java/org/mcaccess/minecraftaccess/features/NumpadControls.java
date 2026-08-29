@@ -54,15 +54,19 @@ public class NumpadControls implements BalmClientModule {
     private ManagedKeyMapping keyLookDown;
     private ManagedKeyMapping keyLookLeft;
     private ManagedKeyMapping keyLookRight;
-    private ManagedKeyMapping keyPitchUp;
-    private ManagedKeyMapping keyPitchDown;
+    private ManagedKeyMapping keyLookUpLeft;
+    private ManagedKeyMapping keyLookUpRight;
+    private ManagedKeyMapping keyLookDownLeft;
+    private ManagedKeyMapping keyLookDownRight;
 
     private long holdStartLookUp = 0;
     private long holdStartLookDown = 0;
     private long holdStartLookLeft = 0;
     private long holdStartLookRight = 0;
-    private long holdStartPitchUp = 0;
-    private long holdStartPitchDown = 0;
+    private long holdStartLookUpLeft = 0;
+    private long holdStartLookUpRight = 0;
+    private long holdStartLookDownLeft = 0;
+    private long holdStartLookDownRight = 0;
 
     // Mouse button key mappings for tick-based hold detection
     private ManagedKeyMapping keyLeftClick;
@@ -147,51 +151,59 @@ public class NumpadControls implements BalmClientModule {
                 })
                 .build();
 
-        // Diagonals / Pitch Steps
-        keyPitchUp = Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "numpad.camera.pitch_up"))
+        // 2D Diagonals
+        keyLookUpLeft = Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "numpad.camera.look_up_left"))
                 .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_7))
                 .enableKeyRepeat()
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
                     if (isDisabled()) return false;
-                    if (holdStartPitchUp == 0) {
-                        holdStartPitchUp = System.currentTimeMillis();
-                        rotateCameraBy(0, -1, true);
+                    if (holdStartLookUpLeft == 0) {
+                        holdStartLookUpLeft = System.currentTimeMillis();
+                        rotateCameraBy(-1, -1, false);
                     }
                     return true;
                 })
                 .build();
 
-        keyPitchDown = Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "numpad.camera.pitch_down"))
+        keyLookUpRight = Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "numpad.camera.look_up_right"))
                 .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_9))
                 .enableKeyRepeat()
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
                     if (isDisabled()) return false;
-                    if (holdStartPitchDown == 0) {
-                        holdStartPitchDown = System.currentTimeMillis();
-                        rotateCameraBy(0, 1, true);
+                    if (holdStartLookUpRight == 0) {
+                        holdStartLookUpRight = System.currentTimeMillis();
+                        rotateCameraBy(1, -1, false);
                     }
                     return true;
                 })
                 .build();
 
-        Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "numpad.camera.look_nadir"))
+        keyLookDownLeft = Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "numpad.camera.look_down_left"))
                 .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_1))
+                .enableKeyRepeat()
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
                     if (isDisabled()) return false;
-                    rotateCameraTo(Orientation.DOWN, true);
+                    if (holdStartLookDownLeft == 0) {
+                        holdStartLookDownLeft = System.currentTimeMillis();
+                        rotateCameraBy(-1, 1, false);
+                    }
                     return true;
                 })
                 .build();
 
-        Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "numpad.camera.look_zenith"))
+        keyLookDownRight = Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "numpad.camera.look_down_right"))
                 .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_3))
+                .enableKeyRepeat()
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
                     if (isDisabled()) return false;
-                    rotateCameraTo(Orientation.UP, true);
+                    if (holdStartLookDownRight == 0) {
+                        holdStartLookDownRight = System.currentTimeMillis();
+                        rotateCameraBy(1, 1, false);
+                    }
                     return true;
                 })
                 .build();
@@ -608,6 +620,26 @@ public class NumpadControls implements BalmClientModule {
                 })
                 .build();
 
+        Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "numpad.camera.look_nadir"))
+                .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_1, KeyModifiers.of(KeyModifier.ALT)))
+                .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
+                .handleWorldInput(_ -> {
+                    if (isDisabled()) return false;
+                    rotateCameraToPitch(90.0f, true);
+                    return true;
+                })
+                .build();
+
+        Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "numpad.camera.look_zenith"))
+                .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_3, KeyModifiers.of(KeyModifier.ALT)))
+                .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
+                .handleWorldInput(_ -> {
+                    if (isDisabled()) return false;
+                    rotateCameraToPitch(-90.0f, true);
+                    return true;
+                })
+                .build();
+
         Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "numpad.action.auto_walk"))
                 .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_0, KeyModifiers.of(KeyModifier.ALT)))
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
@@ -685,24 +717,44 @@ public class NumpadControls implements BalmClientModule {
                     holdStartLookRight = 0;
                 }
 
-                // Pitch Up Step (Numpad 7)
-                if (keyPitchUp != null && keyPitchUp.isDown()) {
-                    if (holdStartPitchUp == 0) holdStartPitchUp = now;
-                    if (now - holdStartPitchUp >= CONTINUOUS_HOLD_DELAY_MS) {
-                        rotateCameraContinuous(0, -1, true, config.continuousRotationSpeed);
+                // Look Up-Left (Numpad 7)
+                if (keyLookUpLeft != null && keyLookUpLeft.isDown()) {
+                    if (holdStartLookUpLeft == 0) holdStartLookUpLeft = now;
+                    if (now - holdStartLookUpLeft >= CONTINUOUS_HOLD_DELAY_MS) {
+                        rotateCameraContinuous(-1, -1, false, config.continuousRotationSpeed);
                     }
                 } else {
-                    holdStartPitchUp = 0;
+                    holdStartLookUpLeft = 0;
                 }
 
-                // Pitch Down Step (Numpad 9)
-                if (keyPitchDown != null && keyPitchDown.isDown()) {
-                    if (holdStartPitchDown == 0) holdStartPitchDown = now;
-                    if (now - holdStartPitchDown >= CONTINUOUS_HOLD_DELAY_MS) {
-                        rotateCameraContinuous(0, 1, true, config.continuousRotationSpeed);
+                // Look Up-Right (Numpad 9)
+                if (keyLookUpRight != null && keyLookUpRight.isDown()) {
+                    if (holdStartLookUpRight == 0) holdStartLookUpRight = now;
+                    if (now - holdStartLookUpRight >= CONTINUOUS_HOLD_DELAY_MS) {
+                        rotateCameraContinuous(1, -1, false, config.continuousRotationSpeed);
                     }
                 } else {
-                    holdStartPitchDown = 0;
+                    holdStartLookUpRight = 0;
+                }
+
+                // Look Down-Left (Numpad 1)
+                if (keyLookDownLeft != null && keyLookDownLeft.isDown()) {
+                    if (holdStartLookDownLeft == 0) holdStartLookDownLeft = now;
+                    if (now - holdStartLookDownLeft >= CONTINUOUS_HOLD_DELAY_MS) {
+                        rotateCameraContinuous(-1, 1, false, config.continuousRotationSpeed);
+                    }
+                } else {
+                    holdStartLookDownLeft = 0;
+                }
+
+                // Look Down-Right (Numpad 3)
+                if (keyLookDownRight != null && keyLookDownRight.isDown()) {
+                    if (holdStartLookDownRight == 0) holdStartLookDownRight = now;
+                    if (now - holdStartLookDownRight >= CONTINUOUS_HOLD_DELAY_MS) {
+                        rotateCameraContinuous(1, 1, false, config.continuousRotationSpeed);
+                    }
+                } else {
+                    holdStartLookDownRight = 0;
                 }
             } else {
                 resetHoldTimers();
@@ -742,8 +794,10 @@ public class NumpadControls implements BalmClientModule {
         holdStartLookDown = 0;
         holdStartLookLeft = 0;
         holdStartLookRight = 0;
-        holdStartPitchUp = 0;
-        holdStartPitchDown = 0;
+        holdStartLookUpLeft = 0;
+        holdStartLookUpRight = 0;
+        holdStartLookDownLeft = 0;
+        holdStartLookDownRight = 0;
     }
 
     private boolean hasAnyModifierDown(Minecraft client) {
@@ -780,13 +834,19 @@ public class NumpadControls implements BalmClientModule {
         if (player == null) return;
 
         if (!isModified && Math.signum(player.getXRot()) * Math.signum(player.getXRot() + deltaV * DEGREES_PER_MOUSE_DELTA) < 0) {
-            rotateCameraTo(PlayerPositionUtils.getHorizontalFacing(), false);
+            player.turn(deltaH, 0);
+            player.setXRot(0.0f);
+            player.xRotO = 0.0f;
         } else {
             player.turn(deltaH, deltaV);
         }
 
         if (config.narrateFacingOnChange) {
-            if (horizontalWeight != 0) {
+            if (horizontalWeight != 0 && verticalWeight != 0) {
+                String h = PlayerPositionUtils.getHorizontalFacingDirectionInWords();
+                String v = PlayerPositionUtils.getVerticalFacingDirectionInWords();
+                MainClass.narrate(h + (v != null ? ", " + v : ""), true);
+            } else if (horizontalWeight != 0) {
                 MainClass.narrate(PlayerPositionUtils.getHorizontalFacingDirectionInWords(), true);
             } else if (verticalWeight != 0) {
                 String v = PlayerPositionUtils.getVerticalFacingDirectionInWords();
@@ -832,10 +892,26 @@ public class NumpadControls implements BalmClientModule {
         }
     }
 
+    private void rotateCameraToPitch(float pitchDegrees, boolean narrateChange) {
+        if (handleLocking()) return;
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player == null) return;
+
+        player.setXRot(pitchDegrees);
+        player.xRotO = pitchDegrees;
+
+        if (narrateChange && Config.getInstance().numpadControls.narrateFacingOnChange) {
+            String v = PlayerPositionUtils.getVerticalFacingDirectionInWords();
+            if (v != null) MainClass.narrate(v, true);
+        }
+    }
+
     private void centerCameraHorizon() {
         if (handleLocking()) return;
-        Orientation o = PlayerPositionUtils.getHorizontalFacing();
-        rotateCameraTo(o, false);
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player == null) return;
+        player.setXRot(0.0f);
+        player.xRotO = 0.0f;
     }
 
     private void snapToNearestCardinal() {

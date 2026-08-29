@@ -189,7 +189,7 @@ public class CameraControls implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_PERIOD))
                 .overrideCategory(KeyMappingCategories.CAMERA_CONTROLS)
                 .handleWorldInput(_ -> {
-                    rotateCameraTo(Orientation.DOWN, true);
+                    rotateCameraToPitch(90.0f, true);
                     return true;
                 })
                 .build();
@@ -198,7 +198,7 @@ public class CameraControls implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_PERIOD, KeyModifiers.of(KeyModifier.ALT)))
                 .overrideCategory(KeyMappingCategories.CAMERA_CONTROLS)
                 .handleWorldInput(_ -> {
-                    rotateCameraTo(Orientation.UP, true);
+                    rotateCameraToPitch(-90.0f, true);
                     return true;
                 })
                 .build();
@@ -238,7 +238,9 @@ public class CameraControls implements BalmClientModule {
         assert Minecraft.getInstance().player != null;
         LocalPlayer player = Minecraft.getInstance().player;
         if (!isModified && Math.signum(player.getXRot()) * Math.signum(player.getXRot() + verticalAngleDelta * DEGREES_PER_MOUSE_DELTA) < 0) {
-            rotateCameraTo(PlayerPositionUtils.getHorizontalFacing(), false);
+            player.turn(horizontalAngleDelta, 0);
+            player.setXRot(0.0f);
+            player.xRotO = 0.0f;
         } else {
             player.turn(horizontalAngleDelta, verticalAngleDelta);
         }
@@ -251,6 +253,20 @@ public class CameraControls implements BalmClientModule {
             } else if (verticalDirection != null) {
                 MainClass.narrate(verticalDirection, true);
             }
+        }
+    }
+
+    private static void rotateCameraToPitch(float pitchDegrees, boolean narrateChange) {
+        if (handleLocking()) return;
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player == null) return;
+
+        player.setXRot(pitchDegrees);
+        player.xRotO = pitchDegrees;
+
+        if (narrateChange && Config.getInstance().features.facingDirectionEnabled) {
+            String v = PlayerPositionUtils.getVerticalFacingDirectionInWords();
+            if (v != null) MainClass.narrate(v, true);
         }
     }
 

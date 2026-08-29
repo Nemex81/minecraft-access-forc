@@ -42,6 +42,37 @@ class NumpadControlsTest {
         }
 
         @Test
+        @DisplayName("Verify 2D combined diagonal discrete step calculations (15° H + 15° V)")
+        void testDiagonal2DStepCalculations() {
+            float normalAngle = 15.0f;
+            float deltaUnit = normalAngle / DEGREES_PER_MOUSE_DELTA;
+
+            // Up-Left (-1, -1)
+            float deltaH_UL = deltaUnit * -1;
+            float deltaV_UL = deltaUnit * -1;
+            assertEquals(-100.0f, deltaH_UL, 0.001f);
+            assertEquals(-100.0f, deltaV_UL, 0.001f);
+
+            // Up-Right (1, -1)
+            float deltaH_UR = deltaUnit * 1;
+            float deltaV_UR = deltaUnit * -1;
+            assertEquals(100.0f, deltaH_UR, 0.001f);
+            assertEquals(-100.0f, deltaV_UR, 0.001f);
+
+            // Down-Left (-1, 1)
+            float deltaH_DL = deltaUnit * -1;
+            float deltaV_DL = deltaUnit * 1;
+            assertEquals(-100.0f, deltaH_DL, 0.001f);
+            assertEquals(100.0f, deltaV_DL, 0.001f);
+
+            // Down-Right (1, 1)
+            float deltaH_DR = deltaUnit * 1;
+            float deltaV_DR = deltaUnit * 1;
+            assertEquals(100.0f, deltaH_DR, 0.001f);
+            assertEquals(100.0f, deltaV_DR, 0.001f);
+        }
+
+        @Test
         @DisplayName("Verify continuous rotation speed multiplier scaling")
         void testContinuousRotationScaling() {
             float baseAngle = 4.5f;
@@ -197,8 +228,10 @@ class NumpadControlsTest {
                     "key.minecraft_access.numpad.camera.look_down",
                     "key.minecraft_access.numpad.camera.look_left",
                     "key.minecraft_access.numpad.camera.look_right",
-                    "key.minecraft_access.numpad.camera.pitch_up",
-                    "key.minecraft_access.numpad.camera.pitch_down",
+                    "key.minecraft_access.numpad.camera.look_up_left",
+                    "key.minecraft_access.numpad.camera.look_up_right",
+                    "key.minecraft_access.numpad.camera.look_down_left",
+                    "key.minecraft_access.numpad.camera.look_down_right",
                     "key.minecraft_access.numpad.camera.look_nadir",
                     "key.minecraft_access.numpad.camera.look_zenith",
                     "key.minecraft_access.numpad.camera.center_crosshair",
@@ -225,6 +258,10 @@ class NumpadControlsTest {
                     "key.minecraft_access.numpad.orient.east",
                     "key.minecraft_access.numpad.orient.south",
                     "key.minecraft_access.numpad.orient.west",
+                    "key.minecraft_access.numpad.orient.north_west",
+                    "key.minecraft_access.numpad.orient.north_east",
+                    "key.minecraft_access.numpad.orient.south_west",
+                    "key.minecraft_access.numpad.orient.south_east",
                     "key.minecraft_access.numpad.orient.look_behind",
                     "key.minecraft_access.numpad.orient.narrate_coordinates",
                     "key.minecraft_access.numpad.status.player_all",
