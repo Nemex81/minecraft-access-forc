@@ -15,9 +15,10 @@ Questo file costituisce l'**Hub Centrale di Contesto** del progetto `minecraft-a
    Nessuna funzionalità, interfaccia grafica o comando deve richiedere il mouse o indicatori visivi. Ogni interazione deve essere gestibile al 100% da tastiera e vocalizzata chiaramente tramite lo Screen Reader Proxy (`MainClass.narrate`).
 2. **Rigore I18N Focus su Italiano e Inglese & Ordinamento Alfabetico JSON**:
    Nello sviluppo ci occupiamo unicamente delle localizzazioni in Italiano (`it_it.json`) e Inglese (`en_us.json`), delegando le restanti lingue alla community tramite la piattaforma Weblate. In tutti i file `.json` modificati in `src/main/resources/assets/minecraft_access/lang/`, le chiavi devono essere **rigorosamente disposte in ordine alfabetico crescente** per superare i test di CI GitHub (`jq -e "keys != keys_unsorted"`).
-3. **Gerarchia Cartelle: Workspace di Sviluppo vs Archivio e Backup**:
-   - **Cartella Operativa Primaria di Sviluppo & Hub Documentale**: `C:\Users\nemex\OneDrive\Documenti\GitHub\minecraft-access\` (Sede centrale del codice Java, build Gradle, rami Git `mymaster`/`dev`, schede `knowledge/` 00..12, `gemini.md` e sottocartelle documentali in `docs/`).
-   - **Cartella Master Archivio, Backup & Progetti Speciali**: `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft archivio backup\` (Sede dei backup compressi dei mondi e istanze in `minecraft backup/`, archivio storico `archivio completati/`, progetti di gioco in `progetto casa personale/`, `prompts/` e canali ChatGPT).
+3. **Gerarchia Cartelle Dinamica: Workspace di Sviluppo vs Archivio e Backup**:
+   - **Cartella Operativa Primaria di Sviluppo & Hub Documentale**: `$env:OneDrive\Documenti\GitHub\minecraft-access\` (Sede centrale del codice Java, build Gradle, rami Git `mymaster`/`dev`, schede `knowledge/` 00..12, `gemini.md` e sottocartelle documentali in `docs/`).
+   - **Cartella Master Archivio, Backup & Progetti Speciali**: `$env:OneDrive\progetti dei frati\accessible games\minecraft archivio backup\` (Sede dei backup compressi dei mondi e istanze in `minecraft backup/`, archivio storico `archivio completati/`, progetti di gioco in `progetto casa personale/`, `prompts/` e canali ChatGPT).
+   - **Risoluzione Dinamica delle Istanze**: Istanze di PrismLauncher rilevate dinamicamente in `$env:APPDATA\PrismLauncher\instances\` tramite pattern matching (`*26.2*Access*`).
    - **Regola di Protezione Deploy**: Il backup del PC corrente viene aggiornato con la nuova build `.jar` stabile solo DOPO il superamento del test manuale in-game di Luca.
 4. **Regole Geometriche Voxel & Anti-Ridondanza Comandi**:
    - Non incassare mai torce nei muri distruggendo blocchi solidi; posizionare le torce a muro su blocchi d'aria adiacenti con il facing corretto e le torce ritte a quota $Y+1$. Omettere sistematicamente comandi ridondanti per evitare il falso errore parlato *"Impossibile posizionare il blocco"*.
@@ -34,7 +35,7 @@ Questo file costituisce l'**Hub Centrale di Contesto** del progetto `minecraft-a
      * Report & Collaudi: `docs/report/`
      * Idee & Promemoria futuri: `docs/idee/`
      * Manuali d'uso: `docs/manuali/` (compreso il [`PROTOCOLLO_COLLAUDO_E_SESSIONI_MONITORATE.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/manuali/PROTOCOLLO_COLLAUDO_E_SESSIONI_MONITORATE.md))
-   - **Sede Unica ed Esclusiva**: Le schede di `knowledge/` (00..12) e `gemini.md` risiedono **UNICAMENTE ED ESCLUSIVAMENTE** all'interno del repository Git (`C:\Users\nemex\OneDrive\Documenti\GitHub\minecraft-access\`). È fatto **divieto assoluto** ad Antigravity di copiare, duplicare o sincronizzare file di regole o documentazione nella cartella `minecraft archivio backup\`.
+   - **Sede Unica ed Esclusiva**: Le schede di `knowledge/` (00..12) e `gemini.md` risiedono **UNICAMENTE ED ESCLUSIVAMENTE** all'interno del repository Git (`$env:OneDrive\Documenti\GitHub\minecraft-access\`). È fatto **divieto assoluto** ad Antigravity di copiare, duplicare o sincronizzare file di regole o documentazione nella cartella `minecraft archivio backup\`.
 6. **Automatismi di Mobilità, Non-Interferenza Posturale & Adattività Cognitiva**:
    - Evitare `Shift Sinistro` per comandi nel mondo aperto (per prevenire l'accovacciamento/sneak involontario). Raggruppare per famiglie logiche (`Home/End` per POI, `V` per vista).
    - Quando esistono molteplici formulazioni cognitive valide, offrire opzioni multiple configurabili con Enum in GUI.

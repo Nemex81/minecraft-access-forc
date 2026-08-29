@@ -14,23 +14,40 @@ La compilazione del progetto avviene tramite Gradle Wrapper e richiede Java 25:
 
 ---
 
-## 2. Auto-Rilevamento Trasparente dell'Identità Macchina ($env:COMPUTERNAME)
+## 2. Canone Dinamico & Auto-Discovery di Sistema
 
-Per evitare qualsiasi errore manuale o richiesta superflua a Luca, l'assistente interroga automaticamente la variabile di ambiente `$env:COMPUTERNAME` all'inizio di ogni operazione di deploy, log analysis o configurazione:
+Per garantire la massima resilienza e indipendenza dai percorsi cablati, l'assistente adotta il protocollo di risoluzione dinamica:
 
-| Hostname di Sistema (`$env:COMPUTERNAME`) | Macchina Identificata | Cartella Backup OneDrive di Riferimento |
-|---|---|---|
-| **`MSI`** | **PC Portatile** | `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft archivio backup\minecraft backup\Minecraft 26.2 Access 1.12.0 pc portatile\` |
-| **`NEMEXMASTER`** | **PC Fisso Salotto** | `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft archivio backup\minecraft backup\Minecraft 26.2 Access 1.12.0 pc fisso Salotto\` |
+### A. Auto-Discovery Dinamica delle Istanze PrismLauncher:
+- **Regola**: Vietato cablare percorsi rigidi che falliscono in presenza di spazi (`Minecraft 26.2 Access 1.12.0`) o underscore (`Minecraft_26.2_Access_1.12.0`).
+- **Risoluzione al Volo (PowerShell)**:
+  ```powershell
+  $instances = Get-ChildItem "$env:APPDATA\PrismLauncher\instances" -Directory -ErrorAction SilentlyContinue |
+      Where-Object { $_.Name -match "Minecraft.*26\.2.*Access" }
+  # Deploy automatico su tutte le istanze individuate
+  foreach ($inst in $instances) {
+      $modsPath = Join-Path $inst.FullName ".minecraft\mods"
+      if (-not (Test-Path $modsPath)) { $modsPath = Join-Path $inst.FullName "minecraft\mods" }
+      Copy-Item "build\libs\minecraft-access-1.12.0.jar" -Destination $modsPath -Force
+  }
+  ```
 
-### Protocollo di Routing Dinamico:
-- **Rilevamento Silenzioso**: Antigravity verifica l'hostname senza chiedere a Luca su quale PC si trova.
-- **Associazione Percorsi Istanza**:
-  - Su **`MSI`**: percorsi puntano a `c:\Users\nemex\AppData\Roaming\PrismLauncher\instances\Minecraft 26.2 Access 1.12.0\`.
-  - Su **`NEMEXMASTER`**: percorsi puntano a `c:\Users\nemex\AppData\Roaming\PrismLauncher\instances\Minecraft_26.2_Access_1.12.0\`.
-- **Associazione Hardware GPU & Shader**:
-  - `MSI`: Profilo display interno / GPU mobile (Iris shader tasto `F7`).
-  - `NEMEXMASTER`: Profilo TV salotto / GPU desktop ad alte prestazioni.
+### B. Risoluzione Dinamica del Runtime Java (JDK 25):
+- **Regola**: Non fissare versioni statiche volatili di Java.
+- **Risoluzione al Volo (PowerShell)**:
+  ```powershell
+  $jdk = Get-ChildItem "$env:ProgramFiles\Microsoft\jdk-25*", "$env:APPDATA\PrismLauncher\java\*" -Directory -ErrorAction SilentlyContinue |
+      Sort-Object Name -Descending | Select-Object -First 1
+  if ($jdk) { $env:JAVA_HOME = $jdk.FullName }
+  ```
+
+### C. Risoluzione Dinamica di OneDrive & Backup:
+- **Radice Backup Dinamica**:
+  `$backupRoot = Join-Path $env:OneDrive "progetti dei frati\accessible games\minecraft archivio backup\minecraft backup"`
+- **Cartella Backup Macchina**:
+  - Su `$env:COMPUTERNAME -eq "NEMEXMASTER"` -> `Join-Path $backupRoot "Minecraft 26.2 Access 1.12.0 pc fisso Salotto\minecraft\mods\"`
+  - Su `$env:COMPUTERNAME -eq "MSI"` (o Laptop) -> `Join-Path $backupRoot "Minecraft 26.2 Access 1.12.0 pc portatile\minecraft\mods\"`
+  - Su nuova macchina (Fallback) -> Individuazione automatica o creazione profilo dedicato.
 
 ---
 
@@ -39,20 +56,13 @@ Per evitare qualsiasi errore manuale o richiesta superflua a Luca, l'assistente 
 Una volta generato il file `.jar`, il deploy e la messa in sicurezza seguono una sequenza rigorosa a due fasi:
 
 ### Fase 1: Deploy Immediato nelle Istanze di Test
-Copia simultanea del file `.jar` compilato in tutte le istanze operative locali di PrismLauncher per permettere a Luca di eseguire i test in gioco:
-- Su PC Portatile (`MSI`):
-  - `c:\Users\nemex\AppData\Roaming\PrismLauncher\instances\Minecraft 26.2 Access 1.12.0\minecraft\mods\minecraft-access-1.12.0.jar`
-  - `c:\Users\nemex\AppData\Roaming\PrismLauncher\instances\Minecraft 26.2 Access - Server Tenuta\minecraft\mods\minecraft-access-1.12.0.jar`
-- Su PC Fisso Salotto (`NEMEXMASTER`):
-  - `c:\Users\nemex\AppData\Roaming\PrismLauncher\instances\Minecraft_26.2_Access_1.12.0\minecraft\mods\minecraft-access-1.12.0.jar`
+Copia automatica del file `.jar` compilato in tutte le istanze PrismLauncher scoperte dinamicamente tramite pattern matching (`*26.2*Access*`).
 
 ### Fase 2: Backup Ufficiale OneDrive & Chiusura Piano (Solo Post-Convalida Utente)
-**TASSATIVO**: L'aggiornamento della cartella backup su OneDrive e la spunta delle voci nel Piano Tecnico avvengono **esclusivamente DOPO che Luca ha effettuato il test in-game e ha convalidato e confermato con successo le modifiche**:
-- Su **PC Portatile** (`MSI`): `.../minecraft backup/Minecraft 26.2 Access 1.12.0 pc portatile/minecraft/mods/`
-- Su **PC Fisso Salotto** (`NEMEXMASTER`): `.../minecraft backup/Minecraft 26.2 Access 1.12.0 pc fisso Salotto/minecraft/mods/`
-- Aggiornamento contestuale delle caselle di verifica `[x]` nel file del piano tecnico su OneDrive.
-3. **Allineamento Configurazione Comandi & Codifica Tassativa `UTF-8 No-BOM` (`options.txt`)**:
-   - **Regola di Codifica**: Qualsiasi file `.txt` o `.properties` modificato via script (in particolare `options.txt`) deve essere scritto rigorosamente in **UTF-8 puro senza BOM** (`[System.Text.UTF8Encoding]($false)`). La presenza del BOM (`\uFEFF`) corrompe la lettura del token `version:` da parte del DataFixerUpper di Minecraft provocando il reset integrale delle opzioni.
+**TASSATIVO**: L'aggiornamento della cartella backup su OneDrive (`$backupRoot`) avviene **esclusivamente DOPO che Luca ha effettuato il test in-game e ha convalidato e confermato con successo le modifiche**.
+
+### Regola di Codifica Tassativa `UTF-8 No-BOM` (`options.txt`):
+- Qualsiasi file `.txt` o `.properties` modificato via script (in particolare `options.txt`) deve essere scritto rigorosamente in **UTF-8 puro senza BOM** (`[System.Text.UTF8Encoding]($false)`). La presenza del BOM (`\uFEFF`) corrompe la lettura del token `version:` da parte del DataFixerUpper di Minecraft provocando il reset integrale delle opzioni.
    - **Verifica Keybinding**: Assicurarsi che i comandi di accessibilità e le mod grafiche (Iris shader toggle su **`F7`**) siano mappati senza conflitti:
    ```properties
    key_key.minecraft_access.inventory_controls.recipe_info:key.keyboard.x

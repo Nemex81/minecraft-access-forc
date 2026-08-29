@@ -15,10 +15,10 @@ Il file `.jar` di `minecraft-access` viene iniettato nel runtime di Minecraft co
 La gestione dei file rispetta una separazione netta e ordinata tra sviluppo operativo, documentazione e backup:
 
 ```
-├── C:\Users\nemex\OneDrive\Documenti\GitHub\minecraft-access\             <-- CARTELLA OPERATIVA PRIMARIA & SVILUPPO
+├── $env:OneDrive\Documenti\GitHub\minecraft-access\             <-- CARTELLA OPERATIVA PRIMARIA & SVILUPPO
 │   ├── src/ (Codice Java Mod Fabric/NeoForge)
 │   ├── gemini.md (Hub Master di Contesto)
-│   ├── knowledge/ (Schede Architetturali 01..10)
+│   ├── knowledge/ (Schede Architetturali 00..12)
 │   └── docs/ (Documentazione Tecnica e Organizzativa)
 │       ├── piani/
 │       │   ├── attivi/ (Piani in lavorazione/da collaudare)
@@ -28,7 +28,7 @@ La gestione dei file rispetta una separazione netta e ordinata tra sviluppo oper
 │       ├── idee/ (Promemoria e spunti futuri)
 │       └── manuali/ (Manuali in-game)
 │
-└── C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft archivio backup\ <-- CARTELLA ARCHIVIO, BACKUP & PROGETTI IN-GAME
+└── $env:OneDrive\progetti dei frati\accessible games\minecraft archivio backup\ <-- CARTELLA ARCHIVIO, BACKUP & PROGETTI IN-GAME
     ├── archivio completati/ (Archivio storico)
     ├── progetto casa personale/ & mappa originale del server vecchio/
     ├── prompts/ (Prompt specifici per macchine - Privati)
@@ -40,9 +40,10 @@ La gestione dei file rispetta una separazione netta e ordinata tra sviluppo oper
         └── scuola_di_sopravvivenza_mondo_2_backup_*.zip
 ```
 
-### A. Cartella Operativa Primaria (`Documenti\GitHub\minecraft-access\`)
-- **Scopo**: È la **SEDE PRIMARIA ED ESCLUSIVA DI SVILUPPO E REGOLE**: codice sorgente, build Gradle, rami Git (`mymaster`, `dev`), `gemini.md`, schede `knowledge/` (00..10) e documentazione tecnica strutturata in `docs/`.
+### A. Cartella Operativa Primaria (`$env:OneDrive\Documenti\GitHub\minecraft-access\`)
+- **Scopo**: È la **SEDE PRIMARIA ED ESCLUSIVA DI SVILUPPO E REGOLE**: codice sorgente, build Gradle, rami Git (`mymaster`, `dev`), `gemini.md`, schede `knowledge/` (00..12) e documentazione tecnica strutturata in `docs/`.
 - **Regola**: Qualsiasi nuovo piano tecnico attivo va creato in `docs\piani\attivi\`.
+
 
 ### B. Cartella Master Archivio & Progetti In-Game (`accessible games\minecraft archivio backup\`)
 - **Scopo**: È la sede per i progetti edilizi/planimetrie in gioco, archivio storico, prompt di configurazione hardware privati e canali di dialogo persistenti con ChatGPT.

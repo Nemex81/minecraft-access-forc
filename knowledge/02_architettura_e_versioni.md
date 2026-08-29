@@ -44,31 +44,35 @@ Il codice risiede nel package radice `org.mcaccess.minecraftaccess`:
 
 ---
 
-## 4. Matrice dei Prerequisiti & Pre-Flight Environment Check
+## 4. Matrice Dinamica dei Prerequisiti & Pre-Flight Environment Check
 
-Prima di avviare qualsiasi compilazione o test, l'ambiente locale deve soddisfare i seguenti prerequisiti vincolanti:
+Prima di avviare qualsiasi compilazione o test, l'ambiente locale viene verificato dinamicamente:
 
 ### A. Prerequisiti Hard (Mandatori per compilare ed eseguire):
-1. **JDK 25 (Epsilon Runtime)**:
-   - Percorso: `C:\Users\nemex\AppData\Roaming\PrismLauncher\java\java-runtime-epsilon`
-   - Variabile d'Ambiente: `$env:JAVA_HOME = "C:\Users\nemex\AppData\Roaming\PrismLauncher\java\java-runtime-epsilon"`
+1. **JDK 25 (Microsoft LTS / Epsilon Runtime)**:
+   - Scansione dinamica in `$env:ProgramFiles\Microsoft\jdk-25*` e `$env:APPDATA\PrismLauncher\java\*`.
 2. **Flag Gradle Anti-Daemon Lock**:
    - Compilazione obbligatoria con flag `--no-daemon` per prevenire il blocco file `Access is denied` su Windows/OneDrive.
-3. **PrismLauncher & Istanza di Gioco**:
-   - Cartella `C:\Users\nemex\AppData\Roaming\PrismLauncher\instances\Minecraft 26.2 Access 1.12.0\`
+3. **PrismLauncher & Istanze di Gioco**:
+   - Rilevamento automatico in `$env:APPDATA\PrismLauncher\instances\` con pattern `*26.2*Access*`.
 
 ### B. Prerequisiti Soft (Qualità & Versioning):
 1. **Git 2.40+** per gestione rami `mymaster`, `dev` e Conventional Commits.
 2. **PowerShell 5.1+ / 7+** con policy di esecuzione script abilitata.
 
-### C. Script di Pre-Flight Check Rapido (PowerShell):
+### C. Script di Pre-Flight Check Dinamico (PowerShell):
 ```powershell
-# Pre-Flight Check: verifica preliminare dell'ambiente di compilazione
-$javaPath = "C:\Users\nemex\AppData\Roaming\PrismLauncher\java\java-runtime-epsilon"
-if (Test-Path "$javaPath\bin\javac.exe") {
-    $env:JAVA_HOME = $javaPath
-    Write-Host "✅ Pre-Flight OK: Java 25 impostato correttamente su $javaPath"
+# Pre-Flight Check: scansione dinamica dell'ambiente di compilazione
+$jdk = Get-ChildItem "$env:ProgramFiles\Microsoft\jdk-25*", "$env:APPDATA\PrismLauncher\java\*" -Directory -ErrorAction SilentlyContinue |
+    Sort-Object Name -Descending | Select-Object -First 1
+
+if ($jdk -and (Test-Path "$($jdk.FullName)\bin\javac.exe")) {
+    $env:JAVA_HOME = $jdk.FullName
+    Write-Host "✅ Pre-Flight OK: Java 25 individuato e impostato su $($jdk.FullName)"
+} elseif (Get-Command javac -ErrorAction SilentlyContinue) {
+    Write-Host "✅ Pre-Flight OK: Java di sistema disponibile: $((Get-Command javac).Source)"
 } else {
-    Write-Error "❌ Pre-Flight FAILED: JDK 25 non trovato nel percorso PrismLauncher!"
+    Write-Error "❌ Pre-Flight FAILED: Nessun JDK 25 trovato nei percorsi standard o in PrismLauncher!"
 }
 ```
+
