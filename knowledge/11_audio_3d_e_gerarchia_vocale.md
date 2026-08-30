@@ -77,3 +77,27 @@ Durante movimenti o rotazioni continue ad alta velocità (es. rotazione della vi
 Quando si modifica un singolo asse della visuale (es. azzeramento Pitch all'orizzonte o puntamento Zenith/Nadir a $\pm 90^\circ$):
 - **Divieto Assoluto di `player.lookAt` con Vettori Verticali**: `lookAt` ricalcola entrambi gli angoli introducendo la singolarità $\text{atan2}(0,0)-90^\circ = -90^\circ$ (forzando lo Yaw a Est) o forzando snap a griglia dello Yaw continuo.
 - **Applicazione Diretta**: Le modifiche di pitch devono avvenire esclusivamente tramite `player.setXRot(pitchDegrees)` e `player.xRotO = pitchDegrees`.
+
+---
+
+## 7. Scudo Vocale Didattico per Onboarding & Tutorial (`HelpNarrator`)
+
+Durante le spiegazioni del Mentore, le missioni dell'Accademia o i wizard di primo avvio:
+
+1. **Finestra Protetta Temporale Dinamica**:
+   - La durata dello scudo viene calcolata proporzionalmente alla lunghezza del testo:
+     $$\text{Durata (ms)} = (\text{Numero Parole} \times 280\text{ ms}) + 600\text{ ms}$$
+2. **Soppressione Ambientale Totale**:
+   - Durante lo scudo, lo scanner continuo del mirino (`NarrateCrosshair`) e i rilevatori di ostacoli non vocali vengono completamente silenziati per evitare qualsiasi interruzione o frammentazione cognitiva.
+3. **Firme Acustiche Distintive**:
+   - **Suggerimento Didattico**: Rintocco armonico `NOTE_BLOCK_BELL` a volume $0.6\text{f}$.
+   - **Obiettivo Raggiunto / Successo**: Rintocco percussivo di completamento `EXPERIENCE_ORB_PICKUP` a volume $0.7\text{f}$.
+
+---
+
+## 8. Gerarchia Sonora per Rotazione Discreta a 360° (`RotationFeedbackMode`)
+
+Nelle modalità con feedback sonoro a ogni scatto di rotazione della visuale (tasti `4` e `6`):
+- **Punti Cardinali Puri ($0^\circ, 90^\circ, 180^\circ, 270^\circ$)**: Tono alto e limpido (Pitch $1.2\text{f}$).
+- **Punti Diagonali Intercardinali ($45^\circ, 135^\circ, 225^\circ, 315^\circ$)**: Tono medio (Pitch $1.0\text{f}$).
+- **Angoli Intermedi ($15^\circ, 30^\circ, 60^\circ, 75^\circ\dots$)**: Tono morbido (Pitch $0.85\text{f}$).

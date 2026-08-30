@@ -130,3 +130,33 @@ Questo registro documenta i problemi tecnici complessi risolti nel tempo, preser
   - Introduzione dell'Enum `ContinuousFeedbackMode` (`SOUND_ONLY` default, `VOICE_ONLY`, `SOUND_AND_VOICE`, `OFF`) configurabile in GUI.
   - Conversione di `Orientation.ofHorizontal(angle)` a risoluzione puramente geometrica a 8 settori di $45^\circ$, priva di dipendenze da istanze client nulle.
 
+---
+
+### Record 14 — Macchina a Stati per Simulazione Mouse Hold (`wasDown()`) e Sincronizzazione Cache `options.txt`
+- **Problema**: 
+  1. I comandi del tastierino numerico assegnati ad attacco continuo (Tasto `0`) e uso (Tasto `Invio`) non rispondevano o bloccavano l'input di Minecraft.
+  2. Le modifiche ai tasti predefiniti nel codice della mod non venivano applicate in gioco, mantenendo le vecchie associazioni sovrapposte.
+- **Causa Radice**:
+  1. In `NumpadControls.java`, il metodo `tick()` invocava `MouseUtils.Key.LEFT.press()` a ogni singolo frame (20 volte al secondo) senza verificare la transizione di stato con `wasDown()` e senza inviare `release()`. Questo saturava e mandava in deadlock la macchina a stati del mouse di Minecraft.
+  2. Minecraft carica e preserva i binding salvati nel file `options.txt` dell'istanza; le modifiche ai valori di default in Java non sovrascrivono la cache esistente se la chiave è già presente.
+- **Soluzione Definitiva**:
+  - In `NumpadControls.tick()`, implementata la corretta transizione di stato:
+    - Se `key.isDown() && !key.wasDown()` $\rightarrow$ invia `MouseUtils.Key.press()`.
+    - Se `!key.isDown() && key.wasDown()` $\rightarrow$ invia `MouseUtils.Key.release()`.
+  - Aggiornati programmaticamente i file `options.txt` di tutte le istanze PrismLauncher per sincronizzare all'istante le nuove assegnazioni dei tasti.
+
+---
+
+### Record 15 — Guard Rail di Modalità di Gioco per Missioni Accademia e Bussola Dinamica a 360°
+- **Problema**:
+  1. In modalità Sopravvivenza era possibile avviare missioni dell'Accademia impossibili da completare (es. la missione del volo).
+  2. Ruotando la visuale a scatti di $15^\circ$ con i tasti `4` e `6`, la sintesi vocale ripeteva fino a 3 volte consecutive la stessa frase identica (es. *"Sud-est"*), generando disorientamento.
+- **Causa Radice**:
+  1. Il registro delle missioni (`MissionRegistry`) non filtrava la disponibilità in base al `GameType` del giocatore (Survival vs Creative).
+  2. La suddivisione geografica classica usa 8 settori da $45^\circ$, quindi scatti da $15^\circ$ mantengono lo stesso nome di settore per 3 pressioni consecutive senza informare l'utente sull'angolo reale.
+- **Soluzione Definitiva**:
+  - In `AcademyManager.java`, aggiunto il controllo dei guard rail sulle abilità del giocatore (es. `player.getAbilities().mayfly`) con auto-avanzamento in caso di tappe già soddisfatte.
+  - In `PlayerPositionUtils.java`, implementato il calcolo continuo dei gradi geografici standard a $360^\circ$:
+    $$\text{degrees} = \text{round}\left( (\text{player.getYRot()} + 180 \bmod 360 + 360) \bmod 360 \right)$$
+  - Introdotto l'Enum `RotationFeedbackMode` in `Config.NumpadControls` per offrire 5 stili di feedback selezionabili in GUI (Cardinale + Gradi, Suono + Voce, Solo Cardinale, Solo Suono, Off).
+
