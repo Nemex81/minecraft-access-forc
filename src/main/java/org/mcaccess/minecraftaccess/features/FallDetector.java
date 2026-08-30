@@ -20,12 +20,14 @@ import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.IronBarsBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
@@ -88,7 +90,7 @@ public class FallDetector implements BalmClientModule {
             return;
         }
 
-        if (client.gui.screen() != null || player.isUnderWater() || player.isSwimming() || player.isVisuallySwimming()) {
+        if (client.gui.screen() != null || player.isUnderWater() || player.isInWater() || player.isInWaterOrRain() || player.isSwimming() || player.isVisuallySwimming() || player.isEyeInFluid(FluidTags.WATER)) {
             resetSafetyState();
             return;
         }
@@ -100,7 +102,7 @@ public class FallDetector implements BalmClientModule {
         long currentTimeInMillis = clock.millis();
         if (currentTimeInMillis - previousTimeInMillis >= config.delay) {
             previousTimeInMillis = currentTimeInMillis;
-            if (player.onGround()) {
+            if (player.onGround() && !player.isInWater() && !player.isInLiquid()) {
                 searchNearbyPositions();
             }
         }
@@ -160,6 +162,12 @@ public class FallDetector implements BalmClientModule {
                 break;
             }
 
+            // If step position contains water/fluid, moving into water is completely safe
+            if (!level.getFluidState(stepPos).isEmpty()) {
+                prevPos = stepPos;
+                continue;
+            }
+
             BlockState stepState = level.getBlockState(stepPos);
             VoxelShape stepShape = stepState.getCollisionShape(level, stepPos);
             if (!stepShape.isEmpty()) {
@@ -207,6 +215,12 @@ public class FallDetector implements BalmClientModule {
         BlockPos current = checkGround;
         int depth = 0;
         while (depth < 64) {
+            FluidState fluid = level.getFluidState(current);
+            if (!fluid.isEmpty()) {
+                // Water or other fluid completely negates fall damage, safe landing!
+                return 0;
+            }
+
             BlockState state = level.getBlockState(current);
             if (!state.isAir() && !state.getCollisionShape(level, current).isEmpty()) {
                 // Landed on a solid block at 'current'
@@ -349,6 +363,11 @@ public class FallDetector implements BalmClientModule {
             for (int dz = -range; dz <= range; dz++) {
                 BlockPos checkFeet = center.offset(dx, 0, dz);
 
+                // Skip positions that are inside water or fluid
+                if (!client.level.getFluidState(checkFeet).isEmpty()) {
+                    continue;
+                }
+
                 BlockState feetState = client.level.getBlockState(checkFeet);
                 VoxelShape feetShape = feetState.getCollisionShape(client.level, checkFeet);
                 if (!feetShape.isEmpty() || isInsurmountableBarrier(client.level, checkFeet)) {
@@ -356,6 +375,10 @@ public class FallDetector implements BalmClientModule {
                 }
 
                 BlockPos checkGround = checkFeet.below();
+                if (!client.level.getFluidState(checkGround).isEmpty()) {
+                    continue;
+                }
+
                 int depth = calculateDangerousDrop(client.level, checkGround, playerBaseY);
                 if (depth >= config.depth) {
                     if (!isLineOfSightBlocked(client.level, center, checkFeet)) {
@@ -432,6 +455,7 @@ public class FallDetector implements BalmClientModule {
 
     private void playOnFall(BlockPos toCheck) {
         assert Minecraft.getInstance().level != null;
+        if (!Minecraft.getInstance().level.getFluidState(toCheck).isEmpty()) return;
         if (!Minecraft.getInstance().level.getBlockState(toCheck).isAir()) return;
 
         if (getDepth(toCheck, config.depth) < config.depth) return;
@@ -447,6 +471,7 @@ public class FallDetector implements BalmClientModule {
         }
 
         assert Minecraft.getInstance().level != null;
+        if (!Minecraft.getInstance().level.getFluidState(blockPos).isEmpty()) return 0;
         if (!(Minecraft.getInstance().level.getBlockState(blockPos).isAir())) return 0;
 
         return 1 + getDepth(blockPos.below(), maxDepth - 1);

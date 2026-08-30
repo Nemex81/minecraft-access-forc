@@ -56,6 +56,8 @@ public class AutoWalkController {
     private int jumpHoldingTicks = 0;
     private int startupGraceTicks = 0;
     private int sprintCooldownTicks = 0;
+    private @Nullable BlockPos waitingClosedDoorPos = null;
+    private int lastAnnouncedStepIndex = -1;
 
     public boolean isActive() {
         return state == State.WALKING || state == State.JUMPING || state == State.SWIMMING;
@@ -140,6 +142,8 @@ public class AutoWalkController {
         this.currentPathIndex = 0;
         this.startupGraceTicks = 0;
         this.sprintCooldownTicks = 0;
+        this.waitingClosedDoorPos = null;
+        this.lastAnnouncedStepIndex = -1;
 
         if (narrate) {
             String msg = reasonKey != null ? I18n.get(reasonKey) : I18n.get("minecraft_access.autowalk.cancelled");
@@ -214,6 +218,15 @@ public class AutoWalkController {
             currentPathIndex++;
             playNodeSoundCue(level, player, config);
 
+            if (Config.getInstance().speechSettings.narrateHints) {
+                int remainingSteps = currentPath.size() - currentPathIndex;
+                if (remainingSteps > 0 && remainingSteps % 5 == 0 && currentPathIndex != lastAnnouncedStepIndex) {
+                    lastAnnouncedStepIndex = currentPathIndex;
+                    String stepMsg = I18n.get("minecraft_access.autowalk.step_progression", NarrationUtils.narrateNumber(remainingSteps));
+                    MainClass.narrate(stepMsg, false);
+                }
+            }
+
             if (currentPathIndex >= currentPath.size()) {
                 finishArrival(client, player, targetObject);
                 return;
@@ -234,6 +247,36 @@ public class AutoWalkController {
             if (distToFinalGoalSq <= 2.0 && currentPathIndex >= currentPath.size() - 1) {
                 finishArrival(client, player, targetObject);
                 return;
+            }
+        }
+
+        // 6.5. Closed Door and Obstacle Interactive Check
+        BlockPos doorCheckPos = targetNodePos;
+        if (!isDoorOrGateClosed(level, doorCheckPos) && isDoorOrGateClosed(level, doorCheckPos.above())) {
+            doorCheckPos = doorCheckPos.above();
+        }
+
+        if (isDoorOrGateClosed(level, doorCheckPos)) {
+            double distToDoorSq = player.blockPosition().distSqr(doorCheckPos);
+            if (distToDoorSq <= 4.5) { // Within 2.1 blocks of closed door
+                client.options.keyUp.setDown(false);
+                player.setSprinting(false);
+                player.lookAt(EntityAnchorArgument.Anchor.EYES, Vec3.atCenterOf(doorCheckPos));
+
+                if (waitingClosedDoorPos == null || !waitingClosedDoorPos.equals(doorCheckPos)) {
+                    waitingClosedDoorPos = doorCheckPos;
+                    if (Config.getInstance().speechSettings.narrateHints) {
+                        MainClass.narrate(I18n.get("minecraft_access.autowalk.step_door_closed"), true);
+                    }
+                }
+                return; // Wait for player or world to open door
+            }
+        } else if (waitingClosedDoorPos != null) {
+            // Door was opened!
+            waitingClosedDoorPos = null;
+            if (Config.getInstance().speechSettings.narrateHints) {
+                String targetName = getTargetName(targetObject);
+                MainClass.narrate(I18n.get("minecraft_access.autowalk.step_door_opened", targetName), true);
             }
         }
 
@@ -358,6 +401,8 @@ public class AutoWalkController {
         this.targetObject = null;
         this.currentPath = List.of();
         this.currentPathIndex = 0;
+        this.waitingClosedDoorPos = null;
+        this.lastAnnouncedStepIndex = -1;
     }
 
     private void lookAtTarget(LocalPlayer player, Object target) {
@@ -413,6 +458,21 @@ public class AutoWalkController {
             case Waypoint wp -> true;
             default -> false;
         };
+    }
+
+    private boolean isDoorOrGateClosed(Level level, BlockPos pos) {
+        if (level == null || pos == null) return false;
+        net.minecraft.world.level.block.state.BlockState state = level.getBlockState(pos);
+        if (state.getBlock() instanceof net.minecraft.world.level.block.DoorBlock) {
+            return !state.getValue(net.minecraft.world.level.block.DoorBlock.OPEN);
+        }
+        if (state.getBlock() instanceof net.minecraft.world.level.block.FenceGateBlock) {
+            return !state.getValue(net.minecraft.world.level.block.FenceGateBlock.OPEN);
+        }
+        if (state.getBlock() instanceof net.minecraft.world.level.block.TrapDoorBlock) {
+            return !state.getValue(net.minecraft.world.level.block.TrapDoorBlock.OPEN);
+        }
+        return false;
     }
 
     private String getTargetName(Object target) {

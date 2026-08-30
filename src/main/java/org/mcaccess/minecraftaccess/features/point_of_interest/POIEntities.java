@@ -94,6 +94,8 @@ public class POIEntities implements BalmClientModule {
         log.trace("POIEntities ended");
     }
 
+    private long lastThreatAlertTime = 0;
+
     private void scanEntitiesAroundPlayer() {
         // initialize
         List<Entity> currentScanResults = new ArrayList<>();
@@ -117,6 +119,33 @@ public class POIEntities implements BalmClientModule {
         }
 
         lastScanResults = currentScanResults;
+
+        // Hostile Threat Sentinel: check for Enemy / Hostile entities within 6 blocks
+        long now = System.currentTimeMillis();
+        if (now - lastThreatAlertTime >= 3500) {
+            Entity closestHostile = null;
+            double minThreatDistSq = 36.0; // 6 blocks
+            for (Entity entity : currentScanResults) {
+                if (entity instanceof net.minecraft.world.entity.monster.Enemy && entity.isAlive()) {
+                    double distSq = player.distanceToSqr(entity);
+                    if (distSq <= minThreatDistSq) {
+                        minThreatDistSq = distSq;
+                        closestHostile = entity;
+                    }
+                }
+            }
+
+            if (closestHostile != null) {
+                lastThreatAlertTime = now;
+                if (player.level() != null) {
+                    player.level().playLocalSound(closestHostile.blockPosition(), SoundEvents.NOTE_BLOCK_BASEDRUM.value(), net.minecraft.sounds.SoundSource.HOSTILE, 0.75f, 0.6f, true);
+                }
+                String entityName = closestHostile.getName().getString();
+                String relPos = org.mcaccess.minecraftaccess.utils.NarrationUtils.narrateRelativePositionOfPlayerAnd(closestHostile.blockPosition());
+                String alertMsg = net.minecraft.client.resources.language.I18n.get("minecraft_access.threat.hostile_nearby", entityName, relPos);
+                MainClass.narrate(alertMsg, true);
+            }
+        }
     }
 
     private void playerSoundAtFoundPOI(boolean isMarking) {
