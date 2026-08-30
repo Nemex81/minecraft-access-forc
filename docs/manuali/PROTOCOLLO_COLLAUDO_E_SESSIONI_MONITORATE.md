@@ -41,10 +41,12 @@ Durante la sessione di test, verificare sistematicamente i seguenti moduli:
 - [ ] **Puntamento & Locking**: Puntamento con tasto dedicato e riproduzione audio posizionale.
 - [ ] **Persistenza File**: Salvataggio coerente in `minecraft/config/minecraft-access/waypoints/singleplayer_<mondo>.json`.
 
-### C. Controlli Tastierino Numerico (`features/NumpadControls.java`)
-- [ ] **Scansione 8 Direzioni**: Tasti Numpad `8`, `2`, `4`, `6`, `7`, `9`, `1`, `3` per interrogare i blocchi circostanti.
-- [ ] **Telemetria Altimetrica**: Tasti `+` (quota occhi), `-` (quota salto/testa), `5` (quota piedi).
-- [ ] **Coordinate & Reset**: Tasti `0` (lettura coordinate XYZ correnti) e `.` / Canc (riallineamento rapido).
+### C. Controlli Tastierino Numerico (`features/NumpadControls.java` - Zero Shift)
+- [ ] **Sfera Visiva Layer 0**: Numpad `8`, `2`, `4`, `6` e diagonali `7`, `9`, `1`, `3` per rotazione visuale a tocchi e continua con bussola acustica.
+- [ ] **Centratura Orizzonte & Stato Layer 0**: Tasto `5` (orizzonte piatto con rintocco sonoro e mirino) e tasto `.` (lettura istantanea Salute e Fame).
+- [ ] **Azioni Layer 0**: Tasto `0` (Attacco/Scavo sinistro) e tasto `Invio` (Uso/Piazzamento/Cibo destro).
+- [ ] **Bussola & Radar Layer 1 (`Ctrl + Numpad`)**: `Ctrl+8,6,2,4` per snap cardinali, `Ctrl+5` per coordinate assolute, `Ctrl+Enter` per puntare POI.
+- [ ] **Diagnostica & Mobilità Layer 2 (`Alt + Numpad`)**: `Alt+8/2` per mano principale/secondaria, `Alt+6` durabilità, `Alt+1/3` Nadir/Zenith, `Alt+0` Auto-Walk.
 
 ### D. Rilevatore Ostacoli & Cadute (`features/ObstacleDetector.java` & `FallDetector.java`)
 - [ ] **Auto-Step Silenzioso**: Nessun falso avviso ostacolo quando si cammina su sentieri battuti, lastre o gradini ($\Delta Y \le 0.60\text{ m}$).

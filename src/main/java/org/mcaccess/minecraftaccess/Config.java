@@ -1,5 +1,8 @@
 package org.mcaccess.minecraftaccess;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import lombok.Getter;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.AutoConfigClient;
@@ -65,6 +68,9 @@ public final class Config implements ConfigData {
     @ConfigEntry.Category("autoWalk")
     @ConfigEntry.Gui.TransitiveObject
     public AutoWalk autoWalk = new AutoWalk();
+    @ConfigEntry.Category("helpSettings")
+    @ConfigEntry.Gui.TransitiveObject
+    public HelpSettings helpSettings = new HelpSettings();
 
     private Config() {
     }
@@ -167,6 +173,12 @@ public final class Config implements ConfigData {
         @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
         public ContinuousFeedbackMode continuousFeedbackMode = ContinuousFeedbackMode.SOUND_ONLY;
 
+        @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
+        public RotationFeedbackMode rotationFeedbackMode = RotationFeedbackMode.CARDINAL_AND_DEGREES;
+
+        @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
+        public CenterHorizonFeedbackMode centerHorizonFeedbackMode = CenterHorizonFeedbackMode.SOUND_AND_TARGET;
+
         @ConfigEntry.BoundedDiscrete(min = 50, max = 500)
         public int scrollDelayMilliseconds = 150;
 
@@ -185,11 +197,25 @@ public final class Config implements ConfigData {
             LEFT_HANDED
         }
 
+        public enum RotationFeedbackMode {
+            CARDINAL_AND_DEGREES,
+            SOUND_AND_VOICE_WITH_DEGREES,
+            CARDINAL_ONLY,
+            SOUND_ONLY,
+            OFF
+        }
+
         public enum ContinuousFeedbackMode {
             SOUND_ONLY,
             VOICE_ONLY,
             SOUND_AND_VOICE,
             OFF
+        }
+
+        public enum CenterHorizonFeedbackMode {
+            TARGET_ONLY,
+            SOUND_AND_TARGET,
+            SOUND_VOICE_AND_TARGET
         }
     }
 
@@ -407,6 +433,8 @@ public final class Config implements ConfigData {
                 Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "save_waypoint"),
                 Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "manage_waypoints"),
                 Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "auto_walk"),
+                Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "academy_and_help"),
+                Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "quick_help"),
         };
         @ConfigEntry.Gui.CollapsibleObject
         public ShortcutBar shortcutBar = new ShortcutBar();
@@ -466,6 +494,27 @@ public final class Config implements ConfigData {
 
         public AutoWalk() {
         }
+    }
+
+    public static final class HelpSettings {
+        public boolean firstRunCompleted = false;
+        public boolean mentorEnabled = true;
+        public boolean autoAdvanceMissions = true;
+        public boolean helpPriorityOverride = true;
+        @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
+        public HardwarePreset hardwarePreset = HardwarePreset.DESKTOP_NUMPAD;
+        @ConfigEntry.Gui.Excluded
+        public List<String> completedMissions = new ArrayList<>();
+        @ConfigEntry.Gui.Excluded
+        public List<String> deliveredHints = new ArrayList<>();
+
+        public HelpSettings() {
+        }
+    }
+
+    public enum HardwarePreset {
+        DESKTOP_NUMPAD,
+        LAPTOP_KEYS
     }
 
 }

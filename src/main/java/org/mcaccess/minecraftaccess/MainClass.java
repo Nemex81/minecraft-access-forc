@@ -160,6 +160,11 @@ public final class MainClass {
         registrars.registerModule(new TimeIndicator());
         registrars.registerModule(new XPIndicator());
         registrars.registerModule(autoWalkManager = new org.mcaccess.minecraftaccess.features.autowalk.AutoWalkManager());
+        registrars.registerModule(new org.mcaccess.minecraftaccess.features.context.PlayerContextEngine());
+        registrars.registerModule(new org.mcaccess.minecraftaccess.features.mentor.ContextualMentor());
+        registrars.registerModule(new org.mcaccess.minecraftaccess.features.academy.AcademyManager());
+        registrars.registerModule(new org.mcaccess.minecraftaccess.features.help.FirstRunHandler());
+        registrars.registerModule(new org.mcaccess.minecraftaccess.features.help.QuickHelpKey());
     }
 
     /**

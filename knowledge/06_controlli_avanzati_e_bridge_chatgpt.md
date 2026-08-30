@@ -18,45 +18,43 @@ La mod implementa una mappatura completa per eliminare qualsiasi uso del mouse:
 
 ---
 
-## 2. Mappa Architetturale dei 4 Layer del Tastierino Numerico (Numpad Controls)
+## 2. Mappa Architetturale dei 3 Layer del Tastierino Numerico (Numpad Controls - Zero Shift)
 
-Il modulo `NumpadControls.java` organizza l'intera griglia 3x3 del tastierino numerico su 4 layer funzionali:
+Il modulo `NumpadControls.java` organizza l'intera griglia del tastierino numerico su 3 layer funzionali privi di `Shift` (per prevenire ogni accovacciamento o rallentamento involontario):
 
-### A. Layer 0 (Pressione Diretta — Movimento Visuale & Azioni)
+### A. Layer 0 (Pressione Diretta — Movimento Visuale, Azioni, Stato & Hotbar)
 - **`8` / `2`**: Guarda in Alto / Guarda in Basso (tap $15^\circ$, hold continuo).
-- **`4` / `6`**: Guarda a Sinistra / Guarda a Destra (tap $15^\circ$, hold continuo con **Bussola Acustica Tattile** e lettura direzione finale al rilascio).
+- **`4` / `6`**: Guarda a Sinistra / Guarda a Destra (rotazione a scatti dinamici con annuncio di settore e gradi bussola reali $0^\circ \dots 359^\circ$ configurabile con `rotationFeedbackMode`, e rintocco acustico modulato a 3 frequenze).
 - **`7` / `9`**: Guarda in Alto-Sinistra / Guarda in Alto-Destra (diagonali 2D combinate sia a scatti sia continue).
 - **`1` / `3`**: Guarda in Basso-Sinistra / Guarda in Basso-Destra (diagonali 2D combinate sia a scatti sia continue).
-- **`5`**: Centra Orizzonte (azzera solo il Pitch a $0^\circ$ preservando lo Yaw orizzontale reale) e legge il blocco nel mirino.
-- **`0`**: Tasto Azione Primaria (Attacca / Scava).
-- **`.`**: Tasto Azione Secondaria (Usa / Piazza).
-- **`+` / `-`**: Scorrimento Slot Hotbar Successivo / Precedente.
-- **`*`**: Tasto Centrale Mouse (Seleziona Blocco).
-- **`/`**: Sblocca Puntamento / Bersaglio.
+- **`5`**: **Centra Orizzonte** (azzera solo il Pitch a $0^\circ$, rintocco sonoro `playSnapSound` e voce opzionale `centerHorizonFeedbackMode`) e legge il blocco nel mirino.
+- **`0`**: **Azione Primaria** (Attacca / Rompi blocco / Scava con click sinistro simulato).
+- **`Invio`**: **Azione Secondaria** (Usa oggetto / Piazza blocco / Mangia cibo con click destro simulato).
+- **`.`**: **Stato Istantaneo Giocatore** (Salute, Fame e Livello a 1 tocco rapido).
+- **`+`**: **Seleziona Blocco nel Mirino** (Pick Block / Tasto Centrale Mouse).
+- **`-`**: **Sblocca Puntamento / Bersaglio** (Unlock lock-on).
+- **`/` e `*`**: Scorrimento Barra Rapida Slot Precedente / Successivo.
 
-### B. Layer 1 (Shift + Numpad — Radar POI & Waypoints)
-- **`Shift + 7` / `Shift + 9`**: Bersaglio POI Precedente / Successivo.
-- **`Shift + 4` / `Shift + 6`**: Categoria POI Precedente / Successiva.
-- **`Shift + 5`**: Guarda verso l'oggetto/blocco puntato dal POI attivo.
-- **`Shift + 1` / `Shift + 2` / `Shift + 3`**: Bersaglio Rapido Entità / Blocco / Qualsiasi più vicino.
-- **`Shift + 8`**: Blocca/Sblocca puntamento (Lock-on).
-- **`Shift + 0`**: Contrassegna / Rimuovi contrassegno PDI.
-
-### C. Layer 2 (Ctrl + Numpad — Snap Assoluti & Coordinate)
-- **`Ctrl + 8` / `Ctrl + 6` / `Ctrl + 2` / `Ctrl + 4`**: Allinea istantaneamente lo sguardo a Nord, Est, Sud, Ovest.
-- **`Ctrl + 7` / `Ctrl + 9` / `Ctrl + 1` / `Ctrl + 3`**: Allinea istantaneamente lo sguardo a Nord-Ovest, Nord-Est, Sud-Ovest, Sud-Est.
+### B. Layer 1 (`Ctrl + Numpad` — Bussola Assoluta, Snap Magnetici & Radar POI)
+- **`Ctrl + 8` / `Ctrl + 6` / `Ctrl + 2` / `Ctrl + 4`**: Allinea istantaneamente lo sguardo a Nord, Est, Sud, Ovest (con rintocco acustico ed annuncio).
+- **`Ctrl + 7` / `Ctrl + 9` / `Ctrl + 1` / `Ctrl + 3`**: Allinea istantaneamente a Nord-Ovest, Nord-Est, Sud-Ovest, Sud-Est.
 - **`Ctrl + 5`**: Vocalizza le coordinate assolute $X, Y, Z$ del giocatore.
+- **`Ctrl + .`**: **Vocalizza le coordinate assolute del Blocco/Entità nel Mirino**.
 - **`Ctrl + 0`**: Ruota lo sguardo di $180^\circ$ alle spalle (*Look Behind*).
+- **`Ctrl + /` e `Ctrl + *`**: Categoria POI Precedente / Successiva (Blocchi, Mob, Giocatori).
+- **`Ctrl + -` e `Ctrl + +`**: Oggetto POI Precedente / Successivo nella categoria.
+- **`Ctrl + Invio`**: **Guarda l'Oggetto Puntato dal Radar POI** (*Look at Current Object*).
 
-### D. Layer 3 (Alt + Numpad — Status, Mobilità & Vertici)
-- **`Alt + 8`**: Stato Completo Giocatore (Salute, Fame, Livello).
-- **`Alt + 4` / `Alt + 6`**: Oggetto in Mano Principale / Mano Secondaria.
-- **`Alt + 5`**: Effetti di Stato Attivi.
-- **`Alt + 2`**: Durabilità dell'oggetto impugnato.
+### C. Layer 2 (`Alt + Numpad` — Diagnostica, Equipaggiamento, Vertici & Mobilità)
+- **`Alt + 8` / `Alt + 2`**: Oggetto in Mano Principale / Mano Secondaria.
+- **`Alt + 4`**: Effetti di Stato Attivi (Pozioni, Veleno, Buff, Debuff).
+- **`Alt + 6`**: Durabilità residua dell'oggetto impugnato.
+- **`Alt + 5`**: **Leggi Direzione & Inclinazione Sguardo** (annuncia direzione orizzontale e gradi di pitch verticale).
 - **`Alt + 1`**: Guarda dritto ai piedi (**Nadir**, Pitch $+90^\circ$ diretto senza singolarità).
 - **`Alt + 3`**: Guarda dritto in cielo (**Zenith**, Pitch $-90^\circ$ diretto senza singolarità).
-- **`Alt + 0`**: Avvia marcia automatica (*Auto-Walk*) verso il bersaglio agganciato.
+- **`Alt + 0`**: Avvia / Ferma marcia automatica (**Auto-Walk**).
 - **`Alt + .`**: Alterna corsa/camminata nel navigatore automatico.
+- **`Alt + Invio`**: Apri **Access Menu `F4`**.
 
 ---
 

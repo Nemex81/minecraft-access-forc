@@ -82,4 +82,32 @@ public final class PlayerPositionUtils {
     public static String getHorizontalFacingDirectionInWords() {
         return I18n.get("minecraft_access.direction." + getHorizontalFacing());
     }
+
+    /**
+     * Standard geographic 360-degree compass heading (0 = North, 90 = East, 180 = South, 270 = West).
+     */
+    public static int getCompassDegrees() {
+        assert CLIENT.player != null;
+        float rawYaw = (CLIENT.player.getYRot() % 360.0f + 360.0f) % 360.0f;
+        int degrees = Math.round((rawYaw + 180.0f) % 360.0f);
+        return degrees % 360;
+    }
+
+    /**
+     * Returns the horizontal direction and compass degrees (e.g. "Nord, 0 gradi", "Nord-Est, 45 gradi").
+     */
+    public static String getHorizontalFacingAndDegreesInWords() {
+        String direction = getHorizontalFacingDirectionInWords();
+        int deg = getCompassDegrees();
+        return direction + ", " + I18n.get("minecraft_access.direction.degrees", NarrationUtils.narrateNumber(deg));
+    }
+
+    /**
+     * Returns full facing direction, optionally including horizontal degrees and vertical pitch.
+     */
+    public static String getFullFacingInWords(boolean includeDegrees) {
+        String h = includeDegrees ? getHorizontalFacingAndDegreesInWords() : getHorizontalFacingDirectionInWords();
+        String v = getVerticalFacingDirectionInWords();
+        return I18n.get("minecraft_access.other.facing_direction", h + (v != null ? ", " + v : ""));
+    }
 }

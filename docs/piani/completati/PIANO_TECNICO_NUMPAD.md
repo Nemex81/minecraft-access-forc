@@ -115,7 +115,7 @@ Il modulo opera in **parallelo e perfetta coesistenza** con i controlli da tasti
 
 Tutti i binding sono registrati nella categoria `KeyMappingCategories.NUMPAD_CONTROLS` e risultano rimappabili dall'utente nel menu standard di Minecraft (`Opzioni...` -> `Controlli...` -> `Assegnazione tasti...`).
 
-### 3.1 Layer 0: Numpad Diretto (Preset Destrorso)
+### 3.1 Layer 0: Numpad Diretto (Preset Destrorso Ergonomico)
 
 | Tasto GLFW | Modificatore | ID Binding Kuma | Azione / Metodo Chiamato (Dual-Mode: Tap Discreto / Hold Continuo) |
 | :--- | :--- | :--- | :--- |
@@ -123,42 +123,22 @@ Tutti i binding sono registrati nella categoria `KeyMappingCategories.NUMPAD_CON
 | `KEY_NUMPAD2` | Nessuno | `numpad.camera.look_down` | Guarda in basso (`normalRotatingAngle` su tap / Rotazione continua su hold) |
 | `KEY_NUMPAD4` | Nessuno | `numpad.camera.look_left` | Ruota a sinistra (`normalRotatingAngle` su tap / Rotazione continua su hold) |
 | `KEY_NUMPAD6` | Nessuno | `numpad.camera.look_right` | Ruota a destra (`normalRotatingAngle` su tap / Rotazione continua su hold) |
-| `KEY_NUMPAD7` | Nessuno | `numpad.camera.pitch_up` | Inclinazione rapida in alto (`modifiedRotatingAngle` / Hold continuo) |
-| `KEY_NUMPAD9` | Nessuno | `numpad.camera.pitch_down` | Inclinazione rapida in basso (`modifiedRotatingAngle` / Hold continuo) |
-| `KEY_NUMPAD1` | Nessuno | `numpad.camera.look_nadir` | Sguardo a 90° verso i piedi (`Orientation.DOWN`) |
-| `KEY_NUMPAD3` | Nessuno | `numpad.camera.look_zenith` | Sguardo a 90° verso il cielo (`Orientation.UP`) |
-| `KEY_NUMPAD5` | Nessuno | `numpad.camera.center_crosshair` | Centra orizzonte (Pitch 0°) + Narra mirino |
-| `KEY_NUMPAD0` | Nessuno | `numpad.camera.narrate_facing` | Annuncia direzione orizzontale e verticale |
-| `KEY_NUMPADDECIMAL` | Nessuno | `numpad.camera.snap_cardinal` | Snap orizzontale al punto cardinale più vicino (con audio cue) |
-| `KEY_NUMPADADD` | Nessuno | `numpad.mouse.left_click` | `MouseUtils.Key.LEFT.press()` / `release()` (Attacco/Scavo Hold) |
-| `KEY_NUMPADENTER` | Nessuno | `numpad.mouse.right_click` | `MouseUtils.Key.RIGHT.press()` / `release()` (Uso/Piazza Hold) |
+| `KEY_NUMPAD7` | Nessuno | `numpad.camera.look_up_left` | Diagonale Alto-Sinistra (`modifiedRotatingAngle` / Hold continuo) |
+| `KEY_NUMPAD9` | Nessuno | `numpad.camera.look_up_right` | Diagonale Alto-Destra (`modifiedRotatingAngle` / Hold continuo) |
+| `KEY_NUMPAD1` | Nessuno | `numpad.camera.look_down_left` | Diagonale Basso-Sinistra |
+| `KEY_NUMPAD3` | Nessuno | `numpad.camera.look_down_right` | Diagonale Basso-Destra |
+| `KEY_NUMPAD5` | Nessuno | `numpad.camera.center_crosshair` | Centra orizzonte (Pitch 0°, rintocco sonoro `playSnapSound` e voce opzionale) + Narra mirino |
+| `KEY_NUMPAD0` | Nessuno | `numpad.mouse.left_click` | **Azione Primaria**: Attacco / Scavo (Simulazione click sinistro con hold) |
+| `KEY_NUMPADENTER` | Nessuno | `numpad.mouse.right_click` | **Azione Secondaria**: Usa / Piazza / Mangia (Simulazione click destro con hold) |
+| `KEY_NUMPADDECIMAL` | Nessuno | `numpad.status.player_all` | **Stato Giocatore Istantaneo**: Lettura Salute, Fame e Livello a 1 tocco |
+| `KEY_NUMPADADD` | Nessuno | `numpad.mouse.middle_click` | **Seleziona Blocco**: Pick Block nel mirino (Simulazione tasto centrale) |
 | `KEY_NUMPADSUBTRACT` | Nessuno | `numpad.action.unlock` | `MainClass.poiManager.lockingHandler.unlock(true, true)` |
 | `KEY_NUMPADDIVIDE` | Nessuno | `numpad.hotbar.scroll_prev` | `MouseUtils.Wheel.UP.scroll()` (Slot Hotbar prec.) |
 | `KEY_NUMPADMULTIPLY` | Nessuno | `numpad.hotbar.scroll_next` | `MouseUtils.Wheel.DOWN.scroll()` (Slot Hotbar succ.) |
 
 ---
 
-### 3.2 Layer 1: `Shift` + Numpad (Scansione POI & Object Tracker)
-
-| Tasto GLFW | Modificatore | ID Binding Kuma | Azione / Metodo Chiamato |
-| :--- | :--- | :--- | :--- |
-| `KEY_NUMPAD8` | `SHIFT` | `numpad.poi.item_prev` | `MainClass.poiManager.objectTracker.moveObject(-1)` |
-| `KEY_NUMPAD2` | `SHIFT` | `numpad.poi.item_next` | `MainClass.poiManager.objectTracker.moveObject(1)` |
-| `KEY_NUMPAD4` | `SHIFT` | `numpad.poi.group_prev` | `MainClass.poiManager.objectTracker.moveGroup(-1)` |
-| `KEY_NUMPAD6` | `SHIFT` | `numpad.poi.group_next` | `MainClass.poiManager.objectTracker.moveGroup(1)` |
-| `KEY_NUMPAD5` | `SHIFT` | `numpad.poi.look_at_target` | `MainClass.poiManager.objectTracker.lookAtCurrentObject()` |
-| `KEY_NUMPAD0` | `SHIFT` | `numpad.poi.target_nearest_any` | `MainClass.poiManager.objectTracker.targetNearestAny()` |
-| `KEY_NUMPAD1` | `SHIFT` | `numpad.poi.target_nearest_entity` | `MainClass.poiManager.objectTracker.targetNearestEntity()` |
-| `KEY_NUMPAD3` | `SHIFT` | `numpad.poi.target_nearest_block` | `MainClass.poiManager.objectTracker.targetNearestBlock()` |
-| `KEY_NUMPADENTER` | `SHIFT` | `numpad.poi.lock_target` | `MainClass.poiManager.lockingHandler.relock()` |
-| `KEY_NUMPADDECIMAL` | `SHIFT` | `numpad.poi.mark_target` | `MainClass.poiManager.poiMarking.markTarget()` |
-| `KEY_NUMPADSUBTRACT` | `SHIFT` | `numpad.poi.unmark_target` | `MainClass.poiManager.poiMarking.unmarkTarget()` |
-| `KEY_NUMPADDIVIDE` | `SHIFT` | `numpad.poi.waypoint_prev` | Selezione rapida waypoint precedente |
-| `KEY_NUMPADMULTIPLY` | `SHIFT` | `numpad.poi.waypoint_next` | Selezione rapida waypoint successivo |
-
----
-
-### 3.3 Layer 2: `Ctrl` + Numpad (Orientamento Assoluto & Punti Cardinali)
+### 3.2 Layer 1: `Ctrl` + Numpad (Bussola Assoluta, Punti Cardinali & Radar POI)
 
 | Tasto GLFW | Modificatore | ID Binding Kuma | Azione / Metodo Chiamato |
 | :--- | :--- | :--- | :--- |
@@ -170,24 +150,31 @@ Tutti i binding sono registrati nella categoria `KeyMappingCategories.NUMPAD_CON
 | `KEY_NUMPAD9` | `CONTROL` | `numpad.orient.north_east` | Snap a **Nord-Est** |
 | `KEY_NUMPAD1` | `CONTROL` | `numpad.orient.south_west` | Snap a **Sud-Ovest** |
 | `KEY_NUMPAD3` | `CONTROL` | `numpad.orient.south_east` | Snap a **Sud-Est** |
-| `KEY_NUMPAD5` | `CONTROL` | `numpad.orient.look_behind` | Ruota di 180° rispetto all'orientamento attuale |
-| `KEY_NUMPAD0` | `CONTROL` | `numpad.orient.narrate_coords` | Lettura coordinate X, Y, Z |
+| `KEY_NUMPAD5` | `CONTROL` | `numpad.orient.narrate_coordinates` | Lettura coordinate assolute X, Y, Z |
 | `KEY_NUMPADDECIMAL` | `CONTROL` | `numpad.orient.narrate_target_coords` | Lettura coordinate del blocco/entità puntato |
-| `KEY_NUMPADENTER` | `CONTROL` | `numpad.mouse.middle_click` | `MouseUtils.Key.MIDDLE.press()` / `release()` (Pick Block) |
+| `KEY_NUMPAD0` | `CONTROL` | `numpad.orient.look_behind` | Ruota di 180° alle spalle |
+| `KEY_NUMPADDIVIDE` | `CONTROL` | `numpad.poi.group_prev` | Categoria POI precedente |
+| `KEY_NUMPADMULTIPLY` | `CONTROL` | `numpad.poi.group_next` | Categoria POI successiva |
+| `KEY_NUMPADSUBTRACT` | `CONTROL` | `numpad.poi.item_prev` | Oggetto POI precedente |
+| `KEY_NUMPADADD` | `CONTROL` | `numpad.poi.item_next` | Oggetto POI successivo |
+| `KEY_NUMPADENTER` | `CONTROL` | `numpad.poi.look_at_current_object` | Guarda l'oggetto puntato dal Radar POI |
 
 ---
 
-### 3.4 Layer 3: `Alt` + Numpad (Stato Giocatore, Ambiente & HUD)
+### 3.3 Layer 2: `Alt` + Numpad (Diagnostica, Vertici & Mobilità Automatica)
 
 | Tasto GLFW | Modificatore | ID Binding Kuma | Azione / Metodo Chiamato |
 | :--- | :--- | :--- | :--- |
-| `KEY_NUMPAD5` | `ALT` | `numpad.status.player_all` | Lettura stato generale (Salute, Fame, Armatura, Aria) |
-| `KEY_NUMPAD8` | `ALT` | `numpad.status.mainhand` | `NarrateHeldItem.narrateMainHand()` |
-| `KEY_NUMPAD2` | `ALT` | `numpad.status.offhand` | `NarrateHeldItem.narrateOffHand()` |
-| `KEY_NUMPAD4` | `ALT` | `numpad.status.effects` | `PlayerStatus.narrateEffects()` |
+| `KEY_NUMPAD8` | `ALT` | `numpad.status.mainhand` | Lettura oggetto in mano principale |
+| `KEY_NUMPAD2` | `ALT` | `numpad.status.offhand` | Lettura oggetto in mano secondaria |
+| `KEY_NUMPAD4` | `ALT` | `numpad.status.effects` | Lettura effetti di stato attivi |
 | `KEY_NUMPAD6` | `ALT` | `numpad.status.durability` | Lettura durabilità strumento impugnato |
-| `KEY_NUMPAD7` | `ALT` | `numpad.status.biome_weather` | Lettura Bioma e condizione meteo |
-| `KEY_NUMPAD9` | `ALT` | `numpad.status.light_time` | Lettura livello luce e ora del giorno |
+| `KEY_NUMPAD5` | `ALT` | `numpad.camera.narrate_facing` | Lettura direzione orizzontale e inclinazione verticale in gradi |
+| `KEY_NUMPAD1` | `ALT` | `numpad.camera.look_nadir` | Guarda dritto ai piedi (**Nadir** a +90°) |
+| `KEY_NUMPAD3` | `ALT` | `numpad.camera.look_zenith` | Guarda dritto in cielo (**Zenith** a -90°) |
+| `KEY_NUMPAD0` | `ALT` | `numpad.action.auto_walk` | Toggle Marcia Automatica (**Auto-Walk**) |
+| `KEY_NUMPADDECIMAL` | `ALT` | `numpad.action.toggle_sprint` | Toggle Corsa / Camminata in Auto-Walk |
+| `KEY_NUMPADENTER` | `ALT` | `numpad.status.access_menu` | Apertura Access Menu (`F4`) |
 | `KEY_NUMPADENTER` | `ALT` | `numpad.status.access_menu` | Apertura/Chiusura Access Menu (`F4`) |
 | `KEY_NUMPADADD` | `ALT` | `numpad.status.bossbar_next` | Lettura bossbar successiva |
 | `KEY_NUMPADSUBTRACT` | `ALT` | `numpad.status.bossbar_prev` | Lettura bossbar precedente |

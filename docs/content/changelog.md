@@ -4,17 +4,23 @@ title: "Changelog"
 
 <!-- INSERT CHANGELOG HERE -->
 
-## Release v1.12.0 (2026-07)
+## Release v1.12.0 (2026-08 - Development Update)
 ### New Features
-- Added a new weather status button in the access menu which will report the current weather for the biome you are in as well as the moon phase, if it is night
-- Added an announcement when it becomes day, afternoon, and night for players
-- Added an API for client-side mods to provide additional information.
-- You can now press the new fuel status key (bound to U by default) in inventories to hear fuel and processing status information if applicable
-- Updated to Minecraft version 1.21.11
-- Many more keys are now rebindable, including all key combinations, as well as some previously hard coded key values
-- Added config for narrating the built in Minecraft narration hints involving interaction and positional hints (defaulted to enabled)
-- Both Fabric and NeoForge now share a single mod jar file, reducing complexity
-- The mod now runs on game version 26.2
+- **Interactive Onboarding, Novice Academy & Contextual Mentor**:
+  - `PlayerContextEngine`: Real-time immutable snapshot engine sampling player environment, stats, threats, and game mode.
+  - `HelpNarrator`: Priority speech shield protecting instructional guidance and suppressing scanner chatter during tutorials, with distinct auditory cues (`NOTE_BLOCK_BELL` and `EXPERIENCE_ORB_PICKUP`).
+  - `AcademyManager`: Guided interactive academy missions covering movement, orientation, wood collection, crafting, and combat with game mode guard rails (e.g. flying mission restricted from survival mode).
+  - `MentorSystem`: Proactive contextual mentor delivering gentle assistance on idle situations, wall collisions, extreme darkness, and hunger.
+  - `QuickHelp`: Tabbed instant key reference accessible from the Access Menu or F1, with delayed welcome screen on first launch.
+- **Numpad Ergonomic Redesign (3-Layer Architecture - Zero Shift)**:
+  - Completely removed `Shift` modifier to eliminate unintentional crouching and deceleration during gameplay.
+  - **Layer 0 (Direct)**: Attack/Mine on `0`, Use/Place/Eat on `Enter`, Instant Health/Hunger status on `.`, Center Horizon + crosshair narration on `5`, Pick Block on `+`, Unlock on `-`.
+  - **Layer 1 (`Ctrl + Numpad`)**: 8-way compass snap, Player XYZ coordinates on `Ctrl + 5`, Targeted block/entity coordinates on `Ctrl + .`, Look behind (180°) on `Ctrl + 0`, POI object tracker navigation.
+  - **Layer 2 (`Alt + Numpad`)**: Full compass direction and vertical pitch on `Alt + 5`, equipment and effects inspection, Nadir/Zenith vertical look, Auto-Walk toggle.
+- **360° Dynamic Compass Rotation & Feedback Hierarchy**:
+  - Continuous calculation of standard 360° heading ($0^\circ \dots 359^\circ$) adapting to any custom user rotation step.
+  - Added `RotationFeedbackMode` configurable option with modulated sound pitches for cardinal, intercardinal, and intermediate angles.
+- **Mouse Simulation Fix**: Corrected state transitions with `wasDown()` for continuous mining and placing on numpad keys.
 
 ### Others
 - Minecraft Access now uses Balm instead of Architectury API, this should hopefully lead to increase stability and faster version updates, though cloth Config is not controlled by the Balm devs, and is another dependency

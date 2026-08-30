@@ -14,64 +14,42 @@ Il tastierino numerico (Numpad) offre un vantaggio ergonomico e cognitivo fondam
 
 ---
 
-## 2. Schema a Livelli Funzionali (Layer Architecture)
+## 2. Schema a Livelli Funzionali (Layer Architecture - Zero Shift)
 
-* **Livello 0 (Numpad liscio - Diretto)**: Telecamera, Sguardo relativo & Interazione/Mouse (Combattimento / Scavo / Uso).
-* **Livello 1 (`Shift` + Numpad)**: Scansione POI, Navigazione bersagli (Object Tracker) & Lock-on.
-* **Livello 2 (`Ctrl` + Numpad)**: Orientamento Assoluto (Punti Cardinali, Zenith, Nadir, Snap e Coordinate).
-* **Livello 3 (`Alt` + Numpad)**: Ispezione Ambiente, Stato Giocatore, HUD & Utility Rapide.
+* **Livello 0 (Numpad Diretto)**: Telecamera, Sguardo, Centratura Orizzonte con rintocco, Azione Primaria (Attacco su `0`), Azione Secondaria (Uso su `Enter`), Stato Istantaneo su `.`, Pick Block su `+`, Unlock su `-`, Hotbar su `/` e `*`.
+* **Livello 1 (`Ctrl` + Numpad)**: Orientamento Assoluto, Snap Magnetici a 45°/90°, Coordinate XYZ, Look Behind & Radar POI.
+* **Livello 2 (`Alt` + Numpad)**: Diagnostica Giocatore, Mano Principale/Secondaria, Durabilità, Effetti, Vertici Nadir/Zenith, Auto-Walk & Access Menu (`F4`).
 
 ---
 
-## 3. Mappatura Dettagliata dei Tasti (Preset Standard / Destrorso)
+## 3. Mappatura Dettagliata dei Tasti (Preset Standard Ergonomico)
 
-### 🔹 Livello 0: Numpad Diretto (Telecamera & Azioni di Base)
-
-### 2.1 Livello 0: Numpad Diretto (Navigazione & Interazione Base)
+### 🔹 Livello 0: Numpad Diretto (Navigazione, Azioni & Stato)
 *Nessun modificatore premuto (Tastierino liscio)*
 
 * **Rotazione Sguardo a Croce (Dual-Mode: Scatto discreto su tocco rapido / Rotazione continua su tenuta prolungata dopo 200ms)**:
   - `Numpad 8`: Guarda in Alto (Pitch Up / +15° o +45°) / Rotazione continua su hold
   - `Numpad 2`: Guarda in Basso (Pitch Down / -15° o -45°) / Rotazione continua su hold
-  - `Numpad 4`: Ruota a Sinistra (Yaw Left / -15° o -45°) / Rotazione continua su hold
-  - `Numpad 6`: Ruota a Destra (Yaw Right / +15° o +45°) / Rotazione continua su hold
+  - `Numpad 4`: Ruota a Sinistra (Yaw Left / -15° o -45°) / Rotazione continua su hold con bussola acustica
+  - `Numpad 6`: Ruota a Destra (Yaw Right / +15° o +45°) / Rotazione continua su hold con bussola acustica
 * **Diagonali e Livellamento Rapido**:
-  - `Numpad 7`: Inclinazione rapida verso l'alto (+45°) / Rotazione continua su hold
-  - `Numpad 9`: Inclinazione rapida verso il basso (-45°) / Rotazione continua su hold
-  - `Numpad 1`: Guarda dritto verso il basso (Nadir / Piedi a 90°)
-  - `Numpad 3`: Guarda dritto verso l'alto (Zenith / Cielo a 90°)
-  - `Numpad 5`: **Centra Orizzonte e Leggi Mirino** (Pitch a 0° e lettura blocco/entità puntato)
-  - `Numpad 0`: **Leggi Direzione Sguardo** (annuncia direzione orizzontale e inclinazione)
-  - `Numpad .`: **Snap Cardinale Rapido** (allinea al punto cardinale orizzontale più vicino con audio cue) |
-| **Numpad +** | Tasto Sinistro Mouse | Attacca / Rompi blocco (supporta pressione e mantenimento) |
-| **Numpad Enter** | Tasto Destro Mouse | Usa oggetto / Piazza blocco / Interagisci (supporta hold) |
-| **Numpad -** | Sblocca mira (Unlock) | Sblocca il lock-on corrente |
-| **Numpad /** | Hotbar Indietro | Simula rotella mouse in su (slot precedente) |
-| **Numpad \*** | Hotbar Avanti | Simula rotella mouse in giù (slot successivo) |
+  - `Numpad 7`: Diagonale Alto-Sinistra / Rotazione continua su hold
+  - `Numpad 9`: Diagonale Alto-Destra / Rotazione continua su hold
+  - `Numpad 1`: Diagonale Basso-Sinistra / Rotazione continua su hold
+  - `Numpad 3`: Diagonale Basso-Destra / Rotazione continua su hold
+  - `Numpad 5`: **Centra Orizzonte e Leggi Mirino** (Pitch a 0°, rintocco sonoro `playSnapSound` e voce opzionale)
+* **Azioni, Stato & Utility**:
+  - `Numpad 0`: **Azione Primaria**: Attacca / Rompi blocco / Scava (supporta pressione e mantenimento)
+  - `Numpad Enter`: **Azione Secondaria**: Usa oggetto / Piazza blocco / Mangia (supporta hold)
+  - `Numpad .`: **Stato Istantaneo Giocatore**: Lettura Salute, Fame e Livello a 1 tocco
+  - `Numpad +`: **Seleziona Blocco**: Pick Block nel mirino (Tasto centrale mouse)
+  - `Numpad -`: **Sblocca Mira (Unlock)**: Sblocca il lock-on corrente
+  - `Numpad /`: **Hotbar Indietro**: Slot precedente
+  - `Numpad *`: **Hotbar Avanti**: Slot successivo
 
 ---
 
-### 🔹 Livello 1: `Shift` + Numpad (Scansione, POI & Object Tracker)
-
-| Combinazione | Funzione Proposta | Descrizione / Azione |
-| :--- | :--- | :--- |
-| **Shift + 8** | Elemento Precedente | Naviga all'oggetto/entità precedente nel gruppo (`Page Up`) |
-| **Shift + 2** | Elemento Successivo | Naviga all'oggetto/entità successivo nel gruppo (`Page Down`) |
-| **Shift + 4** | Categoria Precedente | Passa al gruppo POI precedente (Ostili, Passivi, Blocchi, Waypoints) |
-| **Shift + 6** | Categoria Successiva | Passa al gruppo POI successivo |
-| **Shift + 5** | Guarda Bersaglio POI | Ruota la telecamera direttamente verso l'oggetto selezionato (`Look at current object`) |
-| **Shift + 0** | Bersaglio più vicino (Qualsiasi) | Punta istantaneamente all'oggetto o mob più vicino (`Target nearest any`) |
-| **Shift + 1** | Entità più vicina | Punta all'entità più vicina (`Target nearest entity`) |
-| **Shift + 3** | Blocco più vicino | Punta al blocco più vicino (`Target nearest block`) |
-| **Shift + Enter** | Lock-on (Blocca visuale) | Aggancia la telecamera al bersaglio selezionato (`Y` - Lock on target) |
-| **Shift + .** | Contrassegna (Mark Target) | Imposta un marker sul blocco/entità nel mirino |
-| **Shift + -** | Rimuovi Contrassegno | Rimuove il marker attivo |
-| **Shift + /** | Waypoint Precedente | Cicla direttamente tra i waypoint salvati |
-| **Shift + \*** | Waypoint Successivo | Cicla direttamente tra i waypoint salvati |
-
----
-
-### 🔹 Livello 2: `Ctrl` + Numpad (Orientamento Assoluto & Punti Cardinali)
+### 🔹 Livello 1: `Ctrl` + Numpad (Orientamento Assoluto & Radar POI)
 
 | Combinazione | Funzione Proposta | Descrizione |
 | :--- | :--- | :--- |
@@ -83,27 +61,31 @@ Il tastierino numerico (Numpad) offre un vantaggio ergonomico e cognitivo fondam
 | **Ctrl + 9** | Gira a Nord-Est | Allineamento diagonale |
 | **Ctrl + 1** | Gira a Sud-Ovest | Allineamento diagonale |
 | **Ctrl + 3** | Gira a Sud-Est | Allineamento diagonale |
-| **Ctrl + 5** | Guarda Indietro (180°) | Gira istantaneamente lo sguardo alle proprie spalle |
-| **Ctrl + 0** | Coordinate X, Y, Z | Lettura vocale delle coordinate spaziali correnti del giocatore |
-| **Ctrl + .** | Coordinate Bersaglio | Lettura coordinate del blocco/entità puntato |
-| **Ctrl + Enter** | Tasto Centrale Mouse | Simula il tasto centrale (Pick block) |
+| **Ctrl + 5** | Coordinate X, Y, Z | Lettura vocale delle coordinate spaziali correnti del giocatore |
+| **Ctrl + .** | Coordinate Bersaglio | Lettura coordinate assolute del blocco/entità puntato |
+| **Ctrl + 0** | Guarda Indietro (180°) | Gira istantaneamente lo sguardo alle proprie spalle |
+| **Ctrl + /** | Categoria POI Prec. | Passa al gruppo POI precedente (Ostili, Passivi, Blocchi, Waypoints) |
+| **Ctrl + \*** | Categoria POI Succ. | Passa al gruppo POI successivo |
+| **Ctrl + -** | Oggetto POI Prec. | Naviga all'oggetto/entità precedente nel gruppo |
+| **Ctrl + +** | Oggetto POI Succ. | Naviga all'oggetto/entità successivo nel gruppo |
+| **Ctrl + Enter** | Guarda Bersaglio POI | Ruota la telecamera direttamente verso l'oggetto selezionato |
 
 ---
 
-### 🔹 Livello 3: `Alt` + Numpad (Stato Giocatore, Ambiente & HUD)
+### 🔹 Livello 2: `Alt` + Numpad (Diagnostica, Vertici & Mobilità)
 
 | Combinazione | Funzione Proposta | Descrizione |
 | :--- | :--- | :--- |
-| **Alt + 5** | Stato Giocatore Completo | Annuncia Salute, Fame, Armatura, Aria, Freddo |
 | **Alt + 8** | Oggetto Mano Principale | Annuncia nome, quantità e dettagli dell'oggetto impugnato a destra |
 | **Alt + 2** | Oggetto Mano Secondaria | Annuncia cosa c'è nella mano sinistra (scudo, torce, ecc.) |
 | **Alt + 4** | Effetti e Pozioni | Annuncia gli effetti attivi e la durata residua |
 | **Alt + 6** | Durabilità | Annuncia la durabilità residua dell'arma/attrezzo in mano |
-| **Alt + 7** | Bioma & Meteo | Annuncia bioma attuale e se piove/nevica/sereno |
-| **Alt + 9** | Luce & Ora | Annuncia il livello di luce del blocco e l'ora del giorno |
+| **Alt + 5** | Direzione & Inclinazione | Annuncia direzione cardinale e gradi di inclinazione verticale |
+| **Alt + 1** | Guarda ai Piedi (**Nadir**) | Sguardo dritto a +90° verso i piedi |
+| **Alt + 3** | Guarda in Cielo (**Zenith**) | Sguardo dritto a -90° verso il cielo |
+| **Alt + 0** | Marcia Automatica (**Auto-Walk**) | Avvia o arresta la marcia automatica |
+| **Alt + .** | Corsa Auto-Walk | Alterna corsa e camminata nella navigazione automatica |
 | **Alt + Enter** | Access Menu (F4) | Apre/Chiude l'Access Menu rapido |
-| **Alt + +** | Bossbar Successiva | Legge la bossbar successiva |
-| **Alt + -** | Bossbar Precedente | Legge la bossbar precedente |
 
 ---
 

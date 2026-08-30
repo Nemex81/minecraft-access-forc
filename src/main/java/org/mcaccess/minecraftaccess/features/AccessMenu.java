@@ -127,8 +127,12 @@ public class AccessMenu implements BalmClientModule {
             GridLayout grid = new GridLayout().spacing(10);
             GridLayout.RowHelper rowHelper = grid.createRowHelper(2);
 
-            for (Identifier key : Config.getInstance().accessMenu.functions) {
+            java.util.Set<Identifier> allKeys = new java.util.LinkedHashSet<>(Arrays.asList(Config.getInstance().accessMenu.functions));
+            allKeys.addAll(MainClass.registry(AccessMenuFunction.class).keySet());
+
+            for (Identifier key : allKeys) {
                 AccessMenuFunction function = MainClass.registry(AccessMenuFunction.class).get(key);
+                if (function == null) continue;
                 MutableComponent label = Component.translatable(key.toLanguageKey("access_menu_function"));
                 for (byte i = 0; i < 10; i++) {
                     if (getShortcuts()[i] == function) {

@@ -280,6 +280,7 @@ class NumpadControlsTest {
                     "key.minecraft_access.numpad.orient.south_east",
                     "key.minecraft_access.numpad.orient.look_behind",
                     "key.minecraft_access.numpad.orient.narrate_coordinates",
+                    "key.minecraft_access.numpad.orient.narrate_target_coords",
                     "key.minecraft_access.numpad.status.player_all",
                     "key.minecraft_access.numpad.status.mainhand",
                     "key.minecraft_access.numpad.status.offhand",
@@ -297,7 +298,17 @@ class NumpadControlsTest {
                     "text.autoconfig.minecraft-access.option.numpadControls.continuousFeedbackMode.VOICE_ONLY",
                     "text.autoconfig.minecraft-access.option.numpadControls.continuousFeedbackMode.SOUND_AND_VOICE",
                     "text.autoconfig.minecraft-access.option.numpadControls.continuousFeedbackMode.OFF",
-                    "text.autoconfig.minecraft-access.option.numpadControls.enableContinuousHold"
+                    "text.autoconfig.minecraft-access.option.numpadControls.rotationFeedbackMode",
+                    "text.autoconfig.minecraft-access.option.numpadControls.rotationFeedbackMode.CARDINAL_AND_DEGREES",
+                    "text.autoconfig.minecraft-access.option.numpadControls.rotationFeedbackMode.SOUND_AND_VOICE_WITH_DEGREES",
+                    "text.autoconfig.minecraft-access.option.numpadControls.rotationFeedbackMode.CARDINAL_ONLY",
+                    "text.autoconfig.minecraft-access.option.numpadControls.rotationFeedbackMode.SOUND_ONLY",
+                    "text.autoconfig.minecraft-access.option.numpadControls.rotationFeedbackMode.OFF",
+                    "text.autoconfig.minecraft-access.option.numpadControls.centerHorizonFeedbackMode",
+                    "text.autoconfig.minecraft-access.option.numpadControls.centerHorizonFeedbackMode.TARGET_ONLY",
+                    "text.autoconfig.minecraft-access.option.numpadControls.centerHorizonFeedbackMode.SOUND_AND_TARGET",
+                    "text.autoconfig.minecraft-access.option.numpadControls.centerHorizonFeedbackMode.SOUND_VOICE_AND_TARGET",
+                    "minecraft_access.numpad.look_centered"
             };
 
             for (String key : expectedKeyPrefixes) {
