@@ -174,4 +174,21 @@ Questo registro documenta i problemi tecnici complessi risolti nel tempo, preser
   - Creata la classe `AcousticOcclusion.java` per eseguire il raycast voxel discreto 3D lungo il vettore giocatore-bersaglio con scala di assorbimento a 5 livelli (Porte/Lastre $-10\%$, Assi $-18\%$, Tronchi $-28\%$, Pietra $-38\%$, Deepslate/Ossidiana $-50\%$) e soglia minima di sicurezza all'**$1\%$ (`0.01f`)**.
   - In `ObjectTracker.java` e `POIGroup.java`, integrata la modulazione del volume sonoro e l'avviso vocale automatico ` (oltre parete)` quando `totalOcclusion >= 20%`, configurabile in GUI tramite l'Enum `WallOcclusionFeedbackMode`.
 
+---
+
+### Record 17 — Prevenzione Falsi Allarmi nei Fluidi, Threat Sentinel Ravvicinata & Navigazione Guidata alle Porte
+- **Problema**:
+  1. Nuotando in mare o nei fiumi per sfuggire ai mostri notturni, il `FallDetector` entrava in un loop di allarmi continui a raffica (*"Attenzione: burrone 2 blocchi in basso, profondità 8 blocchi"*), saturando la sintesi vocale NVDA e impedendo al giocatore non vedente di percepire le minacce imminenti (es. Creeper).
+  2. I mob ostili notturni (Zombie, Scheletri, Creeper, Ragni) non venivano segnalati con sufficiente tempestività e priorità audio durante l'esplorazione al buio.
+  3. Durante la navigazione automatica con l'autopilota (`Alt + W`), in presenza di una porta o cancello chiuso il giocatore continuava a correre contro l'ostacolo senza ricevere indicazioni vocali sulle azioni da intraprendere.
+- **Causa Radice**:
+  1. I blocchi fluidi (acqua, correnti marine) hanno collision shape vuoto (`getCollisionShape().isEmpty() == true`). Di conseguenza, il vecchio algoritmo di scansione cadute scendeva lungo l'intera colonna d'acqua fino al fondale marino roccioso, interpretando la profondità dell'acqua come un burrone mortale. Inoltre, `player.isUnderWater()` in Minecraft è `true` solo quando gli occhi sono sommersi, ma è `false` mentre il giocatore galleggia o nuota a pelo d'acqua.
+  2. Il modulo POI non prioritizzava in modo autonomo le entità di tipo `Enemy` entro la distanza critica ravvicinata di sopravvivenza (6 blocchi).
+  3. `AutoWalkController` non monitorava lo stato aperto/chiuso dei blocchi `DoorBlock`, `FenceGateBlock` e `TrapDoorBlock` lungo il percorso.
+- **Soluzione Definitiva**:
+  - In `FallDetector.java`, introdotta la guardia di sicurezza estesa per tutti gli stati fluidi: `player.isInWater()`, `player.isInWaterOrRain()`, `player.isEyeInFluid(FluidTags.WATER)` con azzeramento istantaneo di sicurezza. Nei metodi `calculateDangerousDrop()` e `findDangerAhead()`, qualsiasi blocco contenente fluido (`!level.getFluidState(pos).isEmpty()`) restituisce una distanza di caduta pari a `0` (atterraggio sicuro in acqua), azzerando al 100% i falsi allarmi durante il nuoto.
+  - In `POIEntities.java`, creata la **Threat Sentinel**: monitoraggio continuo dei mob `Enemy` entro 6 blocchi con riproduzione di segnale acustico 3D percussivo dedicato e annuncio vocale prioritario (*"Attenzione: %s %s"*).
+  - In `AutoWalkController.java`, integrata la gestione interattiva collegata a `Config.getInstance().speechSettings.narrateHints`: arresto della marcia a 2 metri da porte o cancelli chiusi, puntamento visivo sulla porta, messaggio vocale di guida (*"Porta chiusa davanti a te. Premi Tasto Destro per aprire"*) e ripresa fluida del cammino all'apertura (*"Porta aperta. Procedi"*).
+
+
 
