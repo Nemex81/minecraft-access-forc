@@ -105,9 +105,19 @@ public class POIGroup<T> {
     }
 
     public void playSoundForGroupItems(Function<T, Vec3> mapper, float volume) {
+        LocalPlayer player = Minecraft.getInstance().player;
+        net.minecraft.world.level.Level level = Minecraft.getInstance().level;
+        org.mcaccess.minecraftaccess.Config.POI.WallOcclusionFeedbackMode mode = org.mcaccess.minecraftaccess.Config.getInstance().poi.wallOcclusionFeedback;
+        boolean applyAttenuation = (mode == org.mcaccess.minecraftaccess.Config.POI.WallOcclusionFeedbackMode.SOUND_AND_VOICE
+                || mode == org.mcaccess.minecraftaccess.Config.POI.WallOcclusionFeedbackMode.SOUND_ONLY);
+
         for (T item : items) {
             Vec3 pos = mapper.apply(item);
-            sound.play(pos, volume);
+            float effectiveVolume = volume;
+            if (applyAttenuation && player != null && level != null) {
+                effectiveVolume *= org.mcaccess.minecraftaccess.utils.audio.AcousticOcclusion.getVolumeMultiplier(player.getEyePosition(), pos, level);
+            }
+            sound.play(pos, effectiveVolume);
         }
     }
 

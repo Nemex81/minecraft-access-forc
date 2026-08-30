@@ -221,6 +221,8 @@ public final class Config implements ConfigData {
 
     public static final class POI {
         public boolean narrateDistance = true;
+        @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
+        public WallOcclusionFeedbackMode wallOcclusionFeedback = WallOcclusionFeedbackMode.SOUND_AND_VOICE;
         @ConfigEntry.Gui.CollapsibleObject
         public Blocks blocks = new Blocks();
         @ConfigEntry.Gui.CollapsibleObject
@@ -233,6 +235,13 @@ public final class Config implements ConfigData {
         public Waypoints waypoints = new Waypoints();
 
         private POI() {
+        }
+
+        public enum WallOcclusionFeedbackMode {
+            SOUND_AND_VOICE,
+            SOUND_ONLY,
+            VOICE_ONLY,
+            OFF
         }
 
         public static final class Waypoints {

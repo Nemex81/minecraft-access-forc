@@ -193,11 +193,27 @@ public class ObjectTracker implements BalmClientModule {
         }
 
         boolean narrateDistance = Config.getInstance().poi.narrateDistance;
+        LocalPlayer player = Minecraft.getInstance().player;
+        Level level = Minecraft.getInstance().level;
+        Config.POI.WallOcclusionFeedbackMode occlusionMode = Config.getInstance().poi.wallOcclusionFeedback;
+        boolean applySoundAttenuation = (occlusionMode == Config.POI.WallOcclusionFeedbackMode.SOUND_AND_VOICE
+                || occlusionMode == Config.POI.WallOcclusionFeedbackMode.SOUND_ONLY);
+        boolean applyVoiceWarning = (occlusionMode == Config.POI.WallOcclusionFeedbackMode.SOUND_AND_VOICE
+                || occlusionMode == Config.POI.WallOcclusionFeedbackMode.VOICE_ONLY);
 
         if (currentObject instanceof Entity entity) {
+            boolean isEntityOccluded = (player != null && level != null
+                    && org.mcaccess.minecraftaccess.utils.audio.AcousticOcclusion.isOccluded(player.getEyePosition(), entity.getEyePosition(), level));
+            float volumeMultiplier = (applySoundAttenuation && player != null && level != null)
+                    ? org.mcaccess.minecraftaccess.utils.audio.AcousticOcclusion.getVolumeMultiplier(player.getEyePosition(), entity.getEyePosition(), level)
+                    : 1.0f;
+
             StringBuilder narration = new StringBuilder(
                     MainClass.registry(WorldNarrator.class).get(Config.getInstance().narrateCrosshair.narrator).narrate(entity)
             );
+            if (applyVoiceWarning && isEntityOccluded) {
+                narration.append(I18n.get("minecraft_access.point_of_interest.behind_wall"));
+            }
             if (narrateDistance) {
                 narration.append(' ')
                         .append(NarrationUtils.narrateRelativePositionOfPlayerAnd(entity.blockPosition()));
@@ -210,7 +226,7 @@ public class ObjectTracker implements BalmClientModule {
                     entity.getZ(),
                     SoundEvents.NOTE_BLOCK_BELL.value(),
                     SoundSource.BLOCKS,
-                    1,
+                    volumeMultiplier,
                     1.0f,
                     true
             );
@@ -218,9 +234,19 @@ public class ObjectTracker implements BalmClientModule {
         }
 
         if (currentObject instanceof BlockPos blockPos) {
+            Vec3 blockCenter = Vec3.atCenterOf(blockPos);
+            boolean isBlockOccluded = (player != null && level != null
+                    && org.mcaccess.minecraftaccess.utils.audio.AcousticOcclusion.isOccluded(player.getEyePosition(), blockCenter, level));
+            float volumeMultiplier = (applySoundAttenuation && player != null && level != null)
+                    ? org.mcaccess.minecraftaccess.utils.audio.AcousticOcclusion.getVolumeMultiplier(player.getEyePosition(), blockCenter, level)
+                    : 1.0f;
+
             StringBuilder narration = new StringBuilder(
                     MainClass.registry(WorldNarrator.class).get(Config.getInstance().narrateCrosshair.narrator).narrate(blockPos)
             );
+            if (applyVoiceWarning && isBlockOccluded) {
+                narration.append(I18n.get("minecraft_access.point_of_interest.behind_wall"));
+            }
             if (narrateDistance) {
                 narration.append(' ')
                         .append(NarrationUtils.narrateRelativePositionOfPlayerAnd(blockPos));
@@ -231,7 +257,7 @@ public class ObjectTracker implements BalmClientModule {
                     blockPos,
                     SoundEvents.NOTE_BLOCK_BELL.value(),
                     SoundSource.BLOCKS,
-                    1,
+                    volumeMultiplier,
                     1.0f,
                     true
             );
@@ -239,7 +265,6 @@ public class ObjectTracker implements BalmClientModule {
         }
 
         if (currentObject instanceof Waypoint waypoint) {
-            LocalPlayer player = Minecraft.getInstance().player;
             if (player == null) return;
 
             Identifier currentDim = player.level().dimension().identifier();
