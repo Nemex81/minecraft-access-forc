@@ -160,3 +160,18 @@ Questo registro documenta i problemi tecnici complessi risolti nel tempo, preser
     $$\text{degrees} = \text{round}\left( (\text{player.getYRot()} + 180 \bmod 360 + 360) \bmod 360 \right)$$
   - Introdotto l'Enum `RotationFeedbackMode` in `Config.NumpadControls` per offrire 5 stili di feedback selezionabili in GUI (Cardinale + Gradi, Suono + Voce, Solo Cardinale, Solo Suono, Off).
 
+---
+
+### Record 16 — Ottimizzazione Semantica delle Indicazioni Spaziali & Sistema di Occlusione Acustica Voxel a 5 Livelli
+- **Problema**:
+  1. Alla pressione del tasto `Home`, lo screen reader pronunciava frasi incoerenti e disorientanti per chi usa NVDA (es. *"5 lontano dai blocchi 2 sopra ai blocchi 3 a destra dei blocchi"*).
+  2. I suoni di mob ed entità situati all'esterno dell'edificio venivano percepiti a volume pieno (come se fossero nella stessa stanza del giocatore), causando urti continui contro pareti e porte.
+- **Causa Radice**:
+  1. In `it_it.json`, le chiavi `minecraft_access.util.position_difference_*` contenevano un calco letterale errato dall'inglese (`"lontano dai blocchi"` anziché `"blocchi avanti"`).
+  2. Il motore sonoro vanilla di Minecraft e il modulo POI non calcolavano l'occlusione materiale dei muri lungo la linea di vista del giocatore.
+- **Soluzione Definitiva**:
+  - In `it_it.json`, riformulate le 6 direzioni spaziali con formule naturali e lineari: `"%s blocchi avanti"`, `"%s blocchi indietro"`, `"%s blocchi in alto"`, `"%s blocchi in basso"`, `"%s blocchi a sinistra"`, `"%s blocchi a destra"`.
+  - Creata la classe `AcousticOcclusion.java` per eseguire il raycast voxel discreto 3D lungo il vettore giocatore-bersaglio con scala di assorbimento a 5 livelli (Porte/Lastre $-10\%$, Assi $-18\%$, Tronchi $-28\%$, Pietra $-38\%$, Deepslate/Ossidiana $-50\%$) e soglia minima di sicurezza all'**$1\%$ (`0.01f`)**.
+  - In `ObjectTracker.java` e `POIGroup.java`, integrata la modulazione del volume sonoro e l'avviso vocale automatico ` (oltre parete)` quando `totalOcclusion >= 20%`, configurabile in GUI tramite l'Enum `WallOcclusionFeedbackMode`.
+
+

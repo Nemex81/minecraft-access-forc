@@ -101,3 +101,20 @@ Nelle modalità con feedback sonoro a ogni scatto di rotazione della visuale (ta
 - **Punti Cardinali Puri ($0^\circ, 90^\circ, 180^\circ, 270^\circ$)**: Tono alto e limpido (Pitch $1.2\text{f}$).
 - **Punti Diagonali Intercardinali ($45^\circ, 135^\circ, 225^\circ, 315^\circ$)**: Tono medio (Pitch $1.0\text{f}$).
 - **Angoli Intermedi ($15^\circ, 30^\circ, 60^\circ, 75^\circ\dots$)**: Tono morbido (Pitch $0.85\text{f}$).
+
+---
+
+## 9. Sistema di Occlusione Acustica Voxel a 5 Livelli (`AcousticOcclusion`)
+
+Per risolvere l'illusione cognitiva di vicinanza quando i mob si trovano all'esterno della casa o dietro pareti, il sistema esegue un raycast voxel 3D continuo calcolando l'assorbimento per materiale:
+
+1. **Scala di Assorbimento a 5 Livelli**:
+   - **Livello 1 — Legno Sottile & Divisori** (Porte, Botole, Lastre, Staccionate, Vetri, Foglie): **$-10\%$** (`0.10f`) per blocco.
+   - **Livello 2 — Legno Lavorato & Arredi** (Assi / Planks, Scale, Casse, Terra, Lana): **$-18\%$** (`0.18f`) per blocco.
+   - **Livello 3 — Legno Massiccio & Tronchi** (Tronchi puri / Logs, Ceppi): **$-28\%$** (`0.28f`) per blocco.
+   - **Livello 4 — Pietra & Muratura Solida** (Pietra, Mattoni, Cobblestone, Rame, Ferro): **$-38\%$** (`0.38f`) per blocco.
+   - **Livello 5 — Roccia Ultra-Densa & Metalli Pesanti** (Deepslate, Ossidiana, Bedrock): **$-50\%$** (`0.50f`) per blocco.
+2. **Soglia Minima Garantita (Floor)**:
+   - Il volume scalato non scende mai al di sotto dell'**$1\%$ (`0.01f`)**, garantendo che la presenza del bersaglio rimanga comunque rilevabile a livello subliminale o con cuffie ad alta dinamica.
+3. **Arricchimento Semantico Vocale**:
+   - Se l'occlusione totale supera la soglia di discriminazione del $20\%$ (`totalOcclusion >= 0.20f`), la narrazione vocale (tasto `Home` e mirino) aggiunge automaticamente la qualifica spaziale ` (oltre parete)`.
