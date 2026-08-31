@@ -118,3 +118,10 @@ Per risolvere l'illusione cognitiva di vicinanza quando i mob si trovano all'est
    - Il volume scalato non scende mai al di sotto dell'**$1\%$ (`0.01f`)**, garantendo che la presenza del bersaglio rimanga comunque rilevabile a livello subliminale o con cuffie ad alta dinamica.
 3. **Arricchimento Semantico Vocale**:
    - Se l'occlusione totale supera la soglia di discriminazione del $20\%$ (`totalOcclusion >= 0.20f`), la narrazione vocale (tasto `Home` e mirino) aggiunge automaticamente la qualifica spaziale ` (oltre parete)`.
+
+---
+
+## 10. Scalatura Chirurgica del Giocatore Locale vs Suoni del Mondo
+
+- **Isolamento dell'Entità Locale**: L'amplificazione del volume dei passi viene applicata esclusivamente all'istanza `(Object) this == Minecraft.getInstance().player`, lasciando intatto il volume naturale dei passi di mob, animali e altri giocatori per non inquinare il soundscape 3D.
+- **Resilienza Iniezioni Mixin**: Sulle iniezioni Mixin che intercettano metodi audio di `Entity` (`playStepSound`, `playCombinationStepSounds`, `playMuffledStepSound`), impostare sempre `require = 0` per garantire che differenze di firma o refactoring tra versioni di gioco non causino `InvalidInjectionException` all'avvio.

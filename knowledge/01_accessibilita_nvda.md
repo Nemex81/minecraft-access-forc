@@ -1,4 +1,4 @@
-﻿# 01 — Accessibilità Vocale, Screen Reader & Comandi da Tastiera
+# 01 — Accessibilità Vocale, Screen Reader & Comandi da Tastiera
 
 ## 1. Visione e Filosofia Fondante
 
@@ -61,3 +61,12 @@ In conformità al nostro standard architetturale:
 - **Ruolo di Antigravity come Copilota Visivo**:
   * Durante lo sviluppo, Antigravity supervisiona proattivamente che i menu di configurazione, i messaggi a schermo e gli overlay grafici siano posizionati con proporzioni corrette, spaziature armoniche e contrasti cromatici conformi agli standard WCAG.
 - **Zero Conflitti**: La sintesi vocale e i controlli accessibili non alterano la fedeltà grafica del gioco, e la grafica non oscura né tronca la voce di NVDA.
+
+---
+
+## 6. Propriocezione Tattile-Acustica del Personaggio & Regolazione Passi
+
+- **Importanza Cognitiva**: In assenza di vista, il suono dei passi costituisce la prima ancora di propriocezione in tempo reale: conferma che il movimento sta avvenendo (prevenendo la corsa a vuoto contro ostacoli), scandisce il ritmo della marcia e fornisce l'identificazione immediata del materiale calpestato (legno, pietra, terra, ghiaia, sabbia, lana).
+- **Doppio Canale di Regolazione**:
+  - *Configurativo*: Cursore percentuale da `0%` a `300%` (default `100%`) in `Config.java` (`playerStepSoundVolume`).
+  - *On-The-Fly (Zero Sneak)*: Tasti rapidi **`Alt + Page Up`** (+10%) e **`Alt + Page Down`** (-10%) con vocalizzazione istantanea del livello e salvataggio automatico persistente.
