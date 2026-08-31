@@ -109,6 +109,8 @@ public final class Config implements ConfigData {
         public PickedUpItemNarration pickedUpItemNarration = PickedUpItemNarration.WHEN_FISHING;
         public boolean narrateHeldItemsCountWhenChanged = true;
         public boolean playNewChatMessageSound = true;
+        @ConfigEntry.BoundedDiscrete(min = 0, max = 300)
+        public int playerStepSoundVolume = 100;
 
         private Features() {
         }

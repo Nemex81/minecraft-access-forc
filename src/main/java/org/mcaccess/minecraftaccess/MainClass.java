@@ -36,6 +36,7 @@ import org.mcaccess.minecraftaccess.features.NarrateHeldItem;
 import org.mcaccess.minecraftaccess.features.NumpadControls;
 import org.mcaccess.minecraftaccess.features.ObstacleDetector;
 import org.mcaccess.minecraftaccess.features.PlayerStatus;
+import org.mcaccess.minecraftaccess.features.PlayerStepSound;
 import org.mcaccess.minecraftaccess.features.PositionNarrator;
 import org.mcaccess.minecraftaccess.features.TimeIndicator;
 import org.mcaccess.minecraftaccess.features.XPIndicator;
@@ -150,6 +151,7 @@ public final class MainClass {
         registrars.registerModule(new NumpadControls());
         registrars.registerModule(new ObstacleDetector());
         registrars.registerModule(new PlayerStatus());
+        registrars.registerModule(new PlayerStepSound());
         poiManager = new POIManager();
         registrars.registerModule(poiManager.lockingHandler);
         registrars.registerModule(poiManager.objectTracker);

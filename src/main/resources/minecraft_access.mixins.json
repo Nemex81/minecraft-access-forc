@@ -29,6 +29,7 @@
         "EditBoxAccessor",
         "EditBoxMixin",
         "EntityAccessor",
+        "EntityMixin",
         "EyeOfEnderMixin",
         "GameModeIconAccessor",
         "GameModeSwitcherScreenMixin",

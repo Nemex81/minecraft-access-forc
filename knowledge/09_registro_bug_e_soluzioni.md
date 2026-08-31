@@ -224,6 +224,18 @@ Questo registro documenta i problemi tecnici complessi risolti nel tempo, preser
   2. Adozione delle **Frecce Direzionali** per la tastiera estesa (`Ctrl + Alt + Frecce`), immuni da conflitti con mod esterne.
   3. Campionamento combinato a quota piedi (`targetFeetPos`) per intercettare `CropBlock`, `SweetBerryBushBlock`, `MelonBlock`, `PumpkinBlock` e canne da zucchero insieme alle entità a terra.
 
+---
+
+### Record 20 — Resilienza Iniezioni Mixin Audio (`EntityMixin`) e Compatibilità Metodi Passi 26.2
+- **Data**: 2026-08-31
+- **Modulo Coinvolto**: `EntityMixin.java`, `PlayerStepSound.java`, `Config.java`
+- **Sintomi**: All'avvio del gioco, Minecraft crashava con `InvalidInjectionException: @ModifyArg annotation on modifyPlayAmphibiousStepSoundVolume could not find any targets matching 'playAmphibiousStepSound' in net/minecraft/world/entity/Entity`.
+- **Causa Radice**: `Entity.class` in Minecraft 26.2 non implementa `playAmphibiousStepSound`. Poiché la configurazione Mixin di Minecraft Access definisce `defaultRequire = 1`, la mancata corrispondenza di un target causa il blocco immediato all'avvio.
+- **Soluzione Definitiva**:
+  1. Rimozione del metodo inesistente in `EntityMixin.java`, concentrando l'iniezione sui 3 metodi effettivi dei passi: `playStepSound`, `playCombinationStepSounds` e `playMuffledStepSound`.
+  2. Impostazione esplicita di `require = 0` su tutti i `@ModifyArg` per garantire la massima tolleranza e compatibilità a runtime.
+
+
 
 
 
