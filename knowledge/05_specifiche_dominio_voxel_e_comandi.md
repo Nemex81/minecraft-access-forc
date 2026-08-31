@@ -47,3 +47,14 @@ Per prevenire qualsiasi falso allarme vocale e garantire la massima precisione n
    - La misura di profondità di una colonna verticale d'aria non deve valutare solo il blocco sul fondo: se il blocco d'atterraggio è uno `StairBlock`/`SlabBlock` **oppure** se lungo la colonna verticale tra atterraggio e quota piedi sono presenti i gradini sovrastanti della scala, l'intera campata della rampa è considerata sicura (`drop = 0`).
 3. **Arresto Immediato su Davanzali / Ostacoli Solidi ($\ge 1.0\text{ m}$)**:
    - Nei raycast di avanzamento, un blocco solido a quota piedi di altezza $\ge 1.0\text{ m}$ (o con ostacolo/vetro a quota testa) arresta istantaneamente il raggio (`break;`), impedendo lo scavalcamento errato del davanzale verso il vuoto esterno.
+
+---
+
+## 5. Sonda di Percorso: Inseguimento Suolo, Scansione Continua e Rilevamento Colture Non-Solide
+1. **Tracciamento Continuo del Terreno Calpestabile**:
+   - A ogni passo $d$, campionare il blocco solido di pavimento a quota $Y$ per identificare sempre il materiale (Erba, Pietra, Legno, Terra zappata).
+2. **Campionamento Blocchi Pianta a Quota Piedi**:
+   - Poiché le colture (`CropBlock`) hanno collisione vuota per consentire il passaggio, non devono essere trattate come aria vuota ma rilevate come risorsa raccoglibile.
+3. **Scansione a Lungo Raggio per Modalità DETAILED**:
+   - In modalità dettagliata, la scansione non si arresta al primo ostacolo (`break;`), ma prosegue fino al limite `scanRange` descrivendo la successione completa di segmenti, ostacoli, dislivelli e risorse.
+

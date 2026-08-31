@@ -58,7 +58,16 @@ Il modulo `NumpadControls.java` organizza l'intera griglia del tastierino numeri
 - **`Alt + .`**: Alterna corsa/camminata nel navigatore automatico.
 - **`Alt + Invio`**: Apri **Access Menu `F4`**.
 
+### D. Layer 3 (`Ctrl + Alt + Numpad` e `Ctrl + Alt + Frecce` — Sonda Direzionale di Percorso)
+Il modulo `DirectionalPathScanner.java` implementa una sonda virtuale di cammino per esplorare in anticipo fino a 32 blocchi:
+- **`Ctrl + Alt + 8` / `2` / `4` / `6`**: Scansione direttrice **Nord, Sud, Ovest, Est** (Cardinali).
+- **`Ctrl + Alt + 7` / `9` / `1` / `3`**: Scansione direttrice **Nord-Ovest, Nord-Est, Sud-Ovest, Sud-Est** (Diagonali).
+- **`Ctrl + Alt + 5`**: Scansione **Avanti** (direzione dello sguardo corrente del giocatore).
+- **`Ctrl + Alt + 0`**: Scansione **Dietro** (alle spalle del giocatore).
+- **`Ctrl + Alt + Freccia Su / Giù / Sinistra / Destra`**: Scansione per computer portatili o tastiere senza tastierino (Avanti, Dietro, Sinistra, Destra) con zero conflitti con mod esterne o shader.
+
 ---
+
 
 ## 3. Protocollo del Canale Persistente con ChatGPT
 

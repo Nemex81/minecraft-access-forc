@@ -206,5 +206,24 @@ Questo registro documenta i problemi tecnici complessi risolti nel tempo, preser
   2. Schermato `AccessMenu.java` con `ModifierUtils.hasAnyModifier()` per isolare `Alt + B` dal comando `B` singolo (`narrate_target`).
   3. Sincronizzato programmaticamente il file `options.txt` nell'istanza di gioco attiva.
 
+---
+
+### Record 19 — Conflitto Mod Grafica Iris Shaders, Modificatori Multipli Kuma e Rilevamento Colture
+- **Data**: 2026-08-31
+- **Modulo Coinvolto**: `DirectionalPathScanner.java`, `PathRaycaster.java`, `PathNarrationFormatter.java`
+- **Sintomi**:
+  1. I comandi dello scanner su Numpad (`Ctrl + Alt + 0..9`) non producevano alcun output.
+  2. Su tastiera estesa (`Ctrl + Alt + I / K`), la pressione apriva il menu grafico di Iris Shaders e disabilitava gli shaderpack.
+  3. Gli ortaggi commestibili piantati (Carote, Patate, Grano, Barbabietole) non venivano annunciati dalla sonda.
+- **Causa Radice**:
+  1. In Kuma API, i keybinding registrati senza `KeyModifiers.of(...)` pretendono `KeyModifiers.NONE` e scartano l'evento se l'utente preme modificatori (`Ctrl + Alt`).
+  2. Iris Shaders registra listener globali sul tasto grezzo GLFW `K` e `I` scavalcando qualsiasi combinazione di modificatori.
+  3. Le piante coltivate sono blocchi non-solidi (`CropBlock`) a quota piedi con collisione vuota, ignorate dai filtri che cercavano solo `ItemEntity` o muri solidi bloccanti.
+- **Soluzione Definitiva**:
+  1. Registrazione esplicita di `KeyModifiers.of(KeyModifier.CONTROL, KeyModifier.ALT)` su tutti i binding Numpad.
+  2. Adozione delle **Frecce Direzionali** per la tastiera estesa (`Ctrl + Alt + Frecce`), immuni da conflitti con mod esterne.
+  3. Campionamento combinato a quota piedi (`targetFeetPos`) per intercettare `CropBlock`, `SweetBerryBushBlock`, `MelonBlock`, `PumpkinBlock` e canne da zucchero insieme alle entità a terra.
+
+
 
 
