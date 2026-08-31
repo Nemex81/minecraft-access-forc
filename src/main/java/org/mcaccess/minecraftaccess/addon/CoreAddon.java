@@ -101,6 +101,7 @@ public class CoreAddon implements MinecraftAccessAddon {
         registry.register("auto_walk", new org.mcaccess.minecraftaccess.addon.accessmenu.AutoWalk());
         registry.register("academy_and_help", new org.mcaccess.minecraftaccess.addon.accessmenu.AcademyAndHelp());
         registry.register("quick_help", new org.mcaccess.minecraftaccess.addon.accessmenu.QuickHelp());
+        registry.register("survival_resources", new org.mcaccess.minecraftaccess.addon.accessmenu.SurvivalResources());
 
         registry.register("minecraft_access", new MinecraftAccess());
         if (Balm.platform().isModLoaded("jade")) {

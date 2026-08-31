@@ -44,6 +44,7 @@ public class PlayerStatus implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_R))
                 .overrideCategory(KeyMappingCategories.PLAYER_STATUS)
                 .handleWorldInput(_ -> {
+                    if (org.mcaccess.minecraftaccess.utils.ModifierUtils.hasAnyModifier()) return false;
                     narratePlayerStatus(false);
                     return true;
                 })
@@ -53,6 +54,7 @@ public class PlayerStatus implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_R, KeyModifiers.of(KeyModifier.ALT)))
                 .overrideCategory(KeyMappingCategories.PLAYER_STATUS)
                 .handleWorldInput(_ -> {
+                    if (!org.mcaccess.minecraftaccess.utils.ModifierUtils.hasAltOnly()) return false;
                     narratePlayerStatus(true);
                     return true;
                 })
@@ -62,6 +64,7 @@ public class PlayerStatus implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_R, KeyModifiers.of(KeyModifier.CONTROL)))
                 .overrideCategory(KeyMappingCategories.PLAYER_STATUS)
                 .handleWorldInput(_ -> {
+                    if (!org.mcaccess.minecraftaccess.utils.ModifierUtils.hasControlOnly()) return false;
                     assert Minecraft.getInstance().player != null;
                     Collection<MobEffectInstance> effects = Minecraft.getInstance().player.getActiveEffects();
                     if (effects.isEmpty()) {

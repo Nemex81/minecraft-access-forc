@@ -58,6 +58,7 @@ public final class MainClass {
 
     public static POIManager poiManager = null;
     public static org.mcaccess.minecraftaccess.features.autowalk.AutoWalkManager autoWalkManager = null;
+    public static org.mcaccess.minecraftaccess.features.survival_tracker.SurvivalResourceTracker survivalResourceTracker = null;
 
     private MainClass() {
     }
@@ -165,6 +166,7 @@ public final class MainClass {
         registrars.registerModule(new org.mcaccess.minecraftaccess.features.academy.AcademyManager());
         registrars.registerModule(new org.mcaccess.minecraftaccess.features.help.FirstRunHandler());
         registrars.registerModule(new org.mcaccess.minecraftaccess.features.help.QuickHelpKey());
+        registrars.registerModule(survivalResourceTracker = new org.mcaccess.minecraftaccess.features.survival_tracker.SurvivalResourceTracker());
     }
 
     /**

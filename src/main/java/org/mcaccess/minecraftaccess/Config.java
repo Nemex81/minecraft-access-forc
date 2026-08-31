@@ -71,6 +71,9 @@ public final class Config implements ConfigData {
     @ConfigEntry.Category("helpSettings")
     @ConfigEntry.Gui.TransitiveObject
     public HelpSettings helpSettings = new HelpSettings();
+    @ConfigEntry.Category("survivalTracker")
+    @ConfigEntry.Gui.TransitiveObject
+    public SurvivalTracker survivalTracker = new SurvivalTracker();
 
     private Config() {
     }
@@ -524,6 +527,25 @@ public final class Config implements ConfigData {
     public enum HardwarePreset {
         DESKTOP_NUMPAD,
         LAPTOP_KEYS
+    }
+
+    public static final class SurvivalTracker {
+        public boolean enabled = true;
+
+        @ConfigEntry.BoundedDiscrete(min = 8, max = 64)
+        public int range = 24;
+
+        public boolean periodicScanEnabled = false;
+
+        @ConfigEntry.BoundedDiscrete(min = 5, max = 120)
+        public int periodicIntervalSeconds = 30;
+
+        public boolean trackWood = true;
+        public boolean trackStone = true;
+        public boolean trackFood = true;
+
+        public SurvivalTracker() {
+        }
     }
 
 }

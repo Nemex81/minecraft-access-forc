@@ -43,6 +43,7 @@ public class NarrateHeldItem implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_GRAVE))
                 .overrideCategory(KeyMappingCategories.OTHER)
                 .handleWorldInput(_ -> {
+                    if (org.mcaccess.minecraftaccess.utils.ModifierUtils.hasAnyModifier()) return false;
                     narrateHand(false);
                     return true;
                 })
@@ -52,6 +53,7 @@ public class NarrateHeldItem implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_GRAVE, KeyModifiers.of(KeyModifier.ALT)))
                 .overrideCategory(KeyMappingCategories.OTHER)
                 .handleWorldInput(_ -> {
+                    if (!org.mcaccess.minecraftaccess.utils.ModifierUtils.hasAltOnly()) return false;
                     narrateHand(true);
                     return true;
                 })

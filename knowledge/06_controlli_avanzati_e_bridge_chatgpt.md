@@ -15,6 +15,7 @@ La mod implementa una mappatura completa per eliminare qualsiasi uso del mouse:
 | **`U`** | Stato Carburante & Cottura (tempo residuo fornace, ampolle supporto pozioni) | `features/inventory_controls/InventoryControls.java` |
 | **`X`** | Lettura Prerequisiti & Ingredienti Ricetta (con `.ignoreScreenFocus()`) | `features/inventory_controls/InventoryControls.java` |
 | **`V` / `Shift + V`** | Scorrimento Schede del Ricettario | `features/inventory_controls/InventoryControls.java` |
+| **`Alt + B`** | **Tracciatore Risorse Base** (Scansione 3D Legno, Pietra esposta, Cibo con la mano sinistra) | `features/survival_tracker/SurvivalResourceTracker.java` |
 
 ---
 
@@ -50,6 +51,7 @@ Il modulo `NumpadControls.java` organizza l'intera griglia del tastierino numeri
 - **`Alt + 4`**: Effetti di Stato Attivi (Pozioni, Veleno, Buff, Debuff).
 - **`Alt + 6`**: Durabilità residua dell'oggetto impugnato.
 - **`Alt + 5`**: **Leggi Direzione & Inclinazione Sguardo** (annuncia direzione orizzontale e gradi di pitch verticale).
+- **`Alt + 7`**: **Tracciatore Risorse Base** (Scansione 3D Legno, Pietra esposta all'aria, Cibo commestibile).
 - **`Alt + 1`**: Guarda dritto ai piedi (**Nadir**, Pitch $+90^\circ$ diretto senza singolarità).
 - **`Alt + 3`**: Guarda dritto in cielo (**Zenith**, Pitch $-90^\circ$ diretto senza singolarità).
 - **`Alt + 0`**: Avvia / Ferma marcia automatica (**Auto-Walk**).

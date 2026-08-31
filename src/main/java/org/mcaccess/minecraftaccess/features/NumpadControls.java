@@ -34,6 +34,7 @@ import org.mcaccess.minecraftaccess.Config;
 import org.mcaccess.minecraftaccess.MainClass;
 import org.mcaccess.minecraftaccess.api.WorldNarrator;
 import org.mcaccess.minecraftaccess.utils.KeyMappingCategories;
+import org.mcaccess.minecraftaccess.utils.ModifierUtils;
 import org.mcaccess.minecraftaccess.utils.NarrationPriority;
 import org.mcaccess.minecraftaccess.utils.NarrationUtils;
 import org.mcaccess.minecraftaccess.utils.PlayerUtils;
@@ -102,7 +103,7 @@ public class NumpadControls implements BalmClientModule {
                 .enableKeyRepeat()
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled()) return false;
+                    if (isDisabled() || ModifierUtils.hasAnyModifier()) return false;
                     if (holdStartLookUp == 0) {
                         holdStartLookUp = System.currentTimeMillis();
                         rotateCameraBy(0, -1, false);
@@ -116,7 +117,7 @@ public class NumpadControls implements BalmClientModule {
                 .enableKeyRepeat()
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled()) return false;
+                    if (isDisabled() || ModifierUtils.hasAnyModifier()) return false;
                     if (holdStartLookDown == 0) {
                         holdStartLookDown = System.currentTimeMillis();
                         rotateCameraBy(0, 1, false);
@@ -130,7 +131,7 @@ public class NumpadControls implements BalmClientModule {
                 .enableKeyRepeat()
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled()) return false;
+                    if (isDisabled() || ModifierUtils.hasAnyModifier()) return false;
                     if (holdStartLookLeft == 0) {
                         holdStartLookLeft = System.currentTimeMillis();
                         rotateCameraBy(-1, 0, false);
@@ -144,7 +145,7 @@ public class NumpadControls implements BalmClientModule {
                 .enableKeyRepeat()
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled()) return false;
+                    if (isDisabled() || ModifierUtils.hasAnyModifier()) return false;
                     if (holdStartLookRight == 0) {
                         holdStartLookRight = System.currentTimeMillis();
                         rotateCameraBy(1, 0, false);
@@ -158,7 +159,7 @@ public class NumpadControls implements BalmClientModule {
                 .enableKeyRepeat()
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled()) return false;
+                    if (isDisabled() || ModifierUtils.hasAnyModifier()) return false;
                     if (holdStartLookUpLeft == 0) {
                         holdStartLookUpLeft = System.currentTimeMillis();
                         rotateCameraBy(-1, -1, false);
@@ -172,7 +173,7 @@ public class NumpadControls implements BalmClientModule {
                 .enableKeyRepeat()
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled()) return false;
+                    if (isDisabled() || ModifierUtils.hasAnyModifier()) return false;
                     if (holdStartLookUpRight == 0) {
                         holdStartLookUpRight = System.currentTimeMillis();
                         rotateCameraBy(1, -1, false);
@@ -186,7 +187,7 @@ public class NumpadControls implements BalmClientModule {
                 .enableKeyRepeat()
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled()) return false;
+                    if (isDisabled() || ModifierUtils.hasAnyModifier()) return false;
                     if (holdStartLookDownLeft == 0) {
                         holdStartLookDownLeft = System.currentTimeMillis();
                         rotateCameraBy(-1, 1, false);
@@ -200,7 +201,7 @@ public class NumpadControls implements BalmClientModule {
                 .enableKeyRepeat()
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled()) return false;
+                    if (isDisabled() || ModifierUtils.hasAnyModifier()) return false;
                     if (holdStartLookDownRight == 0) {
                         holdStartLookDownRight = System.currentTimeMillis();
                         rotateCameraBy(1, 1, false);
@@ -214,7 +215,7 @@ public class NumpadControls implements BalmClientModule {
                 .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_5))
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled()) return false;
+                    if (isDisabled() || ModifierUtils.hasAnyModifier()) return false;
                     centerCameraHorizon();
                     Config.NumpadControls.CenterHorizonFeedbackMode mode = Config.getInstance().numpadControls.centerHorizonFeedbackMode;
                     if (mode == Config.NumpadControls.CenterHorizonFeedbackMode.SOUND_AND_TARGET
@@ -250,7 +251,7 @@ public class NumpadControls implements BalmClientModule {
                 .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_DECIMAL))
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled()) return false;
+                    if (isDisabled() || ModifierUtils.hasAnyModifier()) return false;
                     PlayerStatus.narratePlayerStatus(false);
                     return true;
                 })
@@ -269,7 +270,7 @@ public class NumpadControls implements BalmClientModule {
                 .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_SUBTRACT))
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled()) return false;
+                    if (isDisabled() || ModifierUtils.hasAnyModifier()) return false;
                     if (MainClass.poiManager != null && MainClass.poiManager.lockingHandler != null) {
                         if (MainClass.poiManager.lockingHandler.isPlayerLocked()) {
                             MainClass.poiManager.lockingHandler.unlock(true, true);
@@ -285,7 +286,7 @@ public class NumpadControls implements BalmClientModule {
                 .enableKeyRepeat()
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled()) return false;
+                    if (isDisabled() || ModifierUtils.hasAnyModifier()) return false;
                     scrollHotbar(true);
                     return true;
                 })
@@ -296,7 +297,7 @@ public class NumpadControls implements BalmClientModule {
                 .enableKeyRepeat()
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled()) return false;
+                    if (isDisabled() || ModifierUtils.hasAnyModifier()) return false;
                     scrollHotbar(false);
                     return true;
                 })
@@ -312,7 +313,7 @@ public class NumpadControls implements BalmClientModule {
                 .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_8, KeyModifiers.of(KeyModifier.CONTROL)))
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled()) return false;
+                    if (isDisabled() || !ModifierUtils.hasControlOnly()) return false;
                     rotateCameraTo(Orientation.NORTH, true);
                     playSnapSound(1.0f);
                     return true;
@@ -323,7 +324,7 @@ public class NumpadControls implements BalmClientModule {
                 .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_6, KeyModifiers.of(KeyModifier.CONTROL)))
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled()) return false;
+                    if (isDisabled() || !ModifierUtils.hasControlOnly()) return false;
                     rotateCameraTo(Orientation.EAST, true);
                     playSnapSound(1.2f);
                     return true;
@@ -334,7 +335,7 @@ public class NumpadControls implements BalmClientModule {
                 .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_2, KeyModifiers.of(KeyModifier.CONTROL)))
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled()) return false;
+                    if (isDisabled() || !ModifierUtils.hasControlOnly()) return false;
                     rotateCameraTo(Orientation.SOUTH, true);
                     playSnapSound(0.8f);
                     return true;
@@ -345,7 +346,7 @@ public class NumpadControls implements BalmClientModule {
                 .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_4, KeyModifiers.of(KeyModifier.CONTROL)))
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled()) return false;
+                    if (isDisabled() || !ModifierUtils.hasControlOnly()) return false;
                     rotateCameraTo(Orientation.WEST, true);
                     playSnapSound(0.6f);
                     return true;
@@ -357,7 +358,7 @@ public class NumpadControls implements BalmClientModule {
                 .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_7, KeyModifiers.of(KeyModifier.CONTROL)))
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled()) return false;
+                    if (isDisabled() || !ModifierUtils.hasControlOnly()) return false;
                     rotateCameraTo(Orientation.NORTH_WEST, true);
                     playSnapSound(0.9f);
                     return true;
@@ -368,7 +369,7 @@ public class NumpadControls implements BalmClientModule {
                 .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_9, KeyModifiers.of(KeyModifier.CONTROL)))
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled()) return false;
+                    if (isDisabled() || !ModifierUtils.hasControlOnly()) return false;
                     rotateCameraTo(Orientation.NORTH_EAST, true);
                     playSnapSound(1.1f);
                     return true;
@@ -379,7 +380,7 @@ public class NumpadControls implements BalmClientModule {
                 .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_1, KeyModifiers.of(KeyModifier.CONTROL)))
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled()) return false;
+                    if (isDisabled() || !ModifierUtils.hasControlOnly()) return false;
                     rotateCameraTo(Orientation.SOUTH_WEST, true);
                     playSnapSound(0.7f);
                     return true;
@@ -390,7 +391,7 @@ public class NumpadControls implements BalmClientModule {
                 .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_3, KeyModifiers.of(KeyModifier.CONTROL)))
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled()) return false;
+                    if (isDisabled() || !ModifierUtils.hasControlOnly()) return false;
                     rotateCameraTo(Orientation.SOUTH_EAST, true);
                     playSnapSound(0.95f);
                     return true;
@@ -402,7 +403,7 @@ public class NumpadControls implements BalmClientModule {
                 .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_0, KeyModifiers.of(KeyModifier.CONTROL)))
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled()) return false;
+                    if (isDisabled() || !ModifierUtils.hasControlOnly()) return false;
                     Orientation current = PlayerPositionUtils.getHorizontalFacing();
                     rotateCameraTo(current.getOpposite(), true);
                     playSnapSound(0.5f);
@@ -415,7 +416,7 @@ public class NumpadControls implements BalmClientModule {
                 .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_5, KeyModifiers.of(KeyModifier.CONTROL)))
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled()) return false;
+                    if (isDisabled() || !ModifierUtils.hasControlOnly()) return false;
                     MainClass.narrate(PlayerPositionUtils.getNarratableXYZPosition(), true);
                     return true;
                 })
@@ -426,7 +427,7 @@ public class NumpadControls implements BalmClientModule {
                 .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_DIVIDE, KeyModifiers.of(KeyModifier.CONTROL)))
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled() || MainClass.poiManager == null) return false;
+                    if (isDisabled() || !ModifierUtils.hasControlOnly() || MainClass.poiManager == null) return false;
                     MainClass.poiManager.objectTracker.moveGroup(-1);
                     return true;
                 })
@@ -436,7 +437,7 @@ public class NumpadControls implements BalmClientModule {
                 .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_MULTIPLY, KeyModifiers.of(KeyModifier.CONTROL)))
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled() || MainClass.poiManager == null) return false;
+                    if (isDisabled() || !ModifierUtils.hasControlOnly() || MainClass.poiManager == null) return false;
                     MainClass.poiManager.objectTracker.moveGroup(1);
                     return true;
                 })
@@ -446,7 +447,7 @@ public class NumpadControls implements BalmClientModule {
                 .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_SUBTRACT, KeyModifiers.of(KeyModifier.CONTROL)))
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled() || MainClass.poiManager == null) return false;
+                    if (isDisabled() || !ModifierUtils.hasControlOnly() || MainClass.poiManager == null) return false;
                     MainClass.poiManager.objectTracker.moveObject(-1);
                     return true;
                 })
@@ -456,7 +457,7 @@ public class NumpadControls implements BalmClientModule {
                 .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_ADD, KeyModifiers.of(KeyModifier.CONTROL)))
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled() || MainClass.poiManager == null) return false;
+                    if (isDisabled() || !ModifierUtils.hasControlOnly() || MainClass.poiManager == null) return false;
                     MainClass.poiManager.objectTracker.moveObject(1);
                     return true;
                 })
@@ -466,7 +467,7 @@ public class NumpadControls implements BalmClientModule {
                 .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_ENTER, KeyModifiers.of(KeyModifier.CONTROL)))
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled() || MainClass.poiManager == null) return false;
+                    if (isDisabled() || !ModifierUtils.hasControlOnly() || MainClass.poiManager == null) return false;
                     MainClass.poiManager.objectTracker.lookAtCurrentObject();
                     return true;
                 })
@@ -477,7 +478,7 @@ public class NumpadControls implements BalmClientModule {
                 .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_DECIMAL, KeyModifiers.of(KeyModifier.CONTROL)))
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled()) return false;
+                    if (isDisabled() || !ModifierUtils.hasControlOnly()) return false;
                     narrateTargetCoordinates();
                     return true;
                 })
@@ -493,7 +494,7 @@ public class NumpadControls implements BalmClientModule {
                 .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_8, KeyModifiers.of(KeyModifier.ALT)))
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled()) return false;
+                    if (isDisabled() || !ModifierUtils.hasAltOnly()) return false;
                     narrateHandItem(false);
                     return true;
                 })
@@ -503,7 +504,7 @@ public class NumpadControls implements BalmClientModule {
                 .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_2, KeyModifiers.of(KeyModifier.ALT)))
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled()) return false;
+                    if (isDisabled() || !ModifierUtils.hasAltOnly()) return false;
                     narrateHandItem(true);
                     return true;
                 })
@@ -513,7 +514,7 @@ public class NumpadControls implements BalmClientModule {
                 .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_4, KeyModifiers.of(KeyModifier.ALT)))
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled()) return false;
+                    if (isDisabled() || !ModifierUtils.hasAltOnly()) return false;
                     narrateActiveEffects();
                     return true;
                 })
@@ -523,7 +524,7 @@ public class NumpadControls implements BalmClientModule {
                 .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_6, KeyModifiers.of(KeyModifier.ALT)))
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled()) return false;
+                    if (isDisabled() || !ModifierUtils.hasAltOnly()) return false;
                     narrateHeldItemDurability();
                     return true;
                 })
@@ -534,7 +535,7 @@ public class NumpadControls implements BalmClientModule {
                 .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_5, KeyModifiers.of(KeyModifier.ALT)))
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled()) return false;
+                    if (isDisabled() || !ModifierUtils.hasAltOnly()) return false;
                     MainClass.narrate(PlayerPositionUtils.getFullFacingInWords(true), true);
                     return true;
                 })
@@ -545,7 +546,7 @@ public class NumpadControls implements BalmClientModule {
                 .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_1, KeyModifiers.of(KeyModifier.ALT)))
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled()) return false;
+                    if (isDisabled() || !ModifierUtils.hasAltOnly()) return false;
                     rotateCameraToPitch(90.0f, true);
                     return true;
                 })
@@ -555,7 +556,7 @@ public class NumpadControls implements BalmClientModule {
                 .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_3, KeyModifiers.of(KeyModifier.ALT)))
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled()) return false;
+                    if (isDisabled() || !ModifierUtils.hasAltOnly()) return false;
                     rotateCameraToPitch(-90.0f, true);
                     return true;
                 })
@@ -566,7 +567,7 @@ public class NumpadControls implements BalmClientModule {
                 .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_0, KeyModifiers.of(KeyModifier.ALT)))
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled() || MainClass.autoWalkManager == null) return false;
+                    if (isDisabled() || !ModifierUtils.hasAltOnly() || MainClass.autoWalkManager == null) return false;
                     MainClass.autoWalkManager.toggleAutoWalk();
                     return true;
                 })
@@ -577,7 +578,7 @@ public class NumpadControls implements BalmClientModule {
                 .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_DECIMAL, KeyModifiers.of(KeyModifier.ALT)))
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled() || MainClass.autoWalkManager == null) return false;
+                    if (isDisabled() || !ModifierUtils.hasAltOnly() || MainClass.autoWalkManager == null) return false;
                     MainClass.autoWalkManager.toggleSprint();
                     return true;
                 })
@@ -588,7 +589,7 @@ public class NumpadControls implements BalmClientModule {
                 .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_ENTER, KeyModifiers.of(KeyModifier.ALT)))
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
-                    if (isDisabled()) return false;
+                    if (isDisabled() || !ModifierUtils.hasAltOnly()) return false;
                     Minecraft client = Minecraft.getInstance();
                     client.gui.setScreen(new AccessMenu.GUI());
                     return true;
@@ -603,6 +604,28 @@ public class NumpadControls implements BalmClientModule {
         if (isDisabled()) return;
         LocalPlayer player = client.player;
         if (player == null) return;
+
+        // If any modifier (Ctrl, Alt, Shift) is held, suppress mouse button simulation and continuous rotation
+        if (ModifierUtils.hasAnyModifier()) {
+            if (keyLeftClick != null && keyLeftClick.wasDown()) {
+                MouseUtils.Key.LEFT.release();
+            }
+            if (keyRightClick != null && keyRightClick.wasDown()) {
+                MouseUtils.Key.RIGHT.release();
+            }
+            if (keyMiddleClick != null && keyMiddleClick.wasDown()) {
+                MouseUtils.Key.MIDDLE.release();
+            }
+            holdStartLookUp = 0;
+            holdStartLookDown = 0;
+            holdStartLookLeft = 0;
+            holdStartLookRight = 0;
+            holdStartLookUpLeft = 0;
+            holdStartLookUpRight = 0;
+            holdStartLookDownLeft = 0;
+            holdStartLookDownRight = 0;
+            return;
+        }
 
         // Mouse button hold simulation with proper press/release state transitions
         if (keyLeftClick != null) {

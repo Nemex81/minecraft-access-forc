@@ -69,6 +69,7 @@ public class FallDetector implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_F, KeyModifiers.of(KeyModifier.ALT)))
                 .overrideCategory(KeyMappingCategories.OTHER)
                 .handleWorldInput(_ -> {
+                    if (!org.mcaccess.minecraftaccess.utils.ModifierUtils.hasAltOnly()) return false;
                     inspectNearbyFalls();
                     return true;
                 })
@@ -78,6 +79,7 @@ public class FallDetector implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_G, KeyModifiers.of(KeyModifier.ALT)))
                 .overrideCategory(KeyMappingCategories.OTHER)
                 .handleWorldInput(_ -> {
+                    if (!org.mcaccess.minecraftaccess.utils.ModifierUtils.hasAltOnly()) return false;
                     MainClass.repeatLastNarration();
                     return true;
                 })

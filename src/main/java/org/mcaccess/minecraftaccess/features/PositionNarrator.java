@@ -33,6 +33,7 @@ public class PositionNarrator implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_V))
                 .overrideCategory(KeyMappingCategories.PLAYER_POSITION)
                 .handleWorldInput(_ -> {
+                    if (org.mcaccess.minecraftaccess.utils.ModifierUtils.hasAnyModifier()) return false;
                     MainClass.narrate(PlayerPositionUtils.getNarratableXYZPosition(), true);
                     return true;
                 })
@@ -42,6 +43,7 @@ public class PositionNarrator implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_X, KeyModifiers.of(KeyModifier.ALT)))
                 .overrideCategory(KeyMappingCategories.PLAYER_POSITION)
                 .handleWorldInput(_ -> {
+                    if (!org.mcaccess.minecraftaccess.utils.ModifierUtils.hasAltOnly()) return false;
                     MainClass.narrate(PlayerPositionUtils.getNarratableXPos(), true);
                     return true;
                 })
@@ -51,6 +53,7 @@ public class PositionNarrator implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_C, KeyModifiers.of(KeyModifier.ALT)))
                 .overrideCategory(KeyMappingCategories.PLAYER_POSITION)
                 .handleWorldInput(_ -> {
+                    if (!org.mcaccess.minecraftaccess.utils.ModifierUtils.hasAltOnly()) return false;
                     MainClass.narrate(PlayerPositionUtils.getNarratableYPos(), true);
                     return true;
                 })
@@ -60,6 +63,7 @@ public class PositionNarrator implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_Z, KeyModifiers.of(KeyModifier.ALT)))
                 .overrideCategory(KeyMappingCategories.PLAYER_POSITION)
                 .handleWorldInput(_ -> {
+                    if (!org.mcaccess.minecraftaccess.utils.ModifierUtils.hasAltOnly()) return false;
                     MainClass.narrate(PlayerPositionUtils.getNarratableZPos(), true);
                     return true;
                 })

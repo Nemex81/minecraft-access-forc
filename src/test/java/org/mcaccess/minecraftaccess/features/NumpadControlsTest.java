@@ -325,4 +325,25 @@ class NumpadControlsTest {
             return JsonParser.parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8)).getAsJsonObject();
         }
     }
+
+    @Nested
+    @DisplayName("4. Modifier Isolation & Layer Separation")
+    class ModifierIsolationTest {
+
+        @Test
+        @DisplayName("Verify modifier state helper contract")
+        void testModifierContract() {
+            // Screen mock or contract assertion
+            assertDoesNotThrow(() -> {
+                // Testing ModifierUtils class presence and static structure
+                Class<?> clazz = Class.forName("org.mcaccess.minecraftaccess.utils.ModifierUtils");
+                assertNotNull(clazz.getMethod("hasAnyModifier"));
+                assertNotNull(clazz.getMethod("hasNoModifiers"));
+                assertNotNull(clazz.getMethod("hasControlOnly"));
+                assertNotNull(clazz.getMethod("hasAltOnly"));
+                assertNotNull(clazz.getMethod("hasShiftOnly"));
+            });
+        }
+    }
 }
+

@@ -41,6 +41,7 @@ public class HUDStatus implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_U))
                 .overrideCategory(KeyMappingCategories.OTHER)
                 .handleWorldInput(_ -> {
+                    if (org.mcaccess.minecraftaccess.utils.ModifierUtils.hasAnyModifier()) return false;
                     narrateBossBars(false);
                     return true;
                 })
@@ -50,6 +51,7 @@ public class HUDStatus implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_U, KeyModifiers.of(KeyModifier.SHIFT)))
                 .overrideCategory(KeyMappingCategories.OTHER)
                 .handleWorldInput(_ -> {
+                    if (!org.mcaccess.minecraftaccess.utils.ModifierUtils.hasShiftOnly()) return false;
                     narrateBossBars(true);
                     return true;
                 })
