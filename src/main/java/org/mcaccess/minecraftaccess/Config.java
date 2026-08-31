@@ -74,6 +74,9 @@ public final class Config implements ConfigData {
     @ConfigEntry.Category("survivalTracker")
     @ConfigEntry.Gui.TransitiveObject
     public SurvivalTracker survivalTracker = new SurvivalTracker();
+    @ConfigEntry.Category("directionalPathScanner")
+    @ConfigEntry.Gui.TransitiveObject
+    public DirectionalPathScanner directionalPathScanner = new DirectionalPathScanner();
 
     private Config() {
     }
@@ -548,4 +551,60 @@ public final class Config implements ConfigData {
         }
     }
 
+    public static final class DirectionalPathScanner {
+        public boolean enabled = true;
+
+        @ConfigEntry.BoundedDiscrete(min = 4, max = 32)
+        public int scanRange = 12;
+
+        @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
+        public ExtendedKeysMode extendedKeysMode = ExtendedKeysMode.RELATIVE_TO_LOOK;
+
+        @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
+        public NumpadCardinalsMode numpadCardinalsMode = NumpadCardinalsMode.CARDINAL_FIXED;
+
+        public boolean detectObstacles = true;
+        public boolean detectDrops = true;
+
+        @ConfigEntry.BoundedDiscrete(min = 2, max = 10)
+        public int dropWarningDepth = 3;
+
+        public boolean detectItems = true;
+        public boolean detectPassiveMobs = true;
+        public boolean detectHostileMobs = true;
+        public boolean detectFluids = true;
+
+        @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
+        public VerbosityMode verbosityMode = VerbosityMode.COMPACT;
+
+        @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
+        public AudioFeedbackMode audioFeedback = AudioFeedbackMode.SOUND_AND_VOICE;
+
+        public DirectionalPathScanner() {
+        }
+
+        public enum ExtendedKeysMode {
+            RELATIVE_TO_LOOK,
+            CARDINAL_FIXED
+        }
+
+        public enum NumpadCardinalsMode {
+            CARDINAL_FIXED,
+            RELATIVE_TO_LOOK
+        }
+
+        public enum VerbosityMode {
+            COMPACT,
+            DETAILED,
+            SUMMARY_ONLY
+        }
+
+        public enum AudioFeedbackMode {
+            VOICE_ONLY,
+            SOUND_AND_VOICE,
+            SOUND_ONLY
+        }
+    }
+
 }
+

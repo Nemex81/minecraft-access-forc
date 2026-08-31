@@ -59,6 +59,7 @@ public final class MainClass {
     public static POIManager poiManager = null;
     public static org.mcaccess.minecraftaccess.features.autowalk.AutoWalkManager autoWalkManager = null;
     public static org.mcaccess.minecraftaccess.features.survival_tracker.SurvivalResourceTracker survivalResourceTracker = null;
+    public static org.mcaccess.minecraftaccess.features.directional_path_scanner.DirectionalPathScanner directionalPathScanner = null;
 
     private MainClass() {
     }
@@ -167,7 +168,9 @@ public final class MainClass {
         registrars.registerModule(new org.mcaccess.minecraftaccess.features.help.FirstRunHandler());
         registrars.registerModule(new org.mcaccess.minecraftaccess.features.help.QuickHelpKey());
         registrars.registerModule(survivalResourceTracker = new org.mcaccess.minecraftaccess.features.survival_tracker.SurvivalResourceTracker());
+        registrars.registerModule(directionalPathScanner = new org.mcaccess.minecraftaccess.features.directional_path_scanner.DirectionalPathScanner());
     }
+
 
     /**
      * This method gets called at the end of every tick.

@@ -90,4 +90,12 @@ public final class ModifierUtils {
     public static boolean hasShiftOnly() {
         return hasShift() && !hasControl() && !hasAlt();
     }
+
+    /**
+     * @return true if BOTH Control and Alt are held down (and NOT Shift).
+     */
+    public static boolean hasControlAndAlt() {
+        return hasControl() && hasAlt() && !hasShift();
+    }
 }
+

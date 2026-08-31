@@ -49,6 +49,12 @@ public class QuickKeysHelpScreen extends Screen {
             MainClass.narrate(I18n.get("minecraft_access.gui.quick_help.desc_menu"), true);
         }).width(Button.BIG_WIDTH).build());
 
+        // Category 6: Path Scanner & Probe
+        rowHelper.addChild(Button.builder(Component.translatable("minecraft_access.gui.quick_help.cat_scanner"), _ -> {
+            MainClass.narrate(I18n.get("minecraft_access.gui.quick_help.desc_scanner"), true);
+        }).width(Button.BIG_WIDTH).build());
+
+
         layout.addToContents(grid);
         layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, _ -> this.onClose())
                 .width(Button.DEFAULT_WIDTH)
