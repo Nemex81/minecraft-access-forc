@@ -190,5 +190,21 @@ Questo registro documenta i problemi tecnici complessi risolti nel tempo, preser
   - In `POIEntities.java`, creata la **Threat Sentinel**: monitoraggio continuo dei mob `Enemy` entro 6 blocchi con riproduzione di segnale acustico 3D percussivo dedicato e annuncio vocale prioritario (*"Attenzione: %s %s"*).
   - In `AutoWalkController.java`, integrata la gestione interattiva collegata a `Config.getInstance().speechSettings.narrateHints`: arresto della marcia a 2 metri da porte o cancelli chiusi, puntamento visivo sulla porta, messaggio vocale di guida (*"Porta chiusa davanti a te. Premi Tasto Destro per aprire"*) e ripresa fluida del cammino all'apertura (*"Porta aperta. Procedi"*).
 
+---
+
+### Record 18 — Risoluzione Conflitto Scorciatoie su Handler Vanilla (`Alt + T` Chat), Ergonomia Mano Sinistra (`Alt + B`) e Precedenza `options.txt`
+- **Data**: 2026-08-31
+- **Modulo Coinvolto**: `SurvivalResourceTracker.java`, `AccessMenu.java`, `options.txt`
+- **Sintomi**:
+  1. La pressione di `Alt + T` apriva la schermata della chat di Minecraft anziché avviare la scansione delle risorse base.
+  2. Dopo aver impostato `Alt + B` in Java, il client continuava ad attendere `R` e non rispondeva alla combinazione `Alt + B`.
+- **Causa Radice**:
+  1. In Minecraft Vanilla, il tasto `T` è intercettato a monte da `keyChat` nel gestore tastiera nativo, che non controlla lo stato di `Alt` e apre forzatamente la chat.
+  2. Minecraft carica e preserva i keybinding salvati in `options.txt`, dando precedenza alla cache serializzata rispetto ai default definiti in `withDefault()`.
+- **Soluzione Definitiva**:
+  1. Riassegnato il comando a **`Alt + B`**, tasto neutro non associato a funzioni Vanilla e comodissimo per l'azionamento con la sola mano sinistra.
+  2. Schermato `AccessMenu.java` con `ModifierUtils.hasAnyModifier()` per isolare `Alt + B` dal comando `B` singolo (`narrate_target`).
+  3. Sincronizzato programmaticamente il file `options.txt` nell'istanza di gioco attiva.
+
 
 

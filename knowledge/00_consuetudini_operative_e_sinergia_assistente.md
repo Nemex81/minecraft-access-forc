@@ -70,6 +70,7 @@ Il ciclo di vita di ogni modifica o nuova funzionalità segue tassativamente que
 
 ### Fase 2: Deploy Provvisorio & Collaudo Manuale In-Game di Luca
 - Copia del file `.jar` compilato nelle istanze attive di PrismLauncher.
+- **Sincronizzazione Opzioni Utente (`options.txt`)**: Se durante lo sviluppo o refactoring viene modificato il tasto di default di un comando precedentemente rilasciato o testato, aggiornare contestualmente i file `options.txt` delle istanze attive per evitare che il client preservi la vecchia cache serializzata.
 - Apertura del gioco da parte di Luca e svolgimento del collaudo pratico assistito da Antigravity (secondo il `PROTOCOLLO_COLLAUDO_E_SESSIONI_MONITORATE.md`).
 
 ### Fase 3: Chiusura Ufficiale, Merge & Documentazione Viva
