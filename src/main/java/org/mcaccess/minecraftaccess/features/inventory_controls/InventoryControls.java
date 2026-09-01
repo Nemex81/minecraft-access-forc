@@ -383,7 +383,7 @@ public class InventoryControls implements BalmClientModule {
             refreshGroupListAndSelectFirstGroup(false); // Interrupt is false to let it narrate the screen's name
         }
 
-        if (currentSlotsGroupList.isEmpty()) return;
+        if (currentSlotsGroupList == null || currentSlotsGroupList.isEmpty()) return;
 
         int currentQueuedCrafts = getQueuedCraftsCount(currentScreen);
         ItemStack currentResultStack = getResultSlotItem(currentScreen);
@@ -754,6 +754,9 @@ public class InventoryControls implements BalmClientModule {
      * @param goForward Whether to switch to next group or previous group.
      */
     private void changeGroup(boolean goForward) {
+        if (currentSlotsGroupList == null || currentSlotsGroupList.isEmpty()) {
+            return;
+        }
         int nextGroupIndex = currentGroupIndex + (goForward ? 1 : -1);
         nextGroupIndex = Mth.clamp(nextGroupIndex, 0, currentSlotsGroupList.size() - 1);
 
@@ -769,12 +772,15 @@ public class InventoryControls implements BalmClientModule {
      */
     private void refreshGroupListAndSelectFirstGroup(boolean interrupt) {
         currentSlotsGroupList = GroupGenerator.generateGroupsFromSlots(currentScreen);
-        if (currentSlotsGroupList.isEmpty()) return;
+        if (currentSlotsGroupList == null || currentSlotsGroupList.isEmpty()) return;
         currentGroupIndex = 0;
         selectGroup(interrupt);
     }
 
     private void selectGroup(boolean interrupt) {
+        if (currentSlotsGroupList == null || currentSlotsGroupList.isEmpty()) {
+            return;
+        }
         if (!isSearchBoxFocused() && Minecraft.getInstance().gui.screen() != null && Minecraft.getInstance().gui.screen().getFocused() != null) {
             Minecraft.getInstance().gui.screen().setFocused(null);
         }

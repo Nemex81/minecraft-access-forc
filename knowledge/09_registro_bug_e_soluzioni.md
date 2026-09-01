@@ -256,12 +256,12 @@ Questo registro documenta i problemi tecnici complessi risolti nel tempo, preser
 
 ---
 
-### Record 22 — NullPointerException in InventoryControls.changeGroup per Liste Slot Non Inizializzate (Nota Diagnostica)
+### Record 22 — NullPointerException in InventoryControls.changeGroup per Liste Slot Non Inizializzate
 - **Data**: 2026-09-01
-- **Modulo Coinvolto**: `features/inventory_controls/InventoryControls.java` (riga 758)
-- **Sintomi**: Nei log di chiusura sessione si registra `java.lang.NullPointerException: Cannot invoke "java.util.List.size()" because "this.currentSlotsGroupList" is null`.
-- **Causa Radice**: La pressione di un tasto di navigazione rapida a gruppi dell'inventario viene inoltrata dal gestore input anche quando la schermata inventario non ha ancora popolato o ha già liberato la lista `currentSlotsGroupList`.
-- **Soluzione da Applicare**: Inserire un guard check difensivo `if (this.currentSlotsGroupList == null || this.currentSlotsGroupList.isEmpty()) return;` all'inizio del metodo `changeGroup()`.
+- **Modulo Coinvolto**: `features/inventory_controls/InventoryControls.java`
+- **Sintomi**: Nei log di chiusura sessione si registrava `java.lang.NullPointerException: Cannot invoke "java.util.List.size()" because "this.currentSlotsGroupList" is null`.
+- **Causa Radice**: La pressione di un tasto di navigazione rapida a gruppi dell'inventario veniva inoltrata dal gestore input anche quando la schermata inventario non aveva ancora popolato o aveva già liberato la lista `currentSlotsGroupList`.
+- **Soluzione Definitiva**: Inseriti guard check difensivi `if (currentSlotsGroupList == null || currentSlotsGroupList.isEmpty()) return;` all'inizio dei metodi `changeGroup()`, `selectGroup()`, `refreshGroupListAndSelectFirstGroup()` e nel loop di `tick()`.
 
 ---
 
