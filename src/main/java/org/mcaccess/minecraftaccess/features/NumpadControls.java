@@ -33,6 +33,7 @@ import org.lwjgl.glfw.GLFW;
 import org.mcaccess.minecraftaccess.Config;
 import org.mcaccess.minecraftaccess.MainClass;
 import org.mcaccess.minecraftaccess.api.WorldNarrator;
+import org.mcaccess.minecraftaccess.features.crosshair.CrosshairFeedbackManager;
 import org.mcaccess.minecraftaccess.utils.KeyMappingCategories;
 import org.mcaccess.minecraftaccess.utils.ModifierUtils;
 import org.mcaccess.minecraftaccess.utils.NarrationPriority;
@@ -225,7 +226,7 @@ public class NumpadControls implements BalmClientModule {
                     if (mode == Config.NumpadControls.CenterHorizonFeedbackMode.SOUND_VOICE_AND_TARGET) {
                         MainClass.narrate(I18n.get("minecraft_access.numpad.look_centered"), true);
                     }
-                    narrateCrosshairTarget();
+                    CrosshairFeedbackManager.onLookCentered();
                     return true;
                 })
                 .build();
@@ -411,14 +412,13 @@ public class NumpadControls implements BalmClientModule {
                 })
                 .build();
 
-        // Narrate XYZ Coordinates (Ctrl + 5)
-        Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "numpad.orient.narrate_coordinates"))
+        // Restore Previous Look (Ctrl + 5)
+        Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "numpad.camera.restore_previous_look"))
                 .withDefault(InputBinding.key(GLFW.GLFW_KEY_KP_5, KeyModifiers.of(KeyModifier.CONTROL)))
                 .overrideCategory(KeyMappingCategories.NUMPAD_CONTROLS)
                 .handleWorldInput(_ -> {
                     if (isDisabled() || !ModifierUtils.hasControlOnly()) return false;
-                    MainClass.narrate(PlayerPositionUtils.getNarratableXYZPosition(), true);
-                    return true;
+                    return LookHistoryManager.restorePreviousLook(Minecraft.getInstance());
                 })
                 .build();
 
@@ -684,8 +684,7 @@ public class NumpadControls implements BalmClientModule {
             wasContinuouslyRotating = false;
             lastContinuousFacing = null;
             if (config.narrateFacingOnChange && config.rotationFeedbackMode != Config.NumpadControls.RotationFeedbackMode.OFF) {
-                boolean includeDegrees = config.rotationFeedbackMode != Config.NumpadControls.RotationFeedbackMode.CARDINAL_ONLY;
-                MainClass.narrate(PlayerPositionUtils.getFullFacingInWords(includeDegrees), true);
+                CrosshairFeedbackManager.onCameraRotated(true);
             }
         }
     }
@@ -694,6 +693,8 @@ public class NumpadControls implements BalmClientModule {
         if (handleLocking()) return;
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return;
+
+        LookHistoryManager.recordManualRotation(player.getYRot(), player.getXRot());
 
         Config.NumpadControls config = Config.getInstance().numpadControls;
         float angle = config.normalRotatingAngle;
@@ -722,14 +723,8 @@ public class NumpadControls implements BalmClientModule {
             }
 
             // Voice narration handling
-            if (mode == Config.NumpadControls.RotationFeedbackMode.CARDINAL_ONLY) {
-                String h = PlayerPositionUtils.getHorizontalFacingDirectionInWords();
-                String v = PlayerPositionUtils.getVerticalFacingDirectionInWords();
-                MainClass.narrate(I18n.get("minecraft_access.other.facing_direction", h + (v != null ? ", " + v : "")), true);
-            } else if (mode == Config.NumpadControls.RotationFeedbackMode.CARDINAL_AND_DEGREES
-                    || mode == Config.NumpadControls.RotationFeedbackMode.SOUND_AND_VOICE_WITH_DEGREES) {
-                String narration = PlayerPositionUtils.getFullFacingInWords(true);
-                MainClass.narrate(narration, true);
+            if (mode != Config.NumpadControls.RotationFeedbackMode.SOUND_ONLY) {
+                CrosshairFeedbackManager.onCameraRotated(true);
             }
         }
     }
@@ -738,6 +733,8 @@ public class NumpadControls implements BalmClientModule {
         if (handleLocking()) return;
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return;
+
+        LookHistoryManager.recordManualRotation(player.getYRot(), player.getXRot());
 
         Config.NumpadControls config = Config.getInstance().numpadControls;
         if (config.invertYAxis) verticalWeight = -verticalWeight;
@@ -777,16 +774,13 @@ public class NumpadControls implements BalmClientModule {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return;
 
+        LookHistoryManager.saveCurrentLook(player.getYRot(), player.getXRot());
         Vec3 playerBlockPosition = player.position();
         Vec3 targetBlockPosition = playerBlockPosition.add(Vec3.atLowerCornerOf(direction.vector));
         player.lookAt(EntityAnchorArgument.Anchor.FEET, targetBlockPosition);
 
         if (narrateChange && Config.getInstance().numpadControls.narrateFacingOnChange) {
-            if (direction.in(Orientation.Layer.MIDDLE)) {
-                MainClass.narrate(PlayerPositionUtils.getHorizontalFacingDirectionInWords(), true);
-            } else {
-                MainClass.narrate(PlayerPositionUtils.getVerticalFacingDirectionInWords(), true);
-            }
+            CrosshairFeedbackManager.onCameraRotated(true);
         }
     }
 
@@ -795,12 +789,12 @@ public class NumpadControls implements BalmClientModule {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return;
 
+        LookHistoryManager.saveCurrentLook(player.getYRot(), player.getXRot());
         player.setXRot(pitchDegrees);
         player.xRotO = pitchDegrees;
 
         if (narrateChange && Config.getInstance().numpadControls.narrateFacingOnChange) {
-            String v = PlayerPositionUtils.getVerticalFacingDirectionInWords();
-            if (v != null) MainClass.narrate(v, true);
+            CrosshairFeedbackManager.onCameraRotated(true);
         }
     }
 
@@ -808,6 +802,7 @@ public class NumpadControls implements BalmClientModule {
         if (handleLocking()) return;
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return;
+        LookHistoryManager.saveCurrentLook(player.getYRot(), player.getXRot());
         player.setXRot(0.0f);
         player.xRotO = 0.0f;
     }

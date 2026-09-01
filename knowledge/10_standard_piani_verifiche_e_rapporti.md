@@ -88,31 +88,52 @@ Ogni piano o soluzione tecnica deve essere convalidato rispetto a 7 criteri:
 
 ---
 
-## 7. Pipeline Ufficiale a 4 Fasi (Compilazione, Test, Deploy, Chiusura e Auto-Apprendimento)
+## 7. Pipeline Ufficiale a 4 Fasi (Pianificazione, Esecuzione, Deploy, Chiusura e Auto-Apprendimento)
 
 La conclusione di ogni sessione implementativa segue tassativamente una sequenza a 4 fasi:
 
-### Fase 1: Pre-Flight Check, Build e Test Automatici
-1. **Pre-Flight Environment Check**: Verifica preliminare di conformità dell'ambiente (JDK 25, `$env:JAVA_HOME` e flag `--no-daemon` per evitare blocchi file di OneDrive).
-2. **Verifica Compilazione**: Esecuzione di `.\gradlew.bat --no-daemon compileJava` e `compileTestJava`.
-3. **Esecuzione Test Unitari**: Esecuzione di `.\gradlew.bat --no-daemon :test` per confermare che tutti i test passino al 100%.
-4. **Generazione Pacchetto JAR**: Esecuzione di `.\gradlew.bat --no-daemon shadowJar`.
+### Fase 1: Pianificazione Formale, Esecuzione Tecnica & Test Automatici (Disaccoppiamento 1A / 1B)
+1. **Sotto-Fase 1A (Pianificazione & Checkpoint di Stop Obbligatorio)**:
+   - Redazione del piano tecnico implementativo in `docs/piani/attivi/` e nell'artifact `implementation_plan.md`.
+   - **DIVIETO ASSOLUTO DI SCRITTURA CODICE**: L'assistente deve tassativamente fermarsi, presentare il piano a Luca e attendere la convalida esplicita prima di modificare file sorgenti o configurazioni.
+2. **Sotto-Fase 1B (Esecuzione Tecnica & Test - Solo post-convalida piano)**:
+   - *Pre-Flight Environment Check*: Verifica preliminare di conformità dell'ambiente (JDK 25, `$env:JAVA_HOME` e flag `--no-daemon` per evitare blocchi file di OneDrive).
+   - *Modifiche Sorgenti & I18N*: Editing del codice e verifica dell'ordinamento alfabetico JSON (`jq -e "keys != keys_unsorted"`).
+   - *Verifica Compilazione*: Esecuzione di `.\gradlew.bat --no-daemon compileJava compileTestJava`.
+   - *Esecuzione Test Unitari*: Esecuzione di `.\gradlew.bat --no-daemon :test` per confermare che tutti i test passino al 100%.
+   - *Generazione Pacchetto JAR*: Esecuzione di `.\gradlew.bat --no-daemon shadowJar`.
 
 ### Fase 2: Deploy di Prova e Collaudo Manuale Utente
-4. **Deploy Provvisorio nelle Istanze**: Copia e sovrascrittura del file `.jar` appena compilato nelle cartelle `mods/` delle istanze PrismLauncher attive del giocatore (per consentire l'apertura del gioco).
-5. **Rapporto e Consegna a Luca**: Presentazione del resoconto modifiche e avvio del test manuale in-game condotto secondo il manuale [`PROTOCOLLO_COLLAUDO_E_SESSIONI_MONITORATE.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/manuali/PROTOCOLLO_COLLAUDO_E_SESSIONI_MONITORATE.md). In questa fase il piano rimane attivo in `docs/piani/attivi/` e la cartella di backup rimane intatta.
+3. **Deploy Provvisorio nelle Istanze**: Copia e sovrascrittura del file `.jar` appena compilato nelle cartelle `mods/` delle istanze PrismLauncher attive del giocatore (per consentire l'apertura del gioco).
+4. **Rapporto e Consegna a Luca**: Presentazione del resoconto modifiche e avvio del test manuale in-game condotto secondo il manuale [`PROTOCOLLO_COLLAUDO_E_SESSIONI_MONITORATE.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/manuali/PROTOCOLLO_COLLAUDO_E_SESSIONI_MONITORATE.md). In questa fase il piano rimane attivo in `docs/piani/attivi/` e la cartella di backup rimane intatta.
 
 ### Fase 3: Chiusura Ufficiale, Merge & Documentazione Viva (Solo dopo il test in-game di Luca)
-6. **Merge su `mymaster`**: Esecuzione di `git merge --no-ff feat/nome-feature` sul branch master personale.
-7. **Aggiornamento Documentazione Viva**:
+5. **Merge su `mymaster`**: Esecuzione di `git merge --no-ff feat/nome-feature` sul branch master personale.
+6. **Aggiornamento Documentazione Viva**:
    - Aggiornamento di `docs/content/changelog.md` con il dettaglio delle modifiche.
    - Allineamento di `docs/architecture.md` e `docs/api.md` (se modificate architetture o API).
    - Aggiornamento di `README.md`, `keybindings.md` e `features.md` (se introdotti nuovi comandi/tasti).
-8. **Aggiornamento Backup PC Portatile**: Solo dopo il collaudo manuale positivo di Luca, promozione del JAR stabile nella cartella di backup:
+7. **Aggiornamento Backup PC Portatile**: Solo dopo il collaudo manuale positivo di Luca, promozione del JAR stabile nella cartella di backup:
    `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft archivio backup\minecraft backup\Minecraft 26.2 Access 1.12.0 pc portatile\minecraft\mods\`
-9. **Archiviazione del Piano Tecnico**: Spostamento del file del piano nella cartella `docs\piani\completati\` con marcatura `[COMPLETATO, COLLAUDATO E INTEGRATO]`.
-10. **Commit & Push su `origin/mymaster`**.
+8. **Archiviazione del Piano Tecnico**: Spostamento del file del piano nella cartella `docs\piani\completati\` con marcatura `[COMPLETATO, COLLAUDATO E INTEGRATO]`.
+9. **Commit & Push su `origin/mymaster`**.
+10. **Chiusura con Domanda Ponte Obbligatoria**:
+    > *"Vuoi che avviamo ora la sessione formale di Auto-Apprendimento (Fase 4) per elaborare la bozza dettagliata delle regole e aggiornare le schede di conoscenza e governance?"*
 
-### Fase 4: Auto-Apprendimento Automatico Post-Chiusura (Trigger Sistematico)
-8. **Analisi Retrospettiva Autonoma**: Subito dopo la Fase 3, Antigravity avvia **automaticamente e senza richiesta esplicita** una sessione di analisi diagnostica retrospettiva sulle implementazioni svolte, sui problemi affrontati e sulle soluzioni fisiche/ergonomiche adottate.
-9. **Strategia e Proposta di Nuove Regole**: Antigravity valuta quali lezioni hanno valore generale permanente, elabora la strategia di conversione in regole formali per `knowledge/` e `gemini.md`, presenta a Luca un riepilogo chiaro e strutturato e richiede la conferma prima di applicarle.
+### Fase 4: Auto-Apprendimento Continuo a Doppio Binario (Al via libera di Luca)
+11. **Mappatura Schede**: Individuazione chirurgica delle schede locali (`knowledge/`) e globali (Master Hub) da aggiornare.
+12. **Redazione Bozza Pronta**: Stesura dei testi completi e richiesta di convalida finale prima di applicarli.
+
+---
+
+## 8. Protocollo di Revisione e Affinamento Post-Implementazione (PRAPI)
+
+Quando durante la Fase 2 (Collaudo manuale in-game di Luca) emergono micro-anomalie comportamentali, calibrazioni metriche o esigenze di rifinitura:
+1. **Acquisizione Feedback & Diagnosi Telemetrica**:
+   - Analisi mirata dei log di gioco (`latest.log`) e telemetria per isolare l'origine esatta dello scostamento;
+2. **Riformulazione Voxel/Logica & Aggiornamento Piano Attivo (Sotto-Fase 1A Rapida)**:
+   - Redazione della strategia correttiva, registrazione nel registro revisioni e aggiornamento del piano tecnico in `docs/piani/attivi/`;
+3. **Stop Obbligatorio & Gating di Convalida**:
+   - Richiesta formale di conferma a Luca prima di applicare modifiche ai sorgenti;
+4. **Implementazione Chirurgica, Build & Re-Deploy (Sotto-Fase 1B)**:
+   - Applicazione modifiche, esecuzione test JUnit, compilazione con `--no-daemon` su JDK 25 e deploy automatico nelle istanze attive prima del nuovo collaudo.

@@ -279,6 +279,7 @@ class NumpadControlsTest {
                     "key.minecraft_access.numpad.orient.south_west",
                     "key.minecraft_access.numpad.orient.south_east",
                     "key.minecraft_access.numpad.orient.look_behind",
+                    "key.minecraft_access.numpad.camera.restore_previous_look",
                     "key.minecraft_access.numpad.orient.narrate_coordinates",
                     "key.minecraft_access.numpad.orient.narrate_target_coords",
                     "key.minecraft_access.numpad.status.player_all",

@@ -12,6 +12,8 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
+import org.mcaccess.minecraftaccess.Config;
+
 public final class ObstacleDetectionUtils {
 
     public static final double AUTO_STEP_THRESHOLD = 0.60;
@@ -215,5 +217,190 @@ public final class ObstacleDetectionUtils {
                 case SLOPE -> I18n.get("minecraft_access.obstacle_detector.low_ceiling.slope", blockName);
             };
         };
+    }
+
+    public static double calculateRelativeAngle(Vec3 moveDir, float playerYaw) {
+        if (moveDir == null || (moveDir.x == 0 && moveDir.z == 0)) {
+            return 0.0;
+        }
+        // Geographic compass angle of movement (0 = North, 90 = East, 180 = South, 270 = West)
+        double moveCompassDeg = (Math.toDegrees(Math.atan2(moveDir.x, -moveDir.z)) + 360.0) % 360.0;
+        float rawYaw = (playerYaw % 360.0f + 360.0f) % 360.0f;
+        double playerHeading = (rawYaw + 180.0f) % 360.0f;
+        return (moveCompassDeg - playerHeading + 360.0) % 360.0;
+    }
+
+    public static @Nullable String getRelativeDirectionString(double relAngle, Config.ObstacleDetector.DirectionFeedbackMode mode) {
+        if (mode == null || mode == Config.ObstacleDetector.DirectionFeedbackMode.OFF) {
+            return null;
+        }
+        double a = ((relAngle % 360.0) + 360.0) % 360.0;
+        if (mode == Config.ObstacleDetector.DirectionFeedbackMode.FOUR_DIRECTIONS || mode == Config.ObstacleDetector.DirectionFeedbackMode.OMIT_FORWARD) {
+            if (a >= 315.0 || a < 45.0) {
+                return mode == Config.ObstacleDetector.DirectionFeedbackMode.OMIT_FORWARD ? null : I18n.get("minecraft_access.obstacle_detector.dir_forward");
+            } else if (a < 135.0) {
+                return I18n.get("minecraft_access.obstacle_detector.dir_right");
+            } else if (a < 225.0) {
+                return I18n.get("minecraft_access.obstacle_detector.dir_back");
+            } else {
+                return I18n.get("minecraft_access.obstacle_detector.dir_left");
+            }
+        } else if (mode == Config.ObstacleDetector.DirectionFeedbackMode.EIGHT_DIRECTIONS) {
+            if (a >= 337.5 || a < 22.5) {
+                return I18n.get("minecraft_access.obstacle_detector.dir_forward");
+            } else if (a < 67.5) {
+                return I18n.get("minecraft_access.obstacle_detector.dir_forward_right");
+            } else if (a < 112.5) {
+                return I18n.get("minecraft_access.obstacle_detector.dir_right");
+            } else if (a < 157.5) {
+                return I18n.get("minecraft_access.obstacle_detector.dir_back_right");
+            } else if (a < 202.5) {
+                return I18n.get("minecraft_access.obstacle_detector.dir_back");
+            } else if (a < 247.5) {
+                return I18n.get("minecraft_access.obstacle_detector.dir_back_left");
+            } else if (a < 292.5) {
+                return I18n.get("minecraft_access.obstacle_detector.dir_left");
+            } else {
+                return I18n.get("minecraft_access.obstacle_detector.dir_forward_left");
+            }
+        }
+        return null;
+    }
+
+    public record DirectionalObstacle(
+            double relativeAngle,
+            String directionName,
+            ObstacleScanResult result,
+            int distanceInBlocks
+    ) {
+    }
+
+    public record PanoramicScanResult(
+            boolean playerHeadroomSolid,
+            @Nullable BlockState playerHeadroomState,
+            List<DirectionalObstacle> obstacles,
+            List<String> clearDirections,
+            int scannedRange
+    ) {
+    }
+
+    public static @Nullable Double calculateIntendedMoveAngle(boolean up, boolean down, boolean left, boolean right) {
+        double inputZ = 0; // forward (+1) / back (-1)
+        double inputX = 0; // strafe left (+1) / strafe right (-1)
+        if (up) inputZ += 1;
+        if (down) inputZ -= 1;
+        if (left) inputX += 1;
+        if (right) inputX -= 1;
+
+        if (inputZ == 0 && inputX == 0) {
+            return null;
+        }
+
+        // In Minecraft coordinates: W = 0, D = 90, S = 180, A = 270
+        double relDeg = Math.toDegrees(Math.atan2(-inputX, inputZ));
+        return (relDeg + 360.0) % 360.0;
+    }
+
+    public static Vec3 calculateWorldMoveDirFromRelativeAngle(double relAngleDeg, float playerYaw) {
+        float rawYaw = (playerYaw % 360.0f + 360.0f) % 360.0f;
+        double playerHeading = (rawYaw + 180.0f) % 360.0f;
+        double worldCompassDeg = (playerHeading + relAngleDeg + 360.0) % 360.0;
+        double rad = Math.toRadians(worldCompassDeg);
+        double vx = Math.sin(rad);
+        double vz = -Math.cos(rad);
+        return new Vec3(vx, 0, vz).normalize();
+    }
+
+    public static PanoramicScanResult scanPanoramic(Level level, Vec3 playerPos, float playerYaw, int range,
+                                                   Config.ObstacleDetector.DirectionFeedbackMode mode, boolean checkHeadroom) {
+        if (level == null || playerPos == null) {
+            return new PanoramicScanResult(false, null, List.of(), List.of(), range);
+        }
+
+        int scanRange = Math.max(1, range);
+        double playerFeetY = playerPos.y;
+        int baseGroundY = (int) Math.floor(playerFeetY - 0.05);
+
+        boolean playerHeadroomSolid = false;
+        BlockState playerHeadroomState = null;
+        if (checkHeadroom) {
+            BlockPos playerHeadroomPos = BlockPos.containing(playerPos.x, baseGroundY + 3, playerPos.z);
+            if (isSolid(level, playerHeadroomPos)) {
+                playerHeadroomSolid = true;
+                playerHeadroomState = level.getBlockState(playerHeadroomPos);
+            }
+        }
+
+        double[] angles;
+        if (mode == Config.ObstacleDetector.DirectionFeedbackMode.EIGHT_DIRECTIONS) {
+            angles = new double[]{0.0, 45.0, 90.0, 135.0, 180.0, 225.0, 270.0, 315.0};
+        } else {
+            angles = new double[]{0.0, 90.0, 180.0, 270.0};
+        }
+
+        List<DirectionalObstacle> obstacles = new ArrayList<>();
+        List<String> clearDirections = new ArrayList<>();
+
+        for (double relAngle : angles) {
+            Vec3 rayDir = calculateWorldMoveDirFromRelativeAngle(relAngle, playerYaw);
+            ObstacleScanResult res = scan(level, playerPos, rayDir, scanRange);
+            String dirName = getRelativeDirectionString(relAngle, mode != null ? mode : Config.ObstacleDetector.DirectionFeedbackMode.FOUR_DIRECTIONS);
+            if (dirName == null || dirName.isBlank()) {
+                dirName = I18n.get("minecraft_access.obstacle_detector.dir_forward");
+            }
+
+            if (res.state() != ObstacleState.CLEAR) {
+                double dx = res.targetFootPos().getX() + 0.5 - playerPos.x;
+                double dz = res.targetFootPos().getZ() + 0.5 - playerPos.z;
+                int dist = Math.max(1, (int) Math.round(Math.sqrt(dx * dx + dz * dz)));
+                obstacles.add(new DirectionalObstacle(relAngle, dirName, res, dist));
+            } else {
+                clearDirections.add(dirName);
+            }
+        }
+
+        return new PanoramicScanResult(playerHeadroomSolid, playerHeadroomState, obstacles, clearDirections, scanRange);
+    }
+
+    public static String getPanoramicNarrationMessage(PanoramicScanResult pano, NarrationStyle style) {
+        StringBuilder sb = new StringBuilder();
+
+        if (pano.playerHeadroomSolid()) {
+            String headBlockName = pano.playerHeadroomState() != null ? pano.playerHeadroomState().getBlock().getName().getString() : "";
+            sb.append(I18n.get("minecraft_access.obstacle_detector.player_headroom_blocked", headBlockName));
+        }
+
+        if (pano.obstacles().isEmpty()) {
+            if (sb.length() > 0) {
+                sb.append(". ");
+            }
+            sb.append(I18n.get("minecraft_access.obstacle_detector.panoramic_clear", pano.scannedRange()));
+            return sb.toString();
+        }
+
+        for (DirectionalObstacle obs : pano.obstacles()) {
+            if (sb.length() > 0) {
+                sb.append(". ");
+            }
+            String baseMsg = getNarrationMessage(obs.result(), style);
+            String distStr = obs.distanceInBlocks() == 1
+                    ? I18n.get("minecraft_access.obstacle_detector.at_distance_single", baseMsg)
+                    : I18n.get("minecraft_access.obstacle_detector.at_distance", baseMsg, obs.distanceInBlocks());
+            sb.append(I18n.get("minecraft_access.obstacle_detector.with_direction", obs.directionName(), distStr));
+        }
+
+        return sb.toString();
+    }
+
+    public static String getNarrationMessage(ObstacleScanResult result, NarrationStyle style, double relAngle, Config.ObstacleDetector.DirectionFeedbackMode mode) {
+        String baseMessage = getNarrationMessage(result, style);
+        if (result.state() == ObstacleState.CLEAR) {
+            return baseMessage;
+        }
+        String dirString = getRelativeDirectionString(relAngle, mode);
+        if (dirString != null && !dirString.isBlank()) {
+            return I18n.get("minecraft_access.obstacle_detector.with_direction", dirString, baseMessage);
+        }
+        return baseMessage;
     }
 }

@@ -235,6 +235,48 @@ Questo registro documenta i problemi tecnici complessi risolti nel tempo, preser
   1. Rimozione del metodo inesistente in `EntityMixin.java`, concentrando l'iniezione sui 3 metodi effettivi dei passi: `playStepSound`, `playCombinationStepSounds` e `playMuffledStepSound`.
   2. Impostazione esplicita di `require = 0` su tutti i `@ModifyArg` per garantire la massima tolleranza e compatibilità a runtime.
 
+---
+
+### Record 21 — Disaccoppiamento a Due Zone per Auto-Sneak Anticaduta, Riconoscimento Blocchi Speciali (Cobweb) ed Eccezioni Discesa Scale a Pioli
+- **Data**: 2026-09-01
+- **Modulo Coinvolto**: `FallDetector.java`, `Config.java`, `it_it.json`, `en_us.json`
+- **Sintomi**:
+  1. L'auto-sneak forzava l'accovacciamento 2 o 3 blocchi prima del baratro, costringendo il giocatore a muoversi a passo d'uomo per metri.
+  2. Tentando di scendere dal tetto di un edificio imboccando una scala a pioli appesa alla parete, l'anticaduta bloccava l'accesso considerandola caduta mortale.
+  3. L'uso della classe inesistente `CobwebBlock` causava errori di compilazione in Minecraft 1.21.x / 26.2.
+- **Causa Radice**:
+  1. Mancanza di disaccoppiamento tra raggio look-ahead informativo ($d \le \text{slowdownDistance}$) e soglia fisica di ciglio ($d \le 0.85\text{ m}$).
+  2. Mancata scansione della colonna verticale per blocchi con tag `BlockTags.CLIMBABLE`.
+  3. In Fabric 1.21.x la ragnatela è un blocco generico identificato da `Blocks.COBWEB` e non da una classe dedicata `CobwebBlock`.
+- **Soluzione Definitiva**:
+  1. Strutturata l'architettura a due zone: pre-allerta a distanza $> 0.85\text{ m}$ (solo avviso/slowdown) e auto-sneak sul bordo immediato $\le 0.85\text{ m}$.
+  2. Implementato `isSafeClimbableDescender` per validare le discese continue su scale a pioli, liane e impalcature.
+  3. Sostituito `CobwebBlock` con il check di registro `state.is(Blocks.COBWEB)` e arricchita la matrice di landing con fieno, miele, slime e neve polverosa.
+  4. Aggiunto l'Edge Bump debounced (1500 ms) configurabile in Cloth Config (`EdgeBumpFeedbackMode`).
+
+---
+
+### Record 22 — NullPointerException in InventoryControls.changeGroup per Liste Slot Non Inizializzate (Nota Diagnostica)
+- **Data**: 2026-09-01
+- **Modulo Coinvolto**: `features/inventory_controls/InventoryControls.java` (riga 758)
+- **Sintomi**: Nei log di chiusura sessione si registra `java.lang.NullPointerException: Cannot invoke "java.util.List.size()" because "this.currentSlotsGroupList" is null`.
+- **Causa Radice**: La pressione di un tasto di navigazione rapida a gruppi dell'inventario viene inoltrata dal gestore input anche quando la schermata inventario non ha ancora popolato o ha già liberato la lista `currentSlotsGroupList`.
+- **Soluzione da Applicare**: Inserire un guard check difensivo `if (this.currentSlotsGroupList == null || this.currentSlotsGroupList.isEmpty()) return;` all'inizio del metodo `changeGroup()`.
+
+---
+
+### Record 23 — Bypass da Salto sul Ciglio dei Baratri e Neutralizzazione Mixin di `LivingEntity.jumpFromGround()`
+- **Data**: 2026-09-01
+- **Modulo Coinvolto**: `LivingEntityMixin.java`, `FallDetector.java`
+- **Sintomi**: Nonostante l'auto-accovacciamento fosse attivo sul ciglio del burrone, premendo la barra spaziatrice il personaggio spiccava il salto, staccava i piedi da terra e precipitava nel vuoto (cadute registrate da 20 blocchi di altezza).
+- **Causa Radice**:
+  1. *Fisica Minecraft*: Lo sneak blocca l'oltrepassamento del bordo solo a contatto con il suolo (`player.onGround() == true`). In aria, l'inerzia orizzontale fa superare il ciglio.
+  2. *Corsa dei Tick*: Nel tick del client, `LocalPlayer.aiStep()` elabora l'input della tastiera e invoca `LivingEntity.jumpFromGround()` *prima* che l'evento `ClientPlayingTick.AFTER` possa intervenire. Azzerare `keyJump.setDown(false)` a posteriori interveniva a salto già avvenuto.
+- **Soluzione Definitiva**:
+  1. Iniezione cancellabile in `LivingEntityMixin.java` su `jumpFromGround()` con `@Inject(method = "jumpFromGround", at = @At("HEAD"), cancellable = true)` che chiama `ci.cancel()` se `FallDetector.isAutoSneakActive()` è `true`.
+  2. Rimozione dell'istruzione inefficace `keyJump.setDown(false)` da `FallDetector.java`.
+  3. Il salto torna libero all'istante non appena ci si allontana dal ciglio con `S` o si disattiva la protezione con `Ctrl + Alt + F`.
+
 
 
 

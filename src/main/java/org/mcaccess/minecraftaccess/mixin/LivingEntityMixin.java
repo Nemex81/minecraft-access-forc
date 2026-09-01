@@ -16,11 +16,19 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import org.mcaccess.minecraftaccess.MainClass;
+import org.mcaccess.minecraftaccess.features.FallDetector;
 import org.mcaccess.minecraftaccess.utils.NarrationUtils;
 
 @SuppressWarnings("EqualsBetweenInconvertibleTypes")
 @Mixin(LivingEntity.class)
 abstract class LivingEntityMixin {
+    @Inject(method = "jumpFromGround", at = @At("HEAD"), cancellable = true)
+    private void cancelJumpWhenAutoSneakActive(CallbackInfo ci) {
+        if (Objects.equals(Minecraft.getInstance().player, this) && FallDetector.isAutoSneakActive()) {
+            ci.cancel();
+        }
+    }
+
     @Inject(method = "onEffectUpdated", at = @At("TAIL"))
     private void narrateEffectApplication(MobEffectInstance effect, boolean doRefreshAttributes, Entity source, CallbackInfo ci) {
         if (Objects.equals(Minecraft.getInstance().player, this)) {

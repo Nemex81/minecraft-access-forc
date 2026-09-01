@@ -15,6 +15,7 @@ import org.mcaccess.minecraftaccess.api.AccessMenuFunction;
 import org.mcaccess.minecraftaccess.api.Status;
 import org.mcaccess.minecraftaccess.api.WorldNarrator;
 import org.mcaccess.minecraftaccess.features.ObstacleDetectionUtils.NarrationStyle;
+import org.mcaccess.minecraftaccess.features.crosshair.CrosshairReadingOrder;
 import org.mcaccess.minecraftaccess.utils.config.ConfigExtension;
 
 @me.shedaniel.autoconfig.annotation.Config(name = "minecraft-access")
@@ -356,9 +357,21 @@ public final class Config implements ConfigData {
         public boolean autoSlowdown = true;
         public int slowdownDistance = 3;
         public boolean autoRestoreSprint = true;
+        public boolean autoSneakOnEdge = true;
+        public boolean playAudioCues = true;
         public boolean voiceWarning = true;
 
+        @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
+        public EdgeBumpFeedbackMode edgeBumpFeedbackMode = EdgeBumpFeedbackMode.SOUND_AND_VOICE;
+
         private FallDetector() {
+        }
+
+        public enum EdgeBumpFeedbackMode {
+            SOUND_AND_VOICE,
+            SOUND_ONLY,
+            VOICE_ONLY,
+            OFF
         }
     }
 
@@ -368,12 +381,26 @@ public final class Config implements ConfigData {
         public float volume = 0.5f;
         public boolean voiceWarning = true;
         public boolean lookAtObstacleOnInspection = true;
+        @ConfigEntry.BoundedDiscrete(min = 100, max = 2000)
         public int delay = 500;
+        @ConfigEntry.BoundedDiscrete(min = 1, max = 5)
         public int detectionRange = 1;
+        @ConfigEntry.BoundedDiscrete(min = 1, max = 24)
+        public int panoramicRange = 8;
+        public boolean checkHeadroomClearance = true;
         @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
         public NarrationStyle narrationStyle = NarrationStyle.BLOCK;
+        @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
+        public DirectionFeedbackMode directionFeedbackMode = DirectionFeedbackMode.FOUR_DIRECTIONS;
 
         private ObstacleDetector() {
+        }
+
+        public enum DirectionFeedbackMode {
+            FOUR_DIRECTIONS,
+            EIGHT_DIRECTIONS,
+            OMIT_FORWARD,
+            OFF
         }
     }
 
@@ -385,6 +412,15 @@ public final class Config implements ConfigData {
         public boolean disableNarratingConsecutiveBlocks = false;
         public long repetitionInterval = 0;
         public boolean narrateAdditionalEntityPoses = true;
+
+        @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
+        public CrosshairReadingOrder readingOrder = CrosshairReadingOrder.TARGET_FIRST;
+
+        public boolean includeBlock = true;
+        public boolean includeDistance = false;
+        public boolean includeCardinal = true;
+        public boolean includeCompassDegrees = true;
+        public boolean includePitchAngle = true;
 
         @ConfigEntry.Gui.CollapsibleObject
         public RelativePositionSoundCue relativePositionSoundCue = new RelativePositionSoundCue();

@@ -15,8 +15,9 @@ Questo file costituisce l'**Hub Centrale di Contesto** del progetto `minecraft-a
 
 ## 🌟 Le 9 Regole Auree Inviolabili del Progetto
 
-0. **Consuetudini Operative, Dialogo a 2 Tempi & Eliminazione Protetta**:
+0. **Consuetudini Operative, Dialogo a 2 Tempi & Gating Semantico**:
    - Antigravity assume per default la modalità esplorativa/consultiva: analizza, verifica i log, consulta chirurgicamente le schede di riferimento e **attende sempre la conferma esplicita di Luca prima di modificare file, codice o documentazione**.
+   - **Gating Semantico e Disaccoppiamento Fase 1**: Comandi come *"passa alla fase 1"* autorizzano **esclusivamente la stesura del Piano Tecnico Formale (Sotto-Fase 1A)**. L'assistente redige il piano, lo registra in `docs/piani/attivi/` e si arresta tassativamente (**Stop Obbligatorio**), attendendo la convalida esplicita di Luca post-lettura del piano prima di modificare codice sorgente o configurazioni (Sotto-Fase 1B).
    - Standard di validazione preventiva a 7 assi e routing intelligente codificati nella scheda [`00_consuetudini_operative_e_sinergia_assistente.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/knowledge/00_consuetudini_operative_e_sinergia_assistente.md).
    - **Protocollo di Eliminazione Consapevole e Protetta**: Prima di eliminare qualsiasi file (su ordine diretto o refactoring), Antigravity deve motivare la scelta, descriverne impatto ed effetti, verificare l'assenza di perdita dati e chiedere conferma esplicita prima di procedere.
 
@@ -60,7 +61,8 @@ Questo file costituisce l'**Hub Centrale di Contesto** del progetto `minecraft-a
    - Divieto assoluto di diagrammi grafici, disegni 2D, box ASCII complessi o frecce multidirezionali che risultano inaccessibili con la lettura riga per riga. Tutta l'informazione deve essere strutturata linearmente con logiche sequenziali ("Se... Allora"), elenchi puntati semantici e descrizioni spaziali matematico-verbali.
 
 8. **Ciclo di Vita dei Piani a 4 Fasi & Protocollo di Transizione per la Fase 4**:
-   - *Fase 1*: Build e test automatici Gradle (`.\gradlew.bat --no-daemon test shadowJar`).
+   - *Fase 1A (Pianificazione & Stop)*: Redazione formale del piano tecnico in `docs/piani/attivi/` e checkpoint di stop per revisione e convalida di Luca. Divieto assoluto di modifiche al codice.
+   - *Fase 1B (Esecuzione Tecnica & Test)*: Modifiche ai sorgenti, build e test automatici Gradle (`.\gradlew.bat --no-daemon test shadowJar`) eseguiti solo POST-APPROVAZIONE del piano.
    - *Fase 2*: Deploy provvisorio in PrismLauncher e collaudo manuale in-game di Luca ([`PROTOCOLLO_COLLAUDO_E_SESSIONI_MONITORATE.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/manuali/PROTOCOLLO_COLLAUDO_E_SESSIONI_MONITORATE.md)).
    - *Fase 3*: Chiusura simultanea (merge del branch su `mymaster` + aggiornamento documentazione viva `changelog.md`/`architecture.md`/`api.md` + aggiornamento backup PC Portatile + archiviazione del piano in `docs/piani/completati/`).
    - *Fase 4 (Transizione & Esecuzione Formale)*:

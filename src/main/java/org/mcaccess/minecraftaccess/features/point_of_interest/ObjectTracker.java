@@ -335,22 +335,27 @@ public class ObjectTracker implements BalmClientModule {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return;
 
+        org.mcaccess.minecraftaccess.features.LookHistoryManager.saveCurrentLook(player.getYRot(), player.getXRot());
+
         switch (currentObject) {
             case Entity entity -> {
                 player.lookAt(EntityAnchorArgument.Anchor.EYES, entity.getEyePosition());
                 String name = MainClass.registry(WorldNarrator.class).get(Config.getInstance().narrateCrosshair.narrator).narrate(entity);
-                MainClass.narrate(I18n.get("minecraft_access.point_of_interest.look_at", name), true);
+                String facing = org.mcaccess.minecraftaccess.utils.position.PlayerPositionUtils.getFullFacingInWords(true);
+                MainClass.narrate(I18n.get("minecraft_access.point_of_interest.look_at", name, facing), true);
             }
             case BlockPos blockPos -> {
                 player.lookAt(EntityAnchorArgument.Anchor.EYES, Vec3.atCenterOf(blockPos));
                 String name = MainClass.registry(WorldNarrator.class).get(Config.getInstance().narrateCrosshair.narrator).narrate(blockPos);
-                MainClass.narrate(I18n.get("minecraft_access.point_of_interest.look_at", name), true);
+                String facing = org.mcaccess.minecraftaccess.utils.position.PlayerPositionUtils.getFullFacingInWords(true);
+                MainClass.narrate(I18n.get("minecraft_access.point_of_interest.look_at", name, facing), true);
             }
             case Waypoint waypoint -> {
                 Vec3 targetVec = WaypointUtils.getTargetVectorForPlayer(waypoint, player, Config.getInstance().poi.waypoints.crossDimensionConversion);
                 if (targetVec != null) {
                     player.lookAt(EntityAnchorArgument.Anchor.EYES, targetVec);
-                    MainClass.narrate(I18n.get("minecraft_access.point_of_interest.look_at", waypoint.name()), true);
+                    String facing = org.mcaccess.minecraftaccess.utils.position.PlayerPositionUtils.getFullFacingInWords(true);
+                    MainClass.narrate(I18n.get("minecraft_access.point_of_interest.look_at", waypoint.name(), facing), true);
                 } else {
                     MainClass.narrate(I18n.get("minecraft_access.point_of_interest.other_dimension", WaypointUtils.getDimensionName(waypoint.dimension())), true);
                 }

@@ -164,13 +164,78 @@ class ObstacleDetectorTest {
     }
 
     @Test
-    @DisplayName("Verify NarrationStyle enum values")
-    void testNarrationStyles() {
+    @DisplayName("Verify NarrationStyle and DirectionFeedbackMode enum values")
+    void testNarrationStylesAndDirectionModes() {
         assertEquals(4, ObstacleDetectionUtils.NarrationStyle.values().length);
         assertNotNull(ObstacleDetectionUtils.NarrationStyle.valueOf("BLOCK"));
         assertNotNull(ObstacleDetectionUtils.NarrationStyle.valueOf("ELEVATION"));
         assertNotNull(ObstacleDetectionUtils.NarrationStyle.valueOf("DIRECT"));
         assertNotNull(ObstacleDetectionUtils.NarrationStyle.valueOf("SLOPE"));
+
+        assertEquals(4, org.mcaccess.minecraftaccess.Config.ObstacleDetector.DirectionFeedbackMode.values().length);
+        assertNotNull(org.mcaccess.minecraftaccess.Config.ObstacleDetector.DirectionFeedbackMode.valueOf("FOUR_DIRECTIONS"));
+        assertNotNull(org.mcaccess.minecraftaccess.Config.ObstacleDetector.DirectionFeedbackMode.valueOf("EIGHT_DIRECTIONS"));
+        assertNotNull(org.mcaccess.minecraftaccess.Config.ObstacleDetector.DirectionFeedbackMode.valueOf("OMIT_FORWARD"));
+        assertNotNull(org.mcaccess.minecraftaccess.Config.ObstacleDetector.DirectionFeedbackMode.valueOf("OFF"));
+    }
+
+    @Test
+    @DisplayName("Verify relative angle calculation across headings and movement directions")
+    void testRelativeAngleCalculation() {
+        // Player facing North (yaw = 180, heading = 0)
+        assertEquals(0.0, ObstacleDetectionUtils.calculateRelativeAngle(new Vec3(0, 0, -1), 180.0f), 0.001); // Forward
+        assertEquals(180.0, ObstacleDetectionUtils.calculateRelativeAngle(new Vec3(0, 0, 1), 180.0f), 0.001);  // Backward
+        assertEquals(90.0, ObstacleDetectionUtils.calculateRelativeAngle(new Vec3(1, 0, 0), 180.0f), 0.001);   // Right
+        assertEquals(270.0, ObstacleDetectionUtils.calculateRelativeAngle(new Vec3(-1, 0, 0), 180.0f), 0.001); // Left
+
+        // Player facing East (yaw = -90, heading = 90)
+        assertEquals(0.0, ObstacleDetectionUtils.calculateRelativeAngle(new Vec3(1, 0, 0), -90.0f), 0.001);   // Forward
+        assertEquals(180.0, ObstacleDetectionUtils.calculateRelativeAngle(new Vec3(-1, 0, 0), -90.0f), 0.001); // Backward
+        assertEquals(90.0, ObstacleDetectionUtils.calculateRelativeAngle(new Vec3(0, 0, 1), -90.0f), 0.001);   // Right
+        assertEquals(270.0, ObstacleDetectionUtils.calculateRelativeAngle(new Vec3(0, 0, -1), -90.0f), 0.001); // Left
+
+        // Player facing South (yaw = 0, heading = 180)
+        assertEquals(0.0, ObstacleDetectionUtils.calculateRelativeAngle(new Vec3(0, 0, 1), 0.0f), 0.001);     // Forward
+        assertEquals(180.0, ObstacleDetectionUtils.calculateRelativeAngle(new Vec3(0, 0, -1), 0.0f), 0.001);  // Backward
+
+        // Zero movement vector returns 0.0
+        assertEquals(0.0, ObstacleDetectionUtils.calculateRelativeAngle(Vec3.ZERO, 180.0f), 0.001);
+        assertEquals(0.0, ObstacleDetectionUtils.calculateRelativeAngle(null, 180.0f), 0.001);
+    }
+
+    @Test
+    @DisplayName("Verify relative direction string resolution for all modes")
+    void testDirectionStringResolution() {
+        var fourDir = org.mcaccess.minecraftaccess.Config.ObstacleDetector.DirectionFeedbackMode.FOUR_DIRECTIONS;
+        var eightDir = org.mcaccess.minecraftaccess.Config.ObstacleDetector.DirectionFeedbackMode.EIGHT_DIRECTIONS;
+        var omitForward = org.mcaccess.minecraftaccess.Config.ObstacleDetector.DirectionFeedbackMode.OMIT_FORWARD;
+        var off = org.mcaccess.minecraftaccess.Config.ObstacleDetector.DirectionFeedbackMode.OFF;
+
+        // OFF always returns null
+        assertNull(ObstacleDetectionUtils.getRelativeDirectionString(0.0, off));
+        assertNull(ObstacleDetectionUtils.getRelativeDirectionString(180.0, off));
+
+        // OMIT_FORWARD returns null for forward, non-null for other directions
+        assertNull(ObstacleDetectionUtils.getRelativeDirectionString(0.0, omitForward));
+        assertNotNull(ObstacleDetectionUtils.getRelativeDirectionString(90.0, omitForward));
+        assertNotNull(ObstacleDetectionUtils.getRelativeDirectionString(180.0, omitForward));
+        assertNotNull(ObstacleDetectionUtils.getRelativeDirectionString(270.0, omitForward));
+
+        // FOUR_DIRECTIONS returns non-null for all 4 quadrants
+        assertNotNull(ObstacleDetectionUtils.getRelativeDirectionString(0.0, fourDir));
+        assertNotNull(ObstacleDetectionUtils.getRelativeDirectionString(90.0, fourDir));
+        assertNotNull(ObstacleDetectionUtils.getRelativeDirectionString(180.0, fourDir));
+        assertNotNull(ObstacleDetectionUtils.getRelativeDirectionString(270.0, fourDir));
+
+        // EIGHT_DIRECTIONS returns non-null for all 8 sectors
+        assertNotNull(ObstacleDetectionUtils.getRelativeDirectionString(0.0, eightDir));
+        assertNotNull(ObstacleDetectionUtils.getRelativeDirectionString(45.0, eightDir));
+        assertNotNull(ObstacleDetectionUtils.getRelativeDirectionString(90.0, eightDir));
+        assertNotNull(ObstacleDetectionUtils.getRelativeDirectionString(135.0, eightDir));
+        assertNotNull(ObstacleDetectionUtils.getRelativeDirectionString(180.0, eightDir));
+        assertNotNull(ObstacleDetectionUtils.getRelativeDirectionString(225.0, eightDir));
+        assertNotNull(ObstacleDetectionUtils.getRelativeDirectionString(270.0, eightDir));
+        assertNotNull(ObstacleDetectionUtils.getRelativeDirectionString(315.0, eightDir));
     }
 
     @Test
@@ -179,22 +244,46 @@ class ObstacleDetectorTest {
         String[] requiredKeys = {
                 "key.minecraft_access.obstacle_detector.inspect_obstacle",
                 "minecraft_access.obstacle_detector.clear",
+                "minecraft_access.obstacle_detector.dir_back",
+                "minecraft_access.obstacle_detector.dir_back_left",
+                "minecraft_access.obstacle_detector.dir_back_right",
+                "minecraft_access.obstacle_detector.at_distance",
+                "minecraft_access.obstacle_detector.at_distance_single",
+                "minecraft_access.obstacle_detector.dir_forward",
+                "minecraft_access.obstacle_detector.dir_forward_left",
+                "minecraft_access.obstacle_detector.dir_forward_right",
+                "minecraft_access.obstacle_detector.dir_left",
+                "minecraft_access.obstacle_detector.dir_right",
                 "minecraft_access.obstacle_detector.head_obstacle",
-                "minecraft_access.obstacle_detector.obstacle",
                 "minecraft_access.obstacle_detector.low_ceiling.block",
                 "minecraft_access.obstacle_detector.low_ceiling.direct",
                 "minecraft_access.obstacle_detector.low_ceiling.elevation",
                 "minecraft_access.obstacle_detector.low_ceiling.slope",
+                "minecraft_access.obstacle_detector.obstacle",
+                "minecraft_access.obstacle_detector.panoramic_clear",
+                "minecraft_access.obstacle_detector.player_headroom_blocked",
                 "minecraft_access.obstacle_detector.step_climbable.block",
                 "minecraft_access.obstacle_detector.step_climbable.direct",
                 "minecraft_access.obstacle_detector.step_climbable.elevation",
                 "minecraft_access.obstacle_detector.step_climbable.slope",
+                "minecraft_access.obstacle_detector.with_direction",
                 "text.autoconfig.minecraft-access.category.obstacleDetector",
+                "text.autoconfig.minecraft-access.option.obstacleDetector.checkHeadroomClearance",
                 "text.autoconfig.minecraft-access.option.obstacleDetector.delay",
                 "text.autoconfig.minecraft-access.option.obstacleDetector.detectionRange",
+                "text.autoconfig.minecraft-access.option.obstacleDetector.directionFeedbackMode",
+                "text.autoconfig.minecraft-access.option.obstacleDetector.directionFeedbackMode.EIGHT_DIRECTIONS",
+                "text.autoconfig.minecraft-access.option.obstacleDetector.directionFeedbackMode.FOUR_DIRECTIONS",
+                "text.autoconfig.minecraft-access.option.obstacleDetector.directionFeedbackMode.OFF",
+                "text.autoconfig.minecraft-access.option.obstacleDetector.directionFeedbackMode.OMIT_FORWARD",
                 "text.autoconfig.minecraft-access.option.obstacleDetector.enabled",
                 "text.autoconfig.minecraft-access.option.obstacleDetector.lookAtObstacleOnInspection",
                 "text.autoconfig.minecraft-access.option.obstacleDetector.narrationStyle",
+                "text.autoconfig.minecraft-access.option.obstacleDetector.narrationStyle.BLOCK",
+                "text.autoconfig.minecraft-access.option.obstacleDetector.narrationStyle.DIRECT",
+                "text.autoconfig.minecraft-access.option.obstacleDetector.narrationStyle.ELEVATION",
+                "text.autoconfig.minecraft-access.option.obstacleDetector.narrationStyle.SLOPE",
+                "text.autoconfig.minecraft-access.option.obstacleDetector.panoramicRange",
                 "text.autoconfig.minecraft-access.option.obstacleDetector.playAudioCues",
                 "text.autoconfig.minecraft-access.option.obstacleDetector.voiceWarning",
                 "text.autoconfig.minecraft-access.option.obstacleDetector.volume"
@@ -215,5 +304,44 @@ class ObstacleDetectorTest {
                 assertFalse(json.get(key).getAsString().isBlank(), "Empty translation for key '" + key + "' in " + path);
             }
         }
+    }
+
+    @Test
+    @DisplayName("Verify intended move angle calculation from keyboard input keys")
+    void testCalculateIntendedMoveAngle() {
+        assertNull(ObstacleDetectionUtils.calculateIntendedMoveAngle(false, false, false, false));
+
+        // Single keys
+        assertEquals(0.0, ObstacleDetectionUtils.calculateIntendedMoveAngle(true, false, false, false), 0.001);   // W (Up)
+        assertEquals(180.0, ObstacleDetectionUtils.calculateIntendedMoveAngle(false, true, false, false), 0.001); // S (Down)
+        assertEquals(270.0, ObstacleDetectionUtils.calculateIntendedMoveAngle(false, false, true, false), 0.001); // A (Left)
+        assertEquals(90.0, ObstacleDetectionUtils.calculateIntendedMoveAngle(false, false, false, true), 0.001);  // D (Right)
+
+        // Diagonal combinations
+        assertEquals(45.0, ObstacleDetectionUtils.calculateIntendedMoveAngle(true, false, false, true), 0.001);   // W + D
+        assertEquals(135.0, ObstacleDetectionUtils.calculateIntendedMoveAngle(false, true, false, true), 0.001);  // S + D
+        assertEquals(225.0, ObstacleDetectionUtils.calculateIntendedMoveAngle(false, true, true, false), 0.001);  // S + A
+        assertEquals(315.0, ObstacleDetectionUtils.calculateIntendedMoveAngle(true, false, true, false), 0.001);  // W + A
+    }
+
+    @Test
+    @DisplayName("Verify world movement direction vector calculated from relative angle and player yaw")
+    void testCalculateWorldMoveDirFromRelativeAngle() {
+        // Player facing North (yaw = 180)
+        Vec3 forwardNorth = ObstacleDetectionUtils.calculateWorldMoveDirFromRelativeAngle(0.0, 180.0f);
+        assertEquals(0.0, forwardNorth.x, 0.001);
+        assertEquals(-1.0, forwardNorth.z, 0.001);
+
+        Vec3 leftNorth = ObstacleDetectionUtils.calculateWorldMoveDirFromRelativeAngle(270.0, 180.0f);
+        assertEquals(-1.0, leftNorth.x, 0.001);
+        assertEquals(0.0, leftNorth.z, 0.001);
+
+        Vec3 rightNorth = ObstacleDetectionUtils.calculateWorldMoveDirFromRelativeAngle(90.0, 180.0f);
+        assertEquals(1.0, rightNorth.x, 0.001);
+        assertEquals(0.0, rightNorth.z, 0.001);
+
+        Vec3 backNorth = ObstacleDetectionUtils.calculateWorldMoveDirFromRelativeAngle(180.0, 180.0f);
+        assertEquals(0.0, backNorth.x, 0.001);
+        assertEquals(1.0, backNorth.z, 0.001);
     }
 }

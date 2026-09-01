@@ -27,6 +27,7 @@ import org.jetbrains.annotations.Nullable;
 import org.mcaccess.minecraftaccess.Config;
 import org.mcaccess.minecraftaccess.MainClass;
 import org.mcaccess.minecraftaccess.api.WorldNarrator;
+import org.mcaccess.minecraftaccess.features.crosshair.CrosshairFeedbackManager;
 import org.mcaccess.minecraftaccess.utils.condition.Interval;
 import org.mcaccess.minecraftaccess.utils.events.ClientPlayingTick;
 
@@ -36,8 +37,8 @@ import org.mcaccess.minecraftaccess.utils.events.ClientPlayingTick;
  */
 @Slf4j
 public class NarrateCrosshair implements BalmClientModule {
-    private final SessionLocal<@Nullable Object> previousTarget = new SessionLocal<>(() -> null);
-    private final SessionLocal<@Nullable String> previousNarration = new SessionLocal<>(() -> null);
+    private static final SessionLocal<@Nullable Object> previousTarget = new SessionLocal<>(() -> null);
+    private static final SessionLocal<@Nullable String> previousNarration = new SessionLocal<>(() -> null);
     private final SessionLocal<@Nullable Vec3> previousSoundPos = new SessionLocal<>(() -> null);
     private final Interval repetitionInterval = Interval.defaultDelay();
     private static final Config.NarrateCrosshair CONFIG = Config.getInstance().narrateCrosshair;
@@ -45,6 +46,21 @@ public class NarrateCrosshair implements BalmClientModule {
 
     public static void suppressNarration(long durationMillis) {
         suppressUntil = System.currentTimeMillis() + durationMillis;
+    }
+
+    public static void synchronizeTarget(@Nullable HitResult rayCast, @Nullable String narration) {
+        if (rayCast == null) {
+            previousTarget.value = null;
+            previousNarration.value = null;
+            return;
+        }
+        Object target = switch (rayCast) {
+            case BlockHitResult blockHitResult -> CONFIG.disableNarratingConsecutiveBlocks ? null : blockHitResult.getBlockPos();
+            case EntityHitResult entityHitResult -> entityHitResult.getEntity();
+            default -> rayCast;
+        };
+        previousTarget.value = target;
+        previousNarration.value = narration;
     }
 
     @Override
@@ -127,7 +143,7 @@ public class NarrateCrosshair implements BalmClientModule {
             }
         }
 
-        MainClass.narrate(narration, true);
+        CrosshairFeedbackManager.onCrosshairTargetChanged(rayCast, narration);
     }
 
     private boolean isIgnored(Identifier identifier) {

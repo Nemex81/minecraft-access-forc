@@ -58,3 +58,36 @@ Per prevenire qualsiasi falso allarme vocale e garantire la massima precisione n
 3. **Scansione a Lungo Raggio per Modalità DETAILED**:
    - In modalità dettagliata, la scansione non si arresta al primo ostacolo (`break;`), ma prosegue fino al limite `scanRange` descrivendo la successione completa di segmenti, ostacoli, dislivelli e risorse.
 
+---
+
+## 6. Architettura a Due Zone per la Sicurezza Anticaduta, Auto-Sneak Vettoriale & Eccezioni di Discesa
+
+1. **Il Principio di Disaccoppiamento tra Pre-Allerta e Barriera Posturale**:
+   - Nei sistemi anticaduta voxel predittivi, non applicare mai l'accovacciamento fisico (`sneak`) alla stessa distanza dell'avviso di pre-allerta.
+   - **Zona 1 — Pre-Allerta & Rallentamento Corsa ($0.85\text{ m} < d \le \text{slowdownDistance}$)**:
+     - Se il baratro è a 2-3 blocchi di distanza, interrompe lo sprint (`autoSlowdown`) e riproduce l'avviso vocale/sonoro preventivo.
+     - L'auto-sneak rimane disattivato: la marcia procede alla velocità naturale senza costringere a terra il giocatore.
+   - **Zona 2 — Bordo Fisico Immediato / Ciglio ($d \le 0.85\text{ m}$)**:
+     - Attivazione dell'Auto-Sneak forzato (`autoSneakActive = true`) solo sull'ultimo passo prima del baratro.
+     - La fisica nativa di Minecraft blocca fisicamente l'uscita dalla piattaforma, rendendo impossibile la caduta accidentale anche tenendo premuto `W`.
+2. **Calcolo Vettoriale dell'Intenzione di Movimento (`W`, `S`, `A`, `D`)**:
+   - Determinare la direzione di avanzamento reale dai tasti premuti (`W` = $0^\circ$, `S` = $180^\circ$, `A` = $-90^\circ$, `D` = $+90^\circ$, diagonali $\pm 45^\circ / \pm 135^\circ$).
+   - Se il giocatore preme `S` per indietreggiare verso il terreno solido, il pericolo svanisce all'istante: l'auto-sneak viene rilasciato immediatamente (`handleDangerCleared`) consentendo la retromarcia fluida senza impuntamenti.
+   - A velocità nulla ($v \approx 0$) e senza tasti premuti, azzerare il pericolo per non bloccare posture da fermo.
+3. **Matrice delle Eccezioni di Discesa Verticale Sicura**:
+   - I blocchi arrampicabili (`BlockTags.CLIMBABLE`, `LadderBlock`, `VineBlock`, `ScaffoldingBlock`) e gli smorzatori di caduta (Acqua, `Blocks.COBWEB`, Fieno, Miele, Slime, Neve polverosa) non hanno collisione piena ma rappresentano vie di discesa intenzionali.
+   - Eseguire una scansione discendente lungo la colonna verticale: se gli elementi arrampicabili o i fluidi collegano la piattaforma al suolo (o con salto finale $\le 3$ blocchi), il dislivello è valutato sicuro (`depth = 0`), permettendo di scendere liberamente da tetti e scale a pioli.
+4. **Feedback di Barriera Attiva sul Ciglio (Edge Bump)**:
+   - Se l'utente insiste premendo `W` contro il vuoto mentre è protetto dall'auto-sneak, non sopprimere l'output vocale: emettere il rintocco sonoro 3D posizionale e l'avviso vocale dedicato (*"Sul ciglio: burrone avanti, N blocchi"*) con un debouncing temporale a 30 tick ($1.5\text{ secondi}$), configurabile tramite l'Enum `EdgeBumpFeedbackMode`.
+5. **Presidio Fisico del Ciglio da Fermo (Sticky Sneak on Edge)**:
+   - Quando il giocatore rilascia i tasti di movimento (`moveDir == null`), una scansione radiale a 8 punti perimetrali attorno alla hitbox (raggio $0.45\text{ m} - 0.70\text{ m}$) verifica se i piedi confinano direttamente con un dislivello pericoloso.
+   - *Se* il pericolo persiste, *allora* mantiene forzatamente `autoSneakActive = true`: il personaggio rimane accovacciato da fermo sul bordo impedendo che micro-tap di ripartenza o scivolamenti lo facciano precipitare.
+   - Il disimpegno e ritorno in piedi avvengono istantaneamente non appena il giocatore indietreggia con `S` o cammina verso terreno solido.
+6. **Neutralizzazione Mixin del Vettore di Salto (`LivingEntity.jumpFromGround`)**:
+   - Poiché la fisica di blocco del ciglio di Minecraft opera **esclusivamente quando i piedi toccano terra (`onGround == true`)**, la pressione di `Spazio` sul bordo annullava la protezione permettendo al personaggio di veleggiare nel vuoto.
+   - L'iniezione Mixin all'ingresso di `LivingEntity.jumpFromGround()` annulla l'impulso fisico (`ci.cancel()`) quando `FallDetector.isAutoSneakActive()` è attivo, rendendo il distacco da terra fisicamente impossibile sul ciglio.
+7. **Toggle Rapido Bimodale in Tempo Reale (`Ctrl + Alt + F`)**:
+   - Commutazione istantanea dello scudo senza accedere alla GUI:
+     - *Disattivazione (`OFF`)*: Rilascia all'istante l'accovacciamento e sblocca il salto per consentire tuffi e balzi volontari.
+     - *Riattivazione (`ON`)*: Se il giocatore si trova fermo sul ciglio, esegue il check radiale e lo riaccovaccia all'istante nello stesso tick.
+

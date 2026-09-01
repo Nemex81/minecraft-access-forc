@@ -32,6 +32,7 @@ public final class PlayerUtils {
      */
     public static void lookAt(Entity entity) {
         assert CLIENT.player != null;
+        org.mcaccess.minecraftaccess.features.LookHistoryManager.saveCurrentLook(CLIENT.player.getYRot(), CLIENT.player.getXRot());
         Vec3 playerEyePos = CLIENT.player.getEyePosition();
 
         // Try to look at entity's eyes or Enderman's stomach first.

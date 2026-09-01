@@ -20,6 +20,8 @@ Antigravity opera sempre secondo una rigida separazione tra fase consultiva ed e
    - Luca non ha bisogno di specificare *"non modificare nulla, stiamo solo discutendo"*: questa regola è attiva e vincolante per impostazione predefinita in ogni interazione.
 4. **Riconoscimento Semantico delle Richieste Consultive**:
    - Qualsiasi richiesta contenente espressioni di confronto, parere, interrogazione o valutazione aperta (es. *"cosa ne pensi?"*, *"come lo vedi?"*, *"come imposteresti?"*, *"valuta se..."*, *"secondo te..."*, *"analizza"*, *"esegui una verifica"*) impone tassativamente ad Antigravity di limitarsi a riflessioni, analisi, verifiche, diagnostica ed elaborazione di strategie o piani tecnici, **con divieto assoluto di modificare file o codice**.
+5. **Gating Semantico sui Comandi di Transizione (Divieto di Salto della Convalida Piano)**:
+   - Qualsiasi comando come *"passa alla fase 1"*, *"avvia la fase 1"*, *"procedi alla fase 1"* autorizza **esclusivamente la stesura del Piano Tecnico Formale (Sotto-Fase 1A)**. L'assistente redige il piano, lo registra in `docs/piani/attivi/` e **si arresta tassativamente (Stop Obbligatorio)**, attendendo la convalida esplicita di Luca post-lettura del piano prima di modificare qualsiasi file sorgente o configurazione.
 
 ---
 
@@ -28,7 +30,6 @@ Antigravity opera sempre secondo una rigida separazione tra fase consultiva ed e
 Per evitare di sovraccaricare il contesto o leggere inutilmente l'intera base di conoscenza, Antigravity applica un routing intelligente a 2 livelli:
 
 1. **Identificazione Immediata dell'Ambito (Livello 1 - Router `GEMINI.md`)**:
-   - Quando riceve una richiesta, Antigravity individua all'istante la famiglia di appartenenza tramite l'indice ragionato:
      - **Voxel, Dislivelli, Hitbox, Geometrie 3D** -> `knowledge/05_specifiche_dominio_voxel_e_comandi.md`
      - **Controlli da Tastiera, Tasti Rapidi, Categorie** -> `knowledge/06_controlli_avanzati_e_bridge_chatgpt.md`
      - **Traduzioni, Ordinamento JSON, I18N, Branch Fork** -> `knowledge/03_standard_sviluppo_fork_pr.md`
@@ -62,11 +63,17 @@ Ogni proposta tecnica, architettura o piano implementativo deve superare prelimi
 
 Il ciclo di vita di ogni modifica o nuova funzionalità segue tassativamente questa sequenza:
 
-### Fase 1: Pre-Flight Check, Build e Test Automatici
-- **Pre-Flight Environment Check**: Verifica preliminare di conformità dell'ambiente (JDK 25, `$env:JAVA_HOME` e flag `--no-daemon` per evitare blocchi file di OneDrive).
-- **Verifica Compilazione**: Esecuzione di `.\gradlew.bat --no-daemon compileJava compileTestJava`.
-- **Esecuzione Test Unitari**: Esecuzione della suite JUnit (`.\gradlew.bat --no-daemon test`).
-- **Confezionamento Pacchetto**: Creazione del JAR (`.\gradlew.bat --no-daemon shadowJar`).
+### Fase 1: Pianificazione Formale, Esecuzione Tecnica & Test Automatici (Disaccoppiamento Rigido 1A / 1B)
+- **Sotto-Fase 1A (Pianificazione & Checkpoint di Stop Obbligatorio)**:
+  - Antigravity redige il piano tecnico implementativo in `docs/piani/attivi/` e nell'artifact `implementation_plan.md`.
+  - **DIVIETO ASSOLUTO DI EDITING DEL CODICE IN FASE 1A**: L'assistente deve fermarsi all'istante, presentare il piano a Luca e attendere la sua esplicita approvazione. Nessun file sorgente, asset o configurazione può essere modificato prima di questo secondo via libera.
+- **Sotto-Fase 1B (Esecuzione Tecnica, Pre-Flight Check & Test)**:
+  - Si avvia **esclusivamente** dopo l'approvazione formale del piano da parte di Luca.
+  - **Pre-Flight Environment Check**: Verifica preliminare dell'ambiente (JDK 25, `$env:JAVA_HOME` e flag `--no-daemon` per prevenire blocchi di OneDrive).
+  - **Modifiche al Codice**: Editing chirurgico e conformità I18N con JSON ordinati.
+  - **Verifica Compilazione**: Esecuzione di `.\gradlew.bat --no-daemon compileJava compileTestJava`.
+  - **Esecuzione Test Unitari**: Esecuzione della suite JUnit (`.\gradlew.bat --no-daemon test`).
+  - **Confezionamento Pacchetto**: Creazione del JAR (`.\gradlew.bat --no-daemon shadowJar`).
 
 ### Fase 2: Deploy Provvisorio & Collaudo Manuale In-Game di Luca
 - Copia del file `.jar` compilato nelle istanze attive di PrismLauncher.

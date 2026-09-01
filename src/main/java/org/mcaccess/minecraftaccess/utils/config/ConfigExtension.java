@@ -73,6 +73,48 @@ public final class ConfigExtension {
                 field -> field.getType() == String.class,
                 FormatString.class
         );
+        registry.registerAnnotationProvider(
+                (i18n, field, config, defaults, _) -> {
+                    try {
+                        @SuppressWarnings("unchecked")
+                        Class<Enum> enumClass = (Class<Enum>) field.getType();
+                        Enum<?> currentValue = (Enum<?>) field.get(config);
+                        Enum<?> defaultValue = (Enum<?>) field.get(defaults);
+
+                        @SuppressWarnings("unchecked")
+                        var entry = me.shedaniel.clothconfig2.api.ConfigEntryBuilder.create()
+                                .startEnumSelector(Component.translatable(i18n), (Class) enumClass, currentValue)
+                                .setDefaultValue(defaultValue)
+                                .setSaveConsumer(newValue -> {
+                                    try {
+                                        field.set(config, newValue);
+                                    } catch (IllegalAccessException e) {
+                                        log.error("Failed to save enum config value", e);
+                                    }
+                                })
+                                .setEnumNameProvider(enumVal -> {
+                                    if (enumVal == null) return Component.empty();
+                                    String optKey = i18n + "." + ((Enum<?>) enumVal).name();
+                                    if (net.minecraft.locale.Language.getInstance().has(optKey)) {
+                                        return Component.translatable(optKey);
+                                    }
+                                    String enumKey = "text.autoconfig.minecraft-access.enum." + field.getType().getSimpleName() + "." + ((Enum<?>) enumVal).name();
+                                    if (net.minecraft.locale.Language.getInstance().has(enumKey)) {
+                                        return Component.translatable(enumKey);
+                                    }
+                                    return Component.literal(((Enum<?>) enumVal).name());
+                                })
+                                .build();
+
+                        return Collections.singletonList(entry);
+                    } catch (IllegalAccessException e) {
+                        log.error("Failed to access enum config field", e);
+                        return Collections.emptyList();
+                    }
+                },
+                field -> field.isAnnotationPresent(ConfigEntry.Gui.EnumHandler.class),
+                ConfigEntry.Gui.EnumHandler.class
+        );
     }
 
     public static <T> void validate(T config, T defaults) {

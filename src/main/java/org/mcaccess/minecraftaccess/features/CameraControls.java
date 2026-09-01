@@ -17,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 
 import org.mcaccess.minecraftaccess.Config;
 import org.mcaccess.minecraftaccess.MainClass;
+import org.mcaccess.minecraftaccess.features.crosshair.CrosshairFeedbackManager;
 import org.mcaccess.minecraftaccess.utils.KeyMappingCategories;
 import org.mcaccess.minecraftaccess.utils.ModifierUtils;
 import org.mcaccess.minecraftaccess.utils.position.Orientation;
@@ -221,6 +222,30 @@ public class CameraControls implements BalmClientModule {
                     return true;
                 })
                 .build();
+
+        // Universal Look Restore (Backspace)
+        Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "camera_controls.restore_previous_look"))
+                .withDefault(InputBinding.key(InputConstants.KEY_BACKSPACE))
+                .overrideCategory(KeyMappingCategories.CAMERA_CONTROLS)
+                .handleWorldInput(_ -> {
+                    if (ModifierUtils.hasAnyModifier()) return false;
+                    return LookHistoryManager.restorePreviousLook(Minecraft.getInstance());
+                })
+                .build();
+
+        // Sync Reference Look (Ctrl + Backspace)
+        Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "camera_controls.sync_reference_look"))
+                .withDefault(InputBinding.key(InputConstants.KEY_BACKSPACE, KeyModifiers.of(KeyModifier.CONTROL)))
+                .overrideCategory(KeyMappingCategories.CAMERA_CONTROLS)
+                .handleWorldInput(_ -> LookHistoryManager.syncReferenceLook(Minecraft.getInstance()))
+                .build();
+
+        // Align to Reference Look (Alt + Backspace)
+        Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "camera_controls.align_to_reference_look"))
+                .withDefault(InputBinding.key(InputConstants.KEY_BACKSPACE, KeyModifiers.of(KeyModifier.ALT)))
+                .overrideCategory(KeyMappingCategories.CAMERA_CONTROLS)
+                .handleWorldInput(_ -> LookHistoryManager.alignToReferenceLook(Minecraft.getInstance()))
+                .build();
     }
 
     private enum RotatingDirection {
@@ -256,6 +281,7 @@ public class CameraControls implements BalmClientModule {
 
         assert Minecraft.getInstance().player != null;
         LocalPlayer player = Minecraft.getInstance().player;
+        LookHistoryManager.recordManualRotation(player.getYRot(), player.getXRot());
         if (!isModified && Math.signum(player.getXRot()) * Math.signum(player.getXRot() + verticalAngleDelta * DEGREES_PER_MOUSE_DELTA) < 0) {
             player.turn(horizontalAngleDelta, 0);
             player.setXRot(0.0f);
@@ -264,15 +290,7 @@ public class CameraControls implements BalmClientModule {
             player.turn(horizontalAngleDelta, verticalAngleDelta);
         }
 
-        String horizontalDirection = PlayerPositionUtils.getHorizontalFacingDirectionInWords();
-        String verticalDirection = PlayerPositionUtils.getVerticalFacingDirectionInWords();
-        if (Config.getInstance().features.facingDirectionEnabled) {
-            if (direction.isRotatingHorizontal) {
-                MainClass.narrate(horizontalDirection, true);
-            } else if (verticalDirection != null) {
-                MainClass.narrate(verticalDirection, true);
-            }
-        }
+        CrosshairFeedbackManager.onCameraRotated(Config.getInstance().features.facingDirectionEnabled);
     }
 
     private static void rotateCameraToPitch(float pitchDegrees, boolean narrateChange) {
@@ -280,12 +298,12 @@ public class CameraControls implements BalmClientModule {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player == null) return;
 
+        LookHistoryManager.saveCurrentLook(player.getYRot(), player.getXRot());
         player.setXRot(pitchDegrees);
         player.xRotO = pitchDegrees;
 
         if (narrateChange && Config.getInstance().features.facingDirectionEnabled) {
-            String v = PlayerPositionUtils.getVerticalFacingDirectionInWords();
-            if (v != null) MainClass.narrate(v, true);
+            CrosshairFeedbackManager.onCameraRotated(true);
         }
     }
 
@@ -299,6 +317,7 @@ public class CameraControls implements BalmClientModule {
         if (handleLocking()) return;
         LocalPlayer player = Minecraft.getInstance().player;
         assert player != null;
+        LookHistoryManager.saveCurrentLook(player.getYRot(), player.getXRot());
         Vec3 playerBlockPosition = player.position();
         Vec3 targetBlockPosition = playerBlockPosition.add(Vec3.atLowerCornerOf(direction.vector));
         player.lookAt(EntityAnchorArgument.Anchor.FEET, targetBlockPosition);
@@ -306,11 +325,7 @@ public class CameraControls implements BalmClientModule {
         log.debug("Rotating camera to: {}", direction.name());
 
         if (narrateChange && Config.getInstance().features.facingDirectionEnabled) {
-            if (direction.in(Orientation.Layer.MIDDLE)) {
-                MainClass.narrate(PlayerPositionUtils.getHorizontalFacingDirectionInWords(), true);
-            } else {
-                MainClass.narrate(PlayerPositionUtils.getVerticalFacingDirectionInWords(), true);
-            }
+            CrosshairFeedbackManager.onCameraRotated(true);
         }
     }
 
