@@ -125,3 +125,15 @@ Per risolvere l'illusione cognitiva di vicinanza quando i mob si trovano all'est
 
 - **Isolamento dell'Entità Locale**: L'amplificazione del volume dei passi viene applicata esclusivamente all'istanza `(Object) this == Minecraft.getInstance().player`, lasciando intatto il volume naturale dei passi di mob, animali e altri giocatori per non inquinare il soundscape 3D.
 - **Resilienza Iniezioni Mixin**: Sulle iniezioni Mixin che intercettano metodi audio di `Entity` (`playStepSound`, `playCombinationStepSounds`, `playMuffledStepSound`), impostare sempre `require = 0` per garantire che differenze di firma o refactoring tra versioni di gioco non causino `InvalidInjectionException` all'avvio.
+
+---
+
+## 11. Coordinamento Atomico Mirino/Orientamento & Modello a Token
+
+1. **Il Principio di Emissione Atomica Unificata**:
+   - Eventi spaziali concorrenti che riguardano lo sguardo (cosa sto mirando + dove sto guardando) non devono mai generare flussi vocali indipendenti con `interrupt: true`.
+   - `CrosshairFeedbackManager` intercetta entrambi gli eventi e produce una singola frase fluida (*"Nome blocco, a N blocchi, Direzione, X gradi, Quota/Pitch"*).
+
+2. **Grammatica e Risoluzione Verticale per Non Vedenti**:
+   - L'inclinazione in gradi e verso (*"Dritto"*, *"X gradi Su"*, *"X gradi Giù"*) fornisce una percezione spaziale immediata dell'altezza del blocco mirato rispetto al piano degli occhi.
+   - Gestione grammaticale rigorosa per le distanze (singolare *"a 1 blocco"* vs plurale *"a N blocchi"*).

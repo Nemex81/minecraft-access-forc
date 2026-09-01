@@ -277,6 +277,20 @@ Questo registro documenta i problemi tecnici complessi risolti nel tempo, preser
   2. Rimozione dell'istruzione inefficace `keyJump.setDown(false)` da `FallDetector.java`.
   3. Il salto torna libero all'istante non appena ci si allontana dal ciglio con `S` o si disattiva la protezione con `Ctrl + Alt + F`.
 
+---
+
+### Record 24 — Corsa Critica Mirino/Visuale e Coordinatore `CrosshairFeedbackManager` a Token Componibili (Punto 15)
+- **Data**: 2026-09-01
+- **Moduli Coinvolti**: `CrosshairFeedbackManager.java`, `CrosshairReadingOrder.java`, `NarrateCrosshair.java`, `CameraControls.java`, `NumpadControls.java`, `Config.java`
+- **Sintomi**: Durante la rotazione della visuale (tastierino o tasti camera) o il centramento dell'orizzonte (Numpad 5), la voce dello screen reader NVDA subiva troncamenti sistematici a metà frase, alternando disordinatamente frammenti di direzione e nomi di blocchi.
+- **Causa Radice**: Disaccoppiamento architetturale tra il raycast periodico di `NarrateCrosshair` e i comandi di orientamento di `CameraControls`/`NumpadControls`. Entrambi i moduli emettevano chiamate concorrenti `MainClass.narrate(..., interrupt: true)` nello stesso tick o in tick ravvicinati.
+- **Soluzione Definitiva**:
+  1. *Pattern Single Source of Truth & Coordinator*: Introdotto `CrosshairFeedbackManager` come unico punto di assemblaggio ed emissione vocale per mirino e orientamento.
+  2. *Modello a 5 Token Indipendenti*: Separazione dei dati in 5 toggle booleani configurabili in Cloth Config (`includeBlock`, `includeDistance`, `includeCardinal`, `includeCompassDegrees`, `includePitchAngle`).
+  3. *Enum di Ordinamento Strutturale*: `CrosshairReadingOrder` (`TARGET_FIRST`, `ORIENTATION_FIRST`, `TARGET_CARDINAL_INLINE`) per governare la sintassi della frase vocale senza combinatoria rigida.
+  4. *Debouncing & Sincronizzazione Temporale*: Soppressione a 100ms e allineamento dello stato `previousTarget` durante le rotazioni per garantire un'unica emissione atomica priva di duplicazioni.
+
+
 
 
 
