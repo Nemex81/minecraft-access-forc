@@ -105,4 +105,16 @@ Per prevenire qualsiasi falso allarme vocale e garantire la massima precisione n
    - **Finestra di Approccio Naturale**: Attivare il salto con dislivello $0.30 < \Delta Y \le 1.25$ quando $\text{distH} \le 1.25\text{ m}$ oppure in presenza di collisione fisica (`player.horizontalCollision == true`) con appoggio al suolo (`onGround == true`).
    - **Spinta Verticale Stabile**: Mantenere la pressione di `keyJump` per 4 tick ($200\text{ ms}$) per garantire l'impulso completo e l'atterraggio a quota $+1$.
 
+---
 
+## 8. Micro-Voxel Raymarch per Lamine Sottili & Armonizzazione Orizzontale $XZ$ (Rev MC-29.5 - MC-29.6)
+
+1. **Il Paradosso del Pavimento a Coordinate Negative per Lamine Sottili**:
+   - A coordinate negative (es. $X = -64.8$), il giocatore si trova nel voxel $X = -65$ (`Math.floor(-64.8) = -65`).
+   - Se il campionamento volumetrico parte da $d = 0.25\text{ m}$ verso Ovest, $-64.8 - 0.25 = -65.05 \implies \text{floor} = -66$, scavalcando interamente il voxel $X = -65$ e rendendo invisibili porte e pannelli di vetro a filo parete.
+   - **Regola Micro-Voxel Continuo**: Il campionamento volumetrico lungo la linea di vista per lamine sottili (`DoorBlock`, `CrossCollisionBlock`, `FenceBlock`, `IronBarsBlock`, `FenceGateBlock`, `TrapDoorBlock`) deve partire da $d = 0.05\text{ m}$ con passo fisso di $0.10\text{ m}$, intercettando con precisione millimetrica ogni elemento sin dal voxel a contatto.
+2. **Armonizzazione Orizzontale Colonna Unica $XZ$ (Sguardo & Piedi)**:
+   - Quando ci si muove in avanti (`W`) verso una barriera, i sensori dei piedi e dello sguardo inquadrano la **stessa colonna orizzontale** $(X, Z)$ ma a quote verticali diverse ($Y_{\text{piedi}}$ vs $Y_{\text{occhi}}$).
+   - **Regola Colonna Unica**: Non confrontare le coordinate 3D rigide $XYZ$ per decidere se fondere i messaggi; se $X_{\text{target}} == X_{\text{ostacolo}} \land Z_{\text{target}} == Z_{\text{ostacolo}}$ oppure se il movimento è frontale, emettere un unico annuncio compatto (*"Davanti: Ostacolo di Pannello di vetro, a 3 blocchi"*), azzerando la duplicazione ridondante *"Davanti: ... Davanti: ..."*.
+3. **Podometro Ritmico di Cadenza Parete**:
+   - Muovendosi lungo una parete uniforme a blocchi adiacenti (es. assi di quercia), non sopprimere l'annuncio su cambio coordinata: l'annuncio metro per metro funge da sonar di cadenza e velocità fondamentale per il non vedente.

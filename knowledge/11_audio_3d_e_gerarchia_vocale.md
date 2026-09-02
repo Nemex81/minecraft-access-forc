@@ -137,3 +137,19 @@ Per risolvere l'illusione cognitiva di vicinanza quando i mob si trovano all'est
 2. **Grammatica e Risoluzione Verticale per Non Vedenti**:
    - L'inclinazione in gradi e verso (*"Dritto"*, *"X gradi Su"*, *"X gradi Giù"*) fornisce una percezione spaziale immediata dell'altezza del blocco mirato rispetto al piano degli occhi.
    - Gestione grammaticale rigorosa per le distanze (singolare *"a 1 blocco"* vs plurale *"a N blocchi"*).
+
+---
+
+## 12. Feedback Adattivo Dislivello $\Delta Y$ & Dispacciamento Diretto Ostacoli (Rev MC-29.0 - MC-29.6)
+
+1. **Feedback Adattivo di Dislivello Verticale & Altezza Cubi**:
+   - Calcolo deterministico di $\Delta Y = Y_{\text{target}} - Y_{\text{player\_feet}}$ su blocchi ed entità.
+   - **Modalità Operative (`SoundCueMode`)**: `SOUND_AND_VOICE`, `SOUND_ONLY`, `VOICE_ONLY`, `OFF`.
+   - **Stili Vocali (`NarrationStyle`)**: `DESCRIPTIVE` (*"1 blocco sopra"*), `COMPACT` (*"+1Y"*), `DELTA_ONLY` (*"+1"*).
+   - **Toggle Quota Zero**: `narrateSameLevel` per escludere o includere la pronuncia del terreno complanare (*"Stesso livello"*).
+2. **Dispacciamento Diretto al Manager (Direct Dispatching)**:
+   - Divieto assoluto di depositare messaggi passivi "in sospeso" (`pending`) tra sensori diversi (es. `ObstacleDetector` e `NarrateCrosshair`).
+   - All'attivazione dell'allarme ostacolo, invocare direttamente `CrosshairFeedbackManager.onObstacleDetected(...)`, garantendo l'emissione vocale istantanea e sincrona con il suono OpenAL 3D.
+3. **Armonizzazione Colonna Unica $XZ$ & Frase Multidirezionale**:
+   - *Cammino Frontale (`W`)*: Fusione automatica di sguardo e piedi se condividono la colonna orizzontale $(X, Z)$ o la direzione frontale $\rightarrow$ *"Davanti: Ostacolo di Pannello di vetro, a 3 blocchi"*.
+   - *Cammino Laterale/Retro (`A`/`D`/`S`)*: Composizione atomica con il mirino frontale $\rightarrow$ *"A destra: Salita su Fornace. Davanti: Assi di quercia, a 2 blocchi"*.

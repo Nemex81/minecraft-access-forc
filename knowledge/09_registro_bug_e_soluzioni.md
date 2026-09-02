@@ -344,3 +344,25 @@ Questo registro documenta i problemi tecnici complessi risolti nel tempo, preser
   3. *Fornaci & Alambicco*: Monitoraggio differenziale di `furnace.getBurnProgress()` e `brewingStand.getBrewingTicks()` con emissione di notifiche vocali discrete (*"Cottura completata"*, *"Distillazione completata"*).
   4. *Helper `selectGroupByKey`*: Metodo di utilità per rigenerare `currentSlotsGroupList` e saltare direttamente al gruppo con chiave corrispondente (es. `"recipes"`), eliminando i passaggi intermedi a vuoto.
   5. *CI/CD Compliance*: Inserimento delle nuove chiavi I18N con rigoroso rispetto dell'ordinamento alfabetico crescente in `it_it.json` ed `en_us.json`.
+
+---
+
+### Record 28 — Feedback Dislivello Verticale Adattivo, SSOT Mirino/Ostacoli e Micro-Voxel Continuous Raymarch (Rev MC-29.0 - MC-29.6)
+- **Data**: 2026-09-02
+- **Moduli Coinvolti**: `CrosshairFeedbackManager.java`, `ObstacleDetector.java`, `PlayerUtils.java`, `NarrateCrosshair.java`, `Config.java`, `it_it.json`, `en_us.json`
+- **Sintomi**:
+  1. *Assenza Dislivello*: Mancava un canale acustico e vocale configurabile per percepire quota relativa $\Delta Y$ di blocchi ed entità rispetto ai piedi del giocatore.
+  2. *Trap Coordinate Negative per Lamine Sottili*: A $X = -64.8$ il mirino e l'ostacolo saltavano porte e vetri perché il passo da $0.25\text{m}$ calcolava $-65.05$, arrotondando a $X = -66$ e mancando il voxel $X = -65$.
+  3. *Stranded Pending Warning*: L'ObstacleDetector suonava l'allarme audio ma la voce rimaneva muta perché depositata come "in sospeso" e non consumata dal mirino.
+  4. *Duplicazione Frontale*: Quando si camminava in avanti verso un blocco, sguardo e piedi puntavano alla stessa barriera a $Y$ diverse ($Y=70$ vs $Y=71$), innescando il doppio prefisso *"Davanti: Ostacolo... Davanti: ..."*.
+- **Causa Radice**:
+  1. Mancanza di un Presentation Coordinator unificato per i canali di puntamento e ostacoli.
+  2. Campionamento raycast troppo rado ($0.25\text{m}$) e punto di partenza troppo distante ($d = 0.25\text{m}$).
+  3. Dipendenza passiva asincrona tra sensori di movimento e tick del mirino.
+  4. Confronto rigido $XYZ$ anziché riconoscimento di colonna orizzontale $XZ$.
+- **Soluzione Definitiva**:
+  1. *Feedback Dislivello*: Introdotte 4 modalità `SoundCueMode`, 3 stili `NarrationStyle`, toggle `narrateSameLevel` e calcolo matematico deterministico $\Delta Y = Y_{\text{target}} - Y_{\text{feet}}$.
+  2. *Micro-Voxel Raymarch Continuo*: In `PlayerUtils.crosshairTarget`, avvio del campionamento a $d = 0.05\text{m}$ con passo $0.10\text{m}$ per lamine sottili (`DoorBlock`, `CrossCollisionBlock`, `FenceBlock`, `IronBarsBlock`, ecc.).
+  3. *Dispacciamento Diretto al Manager*: Invocazione diretta `CrosshairFeedbackManager.onObstacleDetected(result, msg, relAngle)` da `ObstacleDetector.java`, garantendo sincronia totale al 100% tra suono OpenAL e voce narrante.
+  4. *Armonizzazione Colonna Unica $XZ$*: Merge deterministico degli annunci frontali se $X_{\text{target}} == X_{\text{ostacolo}} \land Z_{\text{target}} == Z_{\text{ostacolo}}$ (*"Davanti: Ostacolo di Pannello di vetro, a 3 blocchi"*), preservando la frase multidirezionale per i lati e il retro (*"A destra: Salita su Fornace. Davanti: Assi di quercia, a 2 blocchi"*).
+  5. *Podometro Parete*: Preservata la ripetizione continua metro per metro dei blocchi in cammino per mantenere il sonar di velocità e cadenza per il non vedente.
