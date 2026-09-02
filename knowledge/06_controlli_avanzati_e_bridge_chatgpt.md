@@ -15,6 +15,7 @@ La mod implementa una mappatura completa per eliminare qualsiasi uso del mouse:
 | **`U`** | Stato Carburante & Cottura (tempo residuo fornace, ampolle supporto pozioni) | `features/inventory_controls/InventoryControls.java` |
 | **`X`** | Lettura Prerequisiti & Ingredienti Ricetta (con `.ignoreScreenFocus()`) | `features/inventory_controls/InventoryControls.java` |
 | **`V` / `Shift + V`** | Scorrimento Schede del Ricettario | `features/inventory_controls/InventoryControls.java` |
+| **`B`** | **Lettura Istantanea Mirino (Mano Sinistra)**: Vocalizzazione atomica a richiesta di blocco/entità, distanza e orientamento secondo Cloth Config | `features/crosshair/CrosshairFeedbackManager.java` |
 | **`Alt + B`** | **Tracciatore Risorse Base** (Scansione 3D Legno, Pietra esposta, Cibo con la mano sinistra) | `features/survival_tracker/SurvivalResourceTracker.java` |
 | **`Alt + Page Up`** | **Aumenta Volume Passi Giocatore** (+10%, fino a 300%) | `features/PlayerStepSound.java` |
 | **`Alt + Page Down`** | **Riduci Volume Passi Giocatore** (-10%, fino a 0%) | `features/PlayerStepSound.java` |

@@ -398,6 +398,8 @@ Tutti i comandi seguenti sono configurabili dal menu Controlli di Minecraft tram
 | **Sonda Terreno / Ispezione Burroni** | **`Alt + F`** | `OTHER` | Mondo aperto | **Funzionalità Specifica del Nostro Fork Locale** (vocalizza burrone vicino o "Nessuna buca") |
 | **Ripeti Ultimo Parlato** | **`Alt + G`** | `OTHER` | Globale / Ovunque | **Funzionalità Specifica del Nostro Fork Locale** (riascolto vocale immediato con mano sinistra) |
 | **Ispeziona Ostacolo Frontale (Look-At)** | **`Alt + V`** | `OTHER` | Mondo aperto | **Funzionalità Specifica del Nostro Fork Locale** (vocalizza e mira all'ostacolo/dislivello più vicino) |
+| **Lettura Istantanea Mirino (Mano Sinistra)** | **`B`** | `ACCESS_MENU_FUNCTIONS` / `CROSSHAIR` | Mondo aperto | **Riqualificato nel Nostro Fork**: lettura forzata istantanea di blocco/entità, distanza e orientamento |
+| **Tracciatore Risorse Base (Mano Sinistra)** | **`Alt + B`** | `OBJECT_TRACKER` | Mondo aperto | **Funzionalità Specifica del Nostro Fork Locale**: scansione 3D Legno, Pietra e Cibo (parità con Alt+Numpad 7) |
 | **Vocalizza POI Tracciato Attuale** | **`Home`** | `OBJECT_TRACKER` | Mondo aperto | Upstream 1.12.0 (vocalizza nome, distanza e direzione del POI) |
 | **Orienta Sguardo su POI Tracciato (Look-At)** | **`Ctrl + Home`** | `OBJECT_TRACKER` | Mondo aperto | **Funzionalità Specifica del Nostro Fork Locale** (mira al POI senza lock continuo e senza sneak) |
 | **Vocalizza Coordinate del POI** | **`Alt + Home`** | `OBJECT_TRACKER` | Mondo aperto | Upstream 1.12.0 (vocalizza coordinate XYZ del POI) |
