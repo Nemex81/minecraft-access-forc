@@ -290,8 +290,18 @@ Questo registro documenta i problemi tecnici complessi risolti nel tempo, preser
   3. *Enum di Ordinamento Strutturale*: `CrosshairReadingOrder` (`TARGET_FIRST`, `ORIENTATION_FIRST`, `TARGET_CARDINAL_INLINE`) per governare la sintassi della frase vocale senza combinatoria rigida.
   4. *Debouncing & Sincronizzazione Temporale*: Soppressione a 100ms e allineamento dello stato `previousTarget` durante le rotazioni per garantire un'unica emissione atomica priva di duplicazioni.
 
+---
 
-
-
-
-
+### Record 25 — Diagnostica Telemetria: ClassCastException al Cambio Tab Ricettario e Annotation @Excluded in Config
+- **Data**: 2026-09-01
+- **Moduli Coinvolto**: `InventoryControls.java`, `Config.java`
+- **Sintomi**:
+  1. Alla pressione di `V` / `Shift+V` per cambiare scheda nel ricettario / crafting screen, l'input si bloccava con eccezione `ClassCastException: RecipeBookCategory cannot be cast to SearchRecipeBookCategory`.
+  2. All'apertura della schermata impostazioni grafiche, loggato errore `No GUI provider registered for field 'Config.instance'`.
+- **Causa Radice**:
+  1. In `InventoryControls.java:837`, l'istruzione di debug forzava il cast `((SearchRecipeBookCategory) category).name()` su un oggetto che in Minecraft 26.2 è un `RecipeBookCategory` generico.
+  2. In `Config.java:24`, il singleton statico `instance` non possedeva l'annotazione `@ConfigEntry.Gui.Excluded`, inducendo Cloth Config a tentare la generazione di un widget di modifica GUI per la classe di configurazione stessa.
+- **Strategia Correttiva Certificata**:
+  1. In `InventoryControls.java`, rimozione del cast insicuro in favore di `category != null ? category.toString() : "null"` con protezione try-catch difensiva.
+  2. In `Config.java`, aggiunta di `@ConfigEntry.Gui.Excluded` sul campo `instance`.
+- **Riferimento Dettagliato**: [`docs/report/REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md)

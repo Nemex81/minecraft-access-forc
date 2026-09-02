@@ -28,7 +28,6 @@ import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
 import net.minecraft.client.gui.screens.recipebook.RecipeButton;
 import net.minecraft.client.gui.screens.recipebook.RecipeCollection;
-import net.minecraft.client.gui.screens.recipebook.SearchRecipeBookCategory;
 import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -833,8 +832,15 @@ public class InventoryControls implements BalmClientModule {
         MouseUtils.moveAndLeftClick(p.x(), p.y());
         moveToSlotItem(currentSlotItem, 100);
 
-        ExtendedRecipeBookCategory category = recipeBookComponentAccessor.getSelectedTab().getCategory();
-        log.debug("Change tab to {}", ((SearchRecipeBookCategory) category).name());
+        try {
+            var selectedTab = recipeBookComponentAccessor.getSelectedTab();
+            if (selectedTab != null) {
+                ExtendedRecipeBookCategory category = selectedTab.getCategory();
+                log.debug("Change tab to {}", category != null ? category.toString() : "null");
+            }
+        } catch (Exception e) {
+            log.debug("Could not log recipe tab change", e);
+        }
     }
 
     private boolean narrateRecipeInfo() {

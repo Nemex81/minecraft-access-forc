@@ -39,6 +39,8 @@ title: "Changelog"
 - The advancements key is now bound to X by default so as not to conflict with the friends list key (O by default)
 
 ### Bug Fixes
+- Fixed `ClassCastException` when switching recipe book categories/tabs with `V` and `Shift+V` in Minecraft 26.2
+- Fixed `No GUI provider registered for field 'Config.instance'` error in AutoConfig reflection by excluding the static singleton instance
 - Flipped show all and show available recipe book hints when pressing R to reflect the real status of the book
 - SAPI is now correctly used if no screen reader is installed on Windows
 - Fixed crash when starting game on MacOS

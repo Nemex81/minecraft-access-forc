@@ -21,6 +21,7 @@ import org.mcaccess.minecraftaccess.utils.config.ConfigExtension;
 @me.shedaniel.autoconfig.annotation.Config(name = "minecraft-access")
 public final class Config implements ConfigData {
     @Getter
+    @ConfigEntry.Gui.Excluded
     private static Config instance;
 
     public boolean menuFixEnabled = true;
