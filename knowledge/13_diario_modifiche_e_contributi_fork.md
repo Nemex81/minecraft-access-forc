@@ -8,7 +8,31 @@
 Questo documento costituisce il **Diario Ufficiale delle Modifiche del Fork Personale in lingua Italiana**.
 Poiché il `README.md` pubblico e la documentazione del repository upstream rimangono in lingua Inglese per la community internazionale con la sola sezione `## [Unreleased]`, tutte le novità, i refactoring e i miglioramenti sviluppati sui nostri rami (`mymaster`, `dev`) vengono tracciati qui secondo la disciplina AVF (`V.A.R[.M]`).
 
-## 🚀 [v26.2-1.17.1] — 2026-09-02 (Salto Automatico Pilota & Auto-Focus Menu di Pausa Esc — Versione Attuale)
+## 🚀 [v26.2-1.18.0] — 2026-09-02 (Feedback Dislivello Adattivo, Verbosità Faccia, Micro-Voxel Raymarch & Armonizzazione SSOT Mirino/Ostacoli — Versione Attuale)
+
+### 🌟 Feedback Dislivello Adattivo & Altezza Cubi (Rev MC-29.0)
+- **4 Modalità Operative (`SoundCueMode`)**: `SOUND_AND_VOICE`, `SOUND_ONLY`, `VOICE_ONLY`, `OFF` configurabili in Cloth Config.
+- **3 Stili Vocali (`NarrationStyle`)**: `DESCRIPTIVE` (*"1 blocco sopra"*), `COMPACT` (*"+1Y"*), `DELTA_ONLY` (*"+1"*).
+- **Toggle Quota Zero**: `narrateSameLevel` per escludere o includere la pronuncia a livello del terreno (*"Stesso livello"*).
+- **Calcolo Deterministico**: Calcolo matematico di $\Delta Y = Y_{\text{target}} - Y_{\text{player\_feet}}$ su blocchi ed entità.
+
+### 🧱 Regolatore di Verbosità Faccia del Blocco (Rev MC-29.1)
+- **4 Modalità (`BlockFaceVerbosity`)**: `DESCRIPTIVE` (*"lato ovest"*), `TOP_BOTTOM_ONLY`, `COMPACT`, `OFF`.
+- Localizzazioni complete in Italiano (`it_it.json`) e Inglese (`en_us.json`) con ordinamento alfabetico crescente.
+
+### 🎯 Architettura SSOT & Centralizzazione Mirino (Rev MC-29.2, Rev MC-29.3, Rev MC-29.4)
+- **`CrosshairFeedbackManager.java` (Presentation Coordinator)**: Single Source of Truth per la sincronizzazione dei canali di puntamento (Tick movimento, Centramento orizzonte tasto 5/M, Lettura manuale B).
+- **Bonifica a 5 Barriere**: Eliminazione di dead code, campi e metodi legacy, soppressione del doppio raycast in `MinecraftAccess.narrate`.
+- **Armonizzazione Concorrenza**: Soppressione dei loop vocali da fermi e protezione atomica delle transizioni.
+
+### 👣 Podometro di Cadenza & Aggancio Volumetrico Voxel Lamine Sottili (Rev MC-29.5, Rev MC-29.6)
+- **Podometro Ritmico**: Feedback di cadenza continuo metro per metro lungo le pareti (*"Assi di quercia, a 1 blocco"*).
+- **Micro-Voxel Raymarch Continuo ($0.05\text{m}$)**: Campionamento a passo $0.10\text{m}$ a partire da $d = 0.05\text{m}$ per porte, vetri, staccionate e sbarre, efficace anche a coordinate negative ($X < 0$).
+- **Dispacciamento Diretto Ostacoli (`onObstacleDetected`)**: Invocazione diretta da `ObstacleDetector` a `CrosshairFeedbackManager` con sincronia assoluta audio/voce e armonizzazione orizzontale colonna unica $XZ$ (*"Davanti: Ostacolo di Pannello di vetro, a 3 blocchi"*).
+
+---
+
+## 🚀 [v26.2-1.17.1] — 2026-09-02 (Salto Automatico Pilota & Auto-Focus Menu di Pausa Esc)
 
 ### 🌟 Pilota Automatico & Movimento (Rev MC-28.0)
 - **Calibrazione Fisica Salto Automatico (`AutoWalkController.java`)**:

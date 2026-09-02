@@ -1,4 +1,4 @@
-﻿# Registro Attivo delle Revisioni & Affinamenti Post-Collaudo (RRU)
+# Registro Attivo delle Revisioni & Affinamenti Post-Collaudo (RRU)
 # Progetto: Minecraft Access (Fork 26.2 / 1.21.x)
 # Autore: Luca (Sviluppatore & Collaudatore) & Antigravity (AI Pair Programmer)
 # Percorso: docs/report/REGISTRO_REVISIONI.md
@@ -24,3 +24,5 @@ Questo documento costituisce il **Registro Attivo Snello** del progetto Minecraf
   3. Override di dizionario per le mod del modpack ufficiale in `minecraft_access/lang/it_it.json`.
 - **Piano Tecnico di Riferimento**: In fase di pianificazione.
 - **Esito Collaudo**: In attesa di lavorazione e collaudo.
+
+---

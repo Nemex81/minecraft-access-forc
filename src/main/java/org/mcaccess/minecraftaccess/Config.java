@@ -409,7 +409,8 @@ public final class Config implements ConfigData {
         public boolean enabled = true;
         @ConfigExtension.Registry(registry = WorldNarrator.class, i18n = "narrator")
         public Identifier narrator = Identifier.fromNamespaceAndPath(MainClass.MOD_ID, Balm.platform().isModLoaded("jade") ? "jade" : "minecraft_access");
-        public boolean narrateBlockFace = true;
+        @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
+        public BlockFaceNarrationMode blockFaceNarrationMode = BlockFaceNarrationMode.DESCRIPTIVE;
         public boolean disableNarratingConsecutiveBlocks = false;
         public long repetitionInterval = 0;
         public boolean narrateAdditionalEntityPoses = true;
@@ -436,6 +437,13 @@ public final class Config implements ConfigData {
         private NarrateCrosshair() {
         }
 
+        public enum BlockFaceNarrationMode {
+            DESCRIPTIVE,
+            TOP_BOTTOM_ONLY,
+            COMPACT,
+            OFF
+        }
+
         public enum MovementFeedbackMode {
             TARGET_AND_DISTANCE,
             TARGET_ONLY,
@@ -443,10 +451,35 @@ public final class Config implements ConfigData {
             OFF
         }
 
+        public enum ElevationFeedbackMode {
+            SOUND_AND_VOICE,
+            SOUND_ONLY,
+            VOICE_ONLY,
+            OFF
+        }
+
+        public enum ElevationNarrationStyle {
+            DESCRIPTIVE,
+            COMPACT,
+            DELTA_ONLY
+        }
+
         public static final class RelativePositionSoundCue {
-            public boolean enabled = true;
+            @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
+            public ElevationFeedbackMode feedbackMode = ElevationFeedbackMode.SOUND_AND_VOICE;
+            @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
+            public ElevationNarrationStyle narrationStyle = ElevationNarrationStyle.DESCRIPTIVE;
+            public boolean narrateSameLevel = false;
             public float minSoundVolume = 0.25f;
             public float maxSoundVolume = 0.4f;
+
+            public boolean isSoundEnabled() {
+                return feedbackMode == ElevationFeedbackMode.SOUND_AND_VOICE || feedbackMode == ElevationFeedbackMode.SOUND_ONLY;
+            }
+
+            public boolean isVoiceEnabled() {
+                return feedbackMode == ElevationFeedbackMode.SOUND_AND_VOICE || feedbackMode == ElevationFeedbackMode.VOICE_ONLY;
+            }
 
             private RelativePositionSoundCue() {
             }

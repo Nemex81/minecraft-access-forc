@@ -102,21 +102,46 @@ public class MinecraftAccess implements WorldNarrator {
     public @NotNull HitResult rayCast() {
         LocalPlayer player = Minecraft.getInstance().player;
         assert player != null;
-        return PlayerUtils.crosshairTarget(Math.min(player.blockInteractionRange(), player.entityInteractionRange()));
+        return PlayerUtils.crosshairTarget(Math.max(player.blockInteractionRange(), player.entityInteractionRange()));
     }
 
     @Override
     public @Nullable String narrate(@NotNull HitResult rayCast) {
-        return switch (rayCast()) {
+        return switch (rayCast) {
             case BlockHitResult blockHitResult -> {
-                String side = Config.getInstance().narrateCrosshair.narrateBlockFace
-                        ? I18n.get(String.format("minecraft_access.direction.%s", blockHitResult.getDirection().getName()))
-                        : "";
+                String side = formatBlockFace(blockHitResult.getDirection(), Config.getInstance().narrateCrosshair.blockFaceNarrationMode);
                 yield narrateBlock(blockHitResult.getBlockPos(), side);
             }
             case EntityHitResult entityHitResult -> narrate(entityHitResult.getEntity());
             default -> throw new IllegalStateException("Unexpected value: " + rayCast());
         };
+    }
+
+    public static String formatBlockFace(@Nullable Direction direction, Config.NarrateCrosshair.BlockFaceNarrationMode mode) {
+        if (direction == null || mode == Config.NarrateCrosshair.BlockFaceNarrationMode.OFF) {
+            return "";
+        }
+        if (mode == Config.NarrateCrosshair.BlockFaceNarrationMode.TOP_BOTTOM_ONLY) {
+            return switch (direction) {
+                case UP -> I18n.get("minecraft_access.direction.face_top");
+                case DOWN -> I18n.get("minecraft_access.direction.face_bottom");
+                default -> "";
+            };
+        }
+        if (mode == Config.NarrateCrosshair.BlockFaceNarrationMode.DESCRIPTIVE) {
+            return switch (direction) {
+                case UP -> I18n.get("minecraft_access.direction.face_top");
+                case DOWN -> I18n.get("minecraft_access.direction.face_bottom");
+                case NORTH -> I18n.get("minecraft_access.direction.face_north");
+                case SOUTH -> I18n.get("minecraft_access.direction.face_south");
+                case WEST -> I18n.get("minecraft_access.direction.face_west");
+                case EAST -> I18n.get("minecraft_access.direction.face_east");
+            };
+        }
+        if (mode == Config.NarrateCrosshair.BlockFaceNarrationMode.COMPACT) {
+            return I18n.get(String.format("minecraft_access.direction.%s", direction.getName()));
+        }
+        return "";
     }
 
     @Override
@@ -292,7 +317,7 @@ public class MinecraftAccess implements WorldNarrator {
         BlockEntity blockEntity = client.level.getBlockEntity(blockPos);
 
         String name = block.getName().getString();
-        String narration = Strings.isBlank(side) ? name : name + ' ' + side;
+        String narration = Strings.isBlank(side) ? name : name + ", " + side;
 
         if (blockState.is(Blocks.WATER) || blockState.is(Blocks.LAVA)) {
             return narrateFluidBlock(blockPos);

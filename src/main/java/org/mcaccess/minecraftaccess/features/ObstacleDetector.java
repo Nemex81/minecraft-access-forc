@@ -106,7 +106,6 @@ public class ObstacleDetector implements BalmClientModule {
         boolean hasMoveInput = intendedRelAngle != null;
 
         if (!isMoving && !hasMoveInput) {
-            resetState();
             return;
         }
 
@@ -128,15 +127,16 @@ public class ObstacleDetector implements BalmClientModule {
             boolean isNewState = result.state() != lastWarnedState;
             boolean delayElapsed = (currentTime - previousTimeInMillis) >= config.delay;
 
-            if (isNewPosition || isNewState || delayElapsed) {
+            boolean shouldWarn = isNewPosition || isNewState || (hasMoveInput && delayElapsed);
+
+            if (shouldWarn) {
                 previousTimeInMillis = currentTime;
                 lastWarnedObstaclePos = result.targetFootPos();
                 lastWarnedState = result.state();
 
                 if (config.voiceWarning) {
-                    CrosshairFeedbackManager.suppressMovementFeed(250);
                     String msg = ObstacleDetectionUtils.getNarrationMessage(result, config.narrationStyle, relAngleForNarration, config.directionFeedbackMode);
-                    MainClass.narrate(msg, true);
+                    CrosshairFeedbackManager.onObstacleDetected(result, msg, relAngleForNarration);
                 }
 
                 if (config.playAudioCues) {

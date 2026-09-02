@@ -1,4 +1,4 @@
-﻿# Archivio Storico delle Revisioni & Collaudi Conclusi (RRU)
+# Archivio Storico delle Revisioni & Collaudi Conclusi (RRU)
 # Progetto: Minecraft Access (Fork 26.2 / 1.21.x)
 # Autore: Luca (Sviluppatore & Collaudatore) & Antigravity (AI Pair Programmer)
 # Percorso: docs/report/ARCHIVIO_REVISIONI.md
@@ -10,6 +10,101 @@ Questo documento raccoglie la memoria storica di tutte le anomalie, correzioni e
 ---
 
 ## 🏛️ STORICO REVISIONI COLLAUDATE CON SUCCESSO (CICLO 26.2)
+
+---
+
+### 🟢 Rev MC-29.0 — Feedback Adattivo di Dislivello Verticale & Altezza Cubi
+- **Stato**: `[COLLAUDATA CON SUCCESSO]`
+- **Versione Chiusura**: 26.2-1.18.0 (Data 2026-09-02)
+- **Problema Riscontrato**: Necessità di percepire istantaneamente e con precisione il dislivello di blocchi ed entità rispetto al giocatore, sia tramite suoni dedicati sia tramite sintesi vocale configurabile.
+- **Soluzione Applicata (PRAPI)**:
+  1. Introdotte 4 modalità in `Config.java` (`SOUND_AND_VOICE`, `SOUND_ONLY`, `VOICE_ONLY`, `OFF`);
+  2. Introdotte 3 modalità di verbosità vocale (`DESCRIPTIVE`, `COMPACT`, `DELTA_ONLY`);
+  3. Aggiunto toggle `narrateSameLevel` per escludere facoltativamente gli annunci a quota zero;
+  4. Implementato calcolo matematico deterministico di $\Delta Y = Y_{\text{target}} - Y_{\text{player\_feet}}$.
+- **Piano Tecnico di Riferimento**: `docs/piani/completati/PIANO_TECNICO_FEEDBACK_ADATTIVO_DISLIVELLO_E_ALTEZZA_CUBI.md`
+- **Esito Collaudo**: Collaudato con pieno successo in-game.
+
+---
+
+### 🟢 Rev MC-29.1 — Regolatore di Verbosità Faccia del Blocco
+- **Stato**: `[COLLAUDATA CON SUCCESSO]`
+- **Versione Chiusura**: 26.2-1.18.0 (Data 2026-09-02)
+- **Problema Riscontrato**: Necessità di controllare la verbosità dell'annuncio della faccia colpita dal mirino per non saturare la sintesi durante l'esplorazione.
+- **Soluzione Applicata (PRAPI)**:
+  1. Aggiunte 4 modalità di verbosità in `Config.java` (`DESCRIPTIVE`, `TOP_BOTTOM_ONLY`, `COMPACT`, `OFF`);
+  2. Integrazione con `BlockFace` e localizzazioni IT/EN.
+- **Piano Tecnico di Riferimento**: `docs/piani/completati/PIANO_TECNICO_FEEDBACK_ADATTIVO_DISLIVELLO_E_ALTEZZA_CUBI.md`
+- **Esito Collaudo**: Collaudato con pieno successo in-game.
+
+---
+
+### 🟢 Rev MC-29.2 — Architettura SSOT & Centralizzazione Mirino in `CrosshairFeedbackManager`
+- **Stato**: `[COLLAUDATA CON SUCCESSO]`
+- **Versione Chiusura**: 26.2-1.18.0 (Data 2026-09-02)
+- **Problema Riscontrato**: Race condition e duplicazione messaggi tra rotazione testa (Yaw/Pitch), centramento orizzonte (`KP_5`/`M`), lettura manuale (`B`) e tick del mirino.
+- **Soluzione Applicata (PRAPI)**:
+  1. Creato `CrosshairFeedbackManager.java` come Presentation Coordinator e Single Source of Truth;
+  2. Disaccoppiati e coordinati i canali: Canale A (Tick/Movimento), Canale B (Centramento `onCameraCentered`), Canale C (Lettura Manuale `B`);
+  3. Stato atomico unico e debouncing temporale unificato.
+- **Piano Tecnico di Riferimento**: `docs/piani/completati/PIANO_TECNICO_FEEDBACK_ADATTIVO_DISLIVELLO_E_ALTEZZA_CUBI.md`
+- **Esito Collaudo**: Collaudato con pieno successo in-game.
+
+---
+
+### 🟢 Rev MC-29.3 — Bonifica Dead Code & Ottimizzazione Mirino in Movimento
+- **Stato**: `[COLLAUDATA CON SUCCESSO]`
+- **Versione Chiusura**: 26.2-1.18.0 (Data 2026-09-02)
+- **Problema Riscontrato**: Dead code legacy in `CrosshairFeedbackManager`, import orfano `Interval` e doppio raycast ridondante in `MinecraftAccess.narrate`.
+- **Soluzione Applicata (PRAPI)**:
+  1. Bonifica a 5 barriere: eliminati metodi e campi orfani;
+  2. `MinecraftAccess.narrate` sfrutta direttamente il raycast passato in ingresso senza rieseguirlo;
+  3. Raggio di interazione allineato a `Math.max(blockRange, entityRange)` (4.5m).
+- **Piano Tecnico di Riferimento**: `docs/piani/completati/PIANO_TECNICO_FEEDBACK_ADATTIVO_DISLIVELLO_E_ALTEZZA_CUBI.md`
+- **Esito Collaudo**: Collaudato con pieno successo in-game.
+
+---
+
+### 🟢 Rev MC-29.4 — Armonizzazione Concorrenza & Soppressione Loop da Fermi
+- **Stato**: `[COLLAUDATA CON SUCCESSO]`
+- **Versione Chiusura**: 26.2-1.18.0 (Data 2026-09-02)
+- **Problema Riscontrato**: Ripetizione continua a intervalli fissi dell'ObstacleDetector in condizioni di fermata contro ostacoli.
+- **Soluzione Applicata (PRAPI)**:
+  1. Rimossa la ripetizione forzata da fermi quando la posizione e lo stato dell'ostacolo non variano;
+  2. Preservata la reattività istantanea sui cambi di blocco e all'avvicinamento.
+- **Piano Tecnico di Riferimento**: `docs/piani/completati/PIANO_TECNICO_FEEDBACK_ADATTIVO_DISLIVELLO_E_ALTEZZA_CUBI.md`
+- **Esito Collaudo**: Collaudato con pieno successo in-game.
+
+---
+
+### 🟢 Rev MC-29.5 — Ripristino Cadenza Podometro & Aggancio Volumetrico Voxel per Lamine Sottili
+- **Stato**: `[COLLAUDATA CON SUCCESSO]`
+- **Versione Chiusura**: 26.2-1.18.0 (Data 2026-09-02)
+- **Problema Riscontrato**:
+  1. La soppressione di blocchi uguali adiacenti toglieva il "contapassi / radar di cadenza" al giocatore non vedente mentre camminava lungo una parete;
+  2. Nei passi laterali veloci, il mirino saltava porte e pannelli di vetro a causa dello spessore ridotto ($0.12\text{--}0.18\text{m}$).
+- **Soluzione Applicata (PRAPI)**:
+  1. Rimossa la soppressione silenziosa in `CrosshairFeedbackManager.java`: ogni coordinata voxel attraversata emette il feedback compatto ritmico (*"Assi di quercia, a 1 blocco"*);
+  2. Campionamento volumetrico continuo lungo la linea di vista in `PlayerUtils.crosshairTarget` per `DoorBlock`, `CrossCollisionBlock`, `FenceBlock`, `IronBarsBlock`, `FenceGateBlock`, `TrapDoorBlock`.
+- **Piano Tecnico di Riferimento**: `docs/piani/completati/PIANO_TECNICO_FEEDBACK_ADATTIVO_DISLIVELLO_E_ALTEZZA_CUBI.md`
+- **Esito Collaudo**: Collaudato con pieno successo in-game.
+
+---
+
+### 🟢 Rev MC-29.6 — Dispacciamento Diretto Ostacoli (`onObstacleDetected`), Micro-Voxel Raymarch ($0.05\text{m}$) & Armonizzazione $XZ$
+- **Stato**: `[COLLAUDATA CON SUCCESSO]`
+- **Versione Chiusura**: 26.2-1.18.0 (Data 2026-09-02)
+- **Problema Riscontrato**:
+  1. Suono ostacolo attivo ma voce muta durante l'avvicinamento frontale verso un ostacolo a causa di un meccanismo passivo di pending warning;
+  2. Duplicazione ridondante del prefisso frontale (*"Davanti: Ostacolo... Davanti: ..."*) per mancato allineamento di colonna orizzontale $XZ$;
+  3. Salto delle lamine sottili a coordinate negative ($X = -64.8$) con passo $0.25\text{m}$.
+- **Soluzione Applicata (PRAPI)**:
+  1. **Dispacciamento Diretto al Manager (`onObstacleDetected`)**: Invocazione diretta da `ObstacleDetector` a `CrosshairFeedbackManager.onObstacleDetected(...)`, garantendo sincronia immediata tra cue sonoro 3D e sintesi vocale:
+     > *"Davanti: Ostacolo di Pannello di vetro, a 3 blocchi"*;
+  2. **Armonizzazione Colonna Unica ($XZ$)**: Se piedi e sguardo puntano alla stessa barriera/colonna frontale, eroga un unico messaggio pulito senza ridondanze; per movimenti laterali o retro, compone fluidamente (*"A destra: Salita su Fornace. Davanti: Assi di quercia, a 2 blocchi"*);
+  3. **Micro-Voxel Raymarch Continuo ($0.05\text{m}$)**: Avvio del campionamento a $d = 0.05\text{m}$ con passo $0.10\text{m}$ in `PlayerUtils.crosshairTarget`.
+- **Piano Tecnico di Riferimento**: `docs/piani/completati/PIANO_TECNICO_FEEDBACK_ADATTIVO_DISLIVELLO_E_ALTEZZA_CUBI.md`
+- **Esito Collaudo**: Collaudato con pieno successo in-game e confermato da telemetria live.
 
 ---
 

@@ -224,9 +224,11 @@ public class NumpadControls implements BalmClientModule {
                         playSnapSound(1.0f);
                     }
                     if (mode == Config.NumpadControls.CenterHorizonFeedbackMode.SOUND_VOICE_AND_TARGET) {
-                        MainClass.narrate(I18n.get("minecraft_access.numpad.look_centered"), true);
+                        CrosshairFeedbackManager.onCameraCentered(true);
+                    } else if (mode == Config.NumpadControls.CenterHorizonFeedbackMode.SOUND_AND_TARGET
+                            || mode == Config.NumpadControls.CenterHorizonFeedbackMode.TARGET_ONLY) {
+                        CrosshairFeedbackManager.onCameraCentered(false);
                     }
-                    CrosshairFeedbackManager.onLookCentered();
                     return true;
                 })
                 .build();

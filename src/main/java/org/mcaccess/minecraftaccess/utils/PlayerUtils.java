@@ -14,8 +14,10 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
@@ -99,13 +101,59 @@ public final class PlayerUtils {
      *     or MinecraftClient.crosshairTarget otherwise
      */
     public static HitResult crosshairTarget(double rayCastDistance) {
+        Entity camera = CLIENT.getCameraEntity();
+        if (camera == null) return CLIENT.hitResult;
+
         BlockHitResult fluidHitResult = crosshairFluidTarget(rayCastDistance);
-        assert Minecraft.getInstance().player != null;
-        if (fluidHitResult.getType() == HitResult.Type.BLOCK && !Minecraft.getInstance().player.isInLiquid()) {
+        if (fluidHitResult.getType() == HitResult.Type.BLOCK && !camera.isInLiquid()) {
             return fluidHitResult;
-        } else {
-            return CLIENT.hitResult;
         }
+
+        HitResult blockHit = camera.pick(rayCastDistance, 0.0F, false);
+
+        Vec3 eyePos = camera.getEyePosition(0.0F);
+        Vec3 viewVec = camera.getViewVector(0.0F);
+        Vec3 reachVec = eyePos.add(viewVec.scale(rayCastDistance));
+        double maxDistSq = (blockHit.getType() != HitResult.Type.MISS)
+                ? eyePos.distanceToSqr(blockHit.getLocation())
+                : rayCastDistance * rayCastDistance;
+
+        // Micro-Voxel Raymarch Snap for thin elements (doors, glass panes, fences, iron bars)
+        ClientLevel level = CLIENT.level;
+        if (level != null) {
+            double step = 0.10;
+            for (double d = 0.05; d <= rayCastDistance; d += step) {
+                Vec3 samplePoint = eyePos.add(viewVec.scale(d));
+                double sampleDistSq = eyePos.distanceToSqr(samplePoint);
+                if (sampleDistSq >= maxDistSq) break;
+
+                BlockPos pos = BlockPos.containing(samplePoint);
+                BlockState state = level.getBlockState(pos);
+                if (!state.isAir()) {
+                    if (state.getBlock() instanceof net.minecraft.world.level.block.DoorBlock
+                            || state.getBlock() instanceof net.minecraft.world.level.block.CrossCollisionBlock
+                            || state.getBlock() instanceof net.minecraft.world.level.block.FenceBlock
+                            || state.getBlock() instanceof net.minecraft.world.level.block.IronBarsBlock
+                            || state.getBlock() instanceof net.minecraft.world.level.block.FenceGateBlock
+                            || state.getBlock() instanceof net.minecraft.world.level.block.TrapDoorBlock) {
+                        Direction dir = Direction.orderedByNearest(camera)[0].getOpposite();
+                        blockHit = new BlockHitResult(samplePoint, dir, pos, false);
+                        maxDistSq = sampleDistSq;
+                        break;
+                    }
+                }
+            }
+        }
+
+        AABB box = camera.getBoundingBox().expandTowards(viewVec.scale(rayCastDistance)).inflate(1.0D);
+        EntityHitResult entityHit = ProjectileUtil.getEntityHitResult(
+                camera, eyePos, reachVec, box, (e) -> !e.isSpectator() && e.isPickable(), maxDistSq
+        );
+
+        if (entityHit != null) {
+            return entityHit;
+        }
+        return blockHit;
     }
 
     private static BlockHitResult crosshairFluidTarget(double rayCastDistance) {
