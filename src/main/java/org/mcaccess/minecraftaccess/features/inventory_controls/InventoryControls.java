@@ -3,6 +3,7 @@ package org.mcaccess.minecraftaccess.features.inventory_controls;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -25,13 +26,17 @@ import net.minecraft.client.gui.screens.inventory.BrewingStandScreen;
 import net.minecraft.client.gui.screens.inventory.CraftingScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.gui.screens.inventory.StonecutterScreen;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
 import net.minecraft.client.gui.screens.recipebook.RecipeButton;
 import net.minecraft.client.gui.screens.recipebook.RecipeCollection;
+import net.minecraft.client.gui.screens.recipebook.SearchRecipeBookCategory;
 import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
@@ -50,6 +55,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.crafting.ExtendedRecipeBookCategory;
+import net.minecraft.world.item.crafting.RecipeBookCategory;
 import net.minecraft.world.item.crafting.display.FurnaceRecipeDisplay;
 import net.minecraft.world.item.crafting.display.RecipeDisplay;
 import net.minecraft.world.item.crafting.display.ShapedCraftingRecipeDisplay;
@@ -108,6 +114,7 @@ public class InventoryControls implements BalmClientModule {
     private String previousSlotText = "";
     private int previousQueuedCrafts = 0;
     private int previousCarriedCount = 0;
+    private int previousStonecutterOptionsCount = 0;
     private ItemStack previousResultStack = ItemStack.EMPTY;
     private static long lastActionNarrationTime = 0;
 
@@ -184,7 +191,19 @@ public class InventoryControls implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_J))
                 .overrideCategory(KeyMappingCategories.INVENTORY_CONTROLS)
                 .handleScreenInput(_ -> {
+                    if (isSearchBoxFocused()) return false;
                     log.debug("Left key pressed");
+                    focusSlotItemAt(FocusDirection.LEFT);
+                    return true;
+                })
+                .build();
+
+        Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "inventory_controls.move/left_arrow"))
+                .withDefault(InputBinding.key(InputConstants.KEY_LEFT))
+                .overrideCategory(KeyMappingCategories.INVENTORY_CONTROLS)
+                .handleScreenInput(_ -> {
+                    if (isSearchBoxFocused()) return false;
+                    log.debug("Left arrow key pressed");
                     focusSlotItemAt(FocusDirection.LEFT);
                     return true;
                 })
@@ -194,7 +213,19 @@ public class InventoryControls implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_L))
                 .overrideCategory(KeyMappingCategories.INVENTORY_CONTROLS)
                 .handleScreenInput(_ -> {
+                    if (isSearchBoxFocused()) return false;
                     log.debug("Right key pressed");
+                    focusSlotItemAt(FocusDirection.RIGHT);
+                    return true;
+                })
+                .build();
+
+        Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "inventory_controls.move/right_arrow"))
+                .withDefault(InputBinding.key(InputConstants.KEY_RIGHT))
+                .overrideCategory(KeyMappingCategories.INVENTORY_CONTROLS)
+                .handleScreenInput(_ -> {
+                    if (isSearchBoxFocused()) return false;
+                    log.debug("Right arrow key pressed");
                     focusSlotItemAt(FocusDirection.RIGHT);
                     return true;
                 })
@@ -204,7 +235,19 @@ public class InventoryControls implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_I))
                 .overrideCategory(KeyMappingCategories.INVENTORY_CONTROLS)
                 .handleScreenInput(_ -> {
+                    if (isSearchBoxFocused()) return false;
                     log.debug("Up key pressed");
+                    focusSlotItemAt(FocusDirection.UP);
+                    return true;
+                })
+                .build();
+
+        Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "inventory_controls.move/up_arrow"))
+                .withDefault(InputBinding.key(InputConstants.KEY_UP))
+                .overrideCategory(KeyMappingCategories.INVENTORY_CONTROLS)
+                .handleScreenInput(_ -> {
+                    if (isSearchBoxFocused()) return false;
+                    log.debug("Up arrow key pressed");
                     focusSlotItemAt(FocusDirection.UP);
                     return true;
                 })
@@ -214,7 +257,8 @@ public class InventoryControls implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_I, KeyModifiers.of(KeyModifier.SHIFT)))
                 .overrideCategory(KeyMappingCategories.INVENTORY_CONTROLS)
                 .handleScreenInput(_ -> {
-                    if (currentGroup.isScrollable) {
+                    if (isSearchBoxFocused()) return false;
+                    if (currentGroup != null && currentGroup.isScrollable) {
                         log.debug("Previous Recipe Book page key pressed");
                         if (isRecipeBookOpen()) {
                             clickPreviousRecipeBookPage();
@@ -231,7 +275,19 @@ public class InventoryControls implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_K))
                 .overrideCategory(KeyMappingCategories.INVENTORY_CONTROLS)
                 .handleScreenInput(_ -> {
+                    if (isSearchBoxFocused()) return false;
                     log.debug("Down key pressed");
+                    focusSlotItemAt(FocusDirection.DOWN);
+                    return true;
+                })
+                .build();
+
+        Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "inventory_controls.move/down_arrow"))
+                .withDefault(InputBinding.key(InputConstants.KEY_DOWN))
+                .overrideCategory(KeyMappingCategories.INVENTORY_CONTROLS)
+                .handleScreenInput(_ -> {
+                    if (isSearchBoxFocused()) return false;
+                    log.debug("Down arrow key pressed");
                     focusSlotItemAt(FocusDirection.DOWN);
                     return true;
                 })
@@ -241,7 +297,8 @@ public class InventoryControls implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_K, KeyModifiers.of(KeyModifier.SHIFT)))
                 .overrideCategory(KeyMappingCategories.INVENTORY_CONTROLS)
                 .handleScreenInput(_ -> {
-                    if (currentGroup.isScrollable) {
+                    if (isSearchBoxFocused()) return false;
+                    if (currentGroup != null && currentGroup.isScrollable) {
                         log.debug("Next Recipe Book page key pressed");
                         if (isRecipeBookOpen()) {
                             clickNextRecipeBookPage();
@@ -285,11 +342,49 @@ public class InventoryControls implements BalmClientModule {
                     Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK.value(), 1.0F));
                     ((RecipeBookComponentAccessor) currentRecipeBookWidget).getFilterButton().onPress(new MouseButtonInfo(InputConstants.MOUSE_BUTTON_LEFT, 0));
 
-                    String narration = ((RecipeBookComponentAccessor) currentRecipeBookWidget).getFilterButton().getValue()
+                    String filterName = ((RecipeBookComponentAccessor) currentRecipeBookWidget).getFilterButton().getValue()
                             ? ((RecipeBookComponentAccessor) currentRecipeBookWidget).callGetRecipeFilterName().getString()
                             : I18n.get("gui.recipebook.toggleRecipes.all");
-                    MainClass.narrate(narration, true);
 
+                    currentSlotsGroupList = GroupGenerator.generateGroupsFromSlots(currentScreen);
+                    SlotsGroup recipesGroup = null;
+                    if (currentSlotsGroupList != null) {
+                        for (int i = 0; i < currentSlotsGroupList.size(); i++) {
+                            if ("recipes".equals(currentSlotsGroupList.get(i).getGroupKey())) {
+                                currentGroupIndex = i;
+                                recipesGroup = currentSlotsGroupList.get(i);
+                                currentGroup = recipesGroup;
+                                break;
+                            }
+                        }
+                    }
+
+                    RecipeBookComponentAccessor compAccessor = (RecipeBookComponentAccessor) currentRecipeBookWidget;
+                    RecipeBookPageAccessor pageAccessor = (RecipeBookPageAccessor) compAccessor.getRecipeBookPage();
+                    RecipePageStats stats = getPageStats(pageAccessor);
+                    String statsSummary = stats.formatSummary();
+                    String prefix = statsSummary.isEmpty() ? filterName : filterName + ", " + statsSummary;
+
+                    if (recipesGroup != null && !recipesGroup.slotItems.isEmpty()) {
+                        currentSlotItem = recipesGroup.getFirstGroupItem();
+                        moveToSlotItem(currentSlotItem, 100);
+                        List<RecipeButton> buttons = pageAccessor.getButtons();
+                        if (!buttons.isEmpty() && buttons.getFirst().visible && buttons.getFirst().getCollection() != null) {
+                            RecipeButton firstButton = buttons.getFirst();
+                            ItemStack displayStack = firstButton.getDisplayStack();
+                            String itemName = displayStack.getHoverName().getString();
+                            String craftable = firstButton.getCollection().hasCraftable() ? I18n.get("minecraft_access.other.craftable") : I18n.get("minecraft_access.other.not_craftable");
+                            String firstRecipeText = "%s %d %s".formatted(craftable, displayStack.getCount(), itemName);
+                            String narration = prefix + ". " + firstRecipeText;
+                            lastActionNarrationTime = System.currentTimeMillis();
+                            previousSlotText = firstRecipeText;
+                            MainClass.narrate(narration, true);
+                            return true;
+                        }
+                    }
+
+                    lastActionNarrationTime = System.currentTimeMillis();
+                    MainClass.narrate(prefix, true);
                     return true;
                 })
                 .build();
@@ -337,6 +432,7 @@ public class InventoryControls implements BalmClientModule {
             currentRecipeBookWidget = null;
             previousQueuedCrafts = 0;
             previousCarriedCount = 0;
+            previousStonecutterOptionsCount = 0;
             previousResultStack = ItemStack.EMPTY;
             return;
         }
@@ -361,6 +457,7 @@ public class InventoryControls implements BalmClientModule {
             previousScreen = currentScreen;
             previousQueuedCrafts = 0;
             previousCarriedCount = 0;
+            previousStonecutterOptionsCount = 0;
             previousResultStack = ItemStack.EMPTY;
             if (currentScreen instanceof AnvilScreen anvilScreen) {
                 setSearchBoxFocus(((AnvilScreenAccessor) anvilScreen).getName(), false);
@@ -380,6 +477,16 @@ public class InventoryControls implements BalmClientModule {
             //</editor-fold>
 
             refreshGroupListAndSelectFirstGroup(false); // Interrupt is false to let it narrate the screen's name
+        }
+
+        if (currentScreen instanceof StonecutterScreen stonecutterScreen) {
+            int visibleCount = stonecutterScreen.getMenu().getNumberOfVisibleRecipes();
+            if (visibleCount > 0 && previousStonecutterOptionsCount == 0) {
+                MainClass.narrate(I18n.get("minecraft_access.inventory_controls.stonecutter_options", visibleCount), false);
+            }
+            previousStonecutterOptionsCount = visibleCount;
+        } else {
+            previousStonecutterOptionsCount = 0;
         }
 
         if (currentSlotsGroupList == null || currentSlotsGroupList.isEmpty()) return;
@@ -564,21 +671,199 @@ public class InventoryControls implements BalmClientModule {
     }
 
     private void clickPreviousRecipeBookPage() {
-        RecipeBookPageAccessor area = (RecipeBookPageAccessor) ((RecipeBookComponentAccessor) currentRecipeBookWidget).getRecipeBookPage();
-        int x = area.getBackButton().getX() + 3;
-        int y = area.getBackButton().getY() + 3;
+        if (currentRecipeBookWidget == null || !currentRecipeBookWidget.isVisible()) return;
+        RecipeBookComponentAccessor compAccessor = (RecipeBookComponentAccessor) currentRecipeBookWidget;
+        RecipeBookPageAccessor pageAccessor = (RecipeBookPageAccessor) compAccessor.getRecipeBookPage();
+        int currentPage = pageAccessor.getCurrentPage();
+        int totalPages = pageAccessor.getTotalPages();
+
+        if (currentPage <= 0) {
+            RecipePageStats stats = getPageStats(pageAccessor);
+            String statsSummary = stats.formatSummary();
+            String prefix = (totalPages <= 1)
+                    ? I18n.get("minecraft_access.inventory_controls.recipe_page_single")
+                    : I18n.get("minecraft_access.inventory_controls.recipe_page_first");
+            String boundaryInfo = statsSummary.isEmpty() ? prefix : prefix + ", " + statsSummary;
+
+            currentSlotsGroupList = GroupGenerator.generateGroupsFromSlots(currentScreen);
+            SlotsGroup recipesGroup = null;
+            if (currentSlotsGroupList != null) {
+                for (int i = 0; i < currentSlotsGroupList.size(); i++) {
+                    if ("recipes".equals(currentSlotsGroupList.get(i).getGroupKey())) {
+                        currentGroupIndex = i;
+                        recipesGroup = currentSlotsGroupList.get(i);
+                        currentGroup = recipesGroup;
+                        break;
+                    }
+                }
+            }
+
+            if (recipesGroup != null && !recipesGroup.slotItems.isEmpty()) {
+                currentSlotItem = recipesGroup.getFirstGroupItem();
+                moveToSlotItem(currentSlotItem, 100);
+                List<RecipeButton> buttons = pageAccessor.getButtons();
+                if (!buttons.isEmpty() && buttons.getFirst().visible && buttons.getFirst().getCollection() != null) {
+                    RecipeButton firstButton = buttons.getFirst();
+                    ItemStack displayStack = firstButton.getDisplayStack();
+                    String itemName = displayStack.getHoverName().getString();
+                    String craftable = firstButton.getCollection().hasCraftable() ? I18n.get("minecraft_access.other.craftable") : I18n.get("minecraft_access.other.not_craftable");
+                    String firstRecipeText = "%s %d %s".formatted(craftable, displayStack.getCount(), itemName);
+                    String narration = boundaryInfo + ". " + firstRecipeText;
+                    lastActionNarrationTime = System.currentTimeMillis();
+                    previousSlotText = firstRecipeText;
+                    MainClass.narrate(narration, true);
+                    return;
+                }
+            }
+
+            lastActionNarrationTime = System.currentTimeMillis();
+            MainClass.narrate(boundaryInfo, true);
+            return;
+        }
+
+        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK.value(), 1.0F));
+        int x = pageAccessor.getBackButton().getX() + 3;
+        int y = pageAccessor.getBackButton().getY() + 3;
         MouseUtils.Coordinates p = MouseUtils.calcRealPositionOfWidget(x, y);
         MouseUtils.moveAndLeftClick(p.x(), p.y());
-        moveToSlotItem(currentSlotItem, 100);
+
+        currentSlotsGroupList = GroupGenerator.generateGroupsFromSlots(currentScreen);
+        SlotsGroup recipesGroup = null;
+        if (currentSlotsGroupList != null) {
+            for (int i = 0; i < currentSlotsGroupList.size(); i++) {
+                if ("recipes".equals(currentSlotsGroupList.get(i).getGroupKey())) {
+                    currentGroupIndex = i;
+                    recipesGroup = currentSlotsGroupList.get(i);
+                    currentGroup = recipesGroup;
+                    break;
+                }
+            }
+        }
+
+        int newPage = Math.max(0, currentPage - 1);
+        RecipePageStats stats = getPageStats(pageAccessor);
+        String statsSummary = stats.formatSummary();
+        String basePageInfo = I18n.get("minecraft_access.inventory_controls.recipe_page", newPage + 1, totalPages);
+        String pageInfo = statsSummary.isEmpty() ? basePageInfo : basePageInfo + ", " + statsSummary;
+
+        if (recipesGroup != null && !recipesGroup.slotItems.isEmpty()) {
+            currentSlotItem = recipesGroup.getFirstGroupItem();
+            moveToSlotItem(currentSlotItem, 100);
+            List<RecipeButton> buttons = pageAccessor.getButtons();
+            if (!buttons.isEmpty() && buttons.getFirst().visible && buttons.getFirst().getCollection() != null) {
+                RecipeButton firstButton = buttons.getFirst();
+                ItemStack displayStack = firstButton.getDisplayStack();
+                String itemName = displayStack.getHoverName().getString();
+                String craftable = firstButton.getCollection().hasCraftable() ? I18n.get("minecraft_access.other.craftable") : I18n.get("minecraft_access.other.not_craftable");
+                String firstRecipeText = "%s %d %s".formatted(craftable, displayStack.getCount(), itemName);
+                String narration = pageInfo + ". " + firstRecipeText;
+                lastActionNarrationTime = System.currentTimeMillis();
+                previousSlotText = firstRecipeText;
+                MainClass.narrate(narration, true);
+                return;
+            }
+        }
+
+        lastActionNarrationTime = System.currentTimeMillis();
+        MainClass.narrate(pageInfo, true);
     }
 
     private void clickNextRecipeBookPage() {
-        RecipeBookPageAccessor area = (RecipeBookPageAccessor) ((RecipeBookComponentAccessor) currentRecipeBookWidget).getRecipeBookPage();
-        int x = area.getForwardButton().getX() + 3;
-        int y = area.getForwardButton().getY() + 3;
+        if (currentRecipeBookWidget == null || !currentRecipeBookWidget.isVisible()) return;
+        RecipeBookComponentAccessor compAccessor = (RecipeBookComponentAccessor) currentRecipeBookWidget;
+        RecipeBookPageAccessor pageAccessor = (RecipeBookPageAccessor) compAccessor.getRecipeBookPage();
+        int currentPage = pageAccessor.getCurrentPage();
+        int totalPages = pageAccessor.getTotalPages();
+
+        if (currentPage >= totalPages - 1) {
+            RecipePageStats stats = getPageStats(pageAccessor);
+            String statsSummary = stats.formatSummary();
+            String prefix = (totalPages <= 1)
+                    ? I18n.get("minecraft_access.inventory_controls.recipe_page_single")
+                    : I18n.get("minecraft_access.inventory_controls.recipe_page_last");
+            String boundaryInfo = statsSummary.isEmpty() ? prefix : prefix + ", " + statsSummary;
+
+            currentSlotsGroupList = GroupGenerator.generateGroupsFromSlots(currentScreen);
+            SlotsGroup recipesGroup = null;
+            if (currentSlotsGroupList != null) {
+                for (int i = 0; i < currentSlotsGroupList.size(); i++) {
+                    if ("recipes".equals(currentSlotsGroupList.get(i).getGroupKey())) {
+                        currentGroupIndex = i;
+                        recipesGroup = currentSlotsGroupList.get(i);
+                        currentGroup = recipesGroup;
+                        break;
+                    }
+                }
+            }
+
+            if (recipesGroup != null && !recipesGroup.slotItems.isEmpty()) {
+                currentSlotItem = recipesGroup.getFirstGroupItem();
+                moveToSlotItem(currentSlotItem, 100);
+                List<RecipeButton> buttons = pageAccessor.getButtons();
+                if (!buttons.isEmpty() && buttons.getFirst().visible && buttons.getFirst().getCollection() != null) {
+                    RecipeButton firstButton = buttons.getFirst();
+                    ItemStack displayStack = firstButton.getDisplayStack();
+                    String itemName = displayStack.getHoverName().getString();
+                    String craftable = firstButton.getCollection().hasCraftable() ? I18n.get("minecraft_access.other.craftable") : I18n.get("minecraft_access.other.not_craftable");
+                    String firstRecipeText = "%s %d %s".formatted(craftable, displayStack.getCount(), itemName);
+                    String narration = boundaryInfo + ". " + firstRecipeText;
+                    lastActionNarrationTime = System.currentTimeMillis();
+                    previousSlotText = firstRecipeText;
+                    MainClass.narrate(narration, true);
+                    return;
+                }
+            }
+
+            lastActionNarrationTime = System.currentTimeMillis();
+            MainClass.narrate(boundaryInfo, true);
+            return;
+        }
+
+        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK.value(), 1.0F));
+        int x = pageAccessor.getForwardButton().getX() + 3;
+        int y = pageAccessor.getForwardButton().getY() + 3;
         MouseUtils.Coordinates p = MouseUtils.calcRealPositionOfWidget(x, y);
         MouseUtils.moveAndLeftClick(p.x(), p.y());
-        moveToSlotItem(currentSlotItem, 100);
+
+        currentSlotsGroupList = GroupGenerator.generateGroupsFromSlots(currentScreen);
+        SlotsGroup recipesGroup = null;
+        if (currentSlotsGroupList != null) {
+            for (int i = 0; i < currentSlotsGroupList.size(); i++) {
+                if ("recipes".equals(currentSlotsGroupList.get(i).getGroupKey())) {
+                    currentGroupIndex = i;
+                    recipesGroup = currentSlotsGroupList.get(i);
+                    currentGroup = recipesGroup;
+                    break;
+                }
+            }
+        }
+
+        int newPage = Math.min(totalPages - 1, currentPage + 1);
+        RecipePageStats stats = getPageStats(pageAccessor);
+        String statsSummary = stats.formatSummary();
+        String basePageInfo = I18n.get("minecraft_access.inventory_controls.recipe_page", newPage + 1, totalPages);
+        String pageInfo = statsSummary.isEmpty() ? basePageInfo : basePageInfo + ", " + statsSummary;
+
+        if (recipesGroup != null && !recipesGroup.slotItems.isEmpty()) {
+            currentSlotItem = recipesGroup.getFirstGroupItem();
+            moveToSlotItem(currentSlotItem, 100);
+            List<RecipeButton> buttons = pageAccessor.getButtons();
+            if (!buttons.isEmpty() && buttons.getFirst().visible && buttons.getFirst().getCollection() != null) {
+                RecipeButton firstButton = buttons.getFirst();
+                ItemStack displayStack = firstButton.getDisplayStack();
+                String itemName = displayStack.getHoverName().getString();
+                String craftable = firstButton.getCollection().hasCraftable() ? I18n.get("minecraft_access.other.craftable") : I18n.get("minecraft_access.other.not_craftable");
+                String firstRecipeText = "%s %d %s".formatted(craftable, displayStack.getCount(), itemName);
+                String narration = pageInfo + ". " + firstRecipeText;
+                lastActionNarrationTime = System.currentTimeMillis();
+                previousSlotText = firstRecipeText;
+                MainClass.narrate(narration, true);
+                return;
+            }
+        }
+
+        lastActionNarrationTime = System.currentTimeMillis();
+        MainClass.narrate(pageInfo, true);
     }
 
     /**
@@ -802,9 +1087,11 @@ public class InventoryControls implements BalmClientModule {
         int tab = CreativeModeTabs.tabs().indexOf(CreativeModeInventoryScreenAccessor.getSelectedTab());
 
         if (goForward && tab + 1 < CreativeModeTabs.tabs().size()) {
+            Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK.value(), 1.0F));
             ((CreativeModeInventoryScreenAccessor) creativeInventoryScreen).invokeSelectTab(CreativeModeTabs.tabs().get(tab + 1));
             refreshGroupListAndSelectFirstGroup(false);
         } else if (!goForward && tab - 1 >= 0) {
+            Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK.value(), 1.0F));
             ((CreativeModeInventoryScreenAccessor) creativeInventoryScreen).invokeSelectTab(CreativeModeTabs.tabs().get(tab - 1));
             refreshGroupListAndSelectFirstGroup(false);
         }
@@ -816,31 +1103,143 @@ public class InventoryControls implements BalmClientModule {
      * @param goForward Whether to switch to next tab or previous tab.
      */
     private void changeRecipeTab(boolean goForward) {
-        if (currentRecipeBookWidget == null) return;
-        if (!currentRecipeBookWidget.isVisible()) return;
+        if (currentRecipeBookWidget == null || !currentRecipeBookWidget.isVisible()) return;
 
         RecipeBookComponentAccessor recipeBookComponentAccessor = (RecipeBookComponentAccessor) currentRecipeBookWidget;
-        int currentTabIndex = recipeBookComponentAccessor.getTabButtons().indexOf(recipeBookComponentAccessor.getSelectedTab());
+        var tabButtons = recipeBookComponentAccessor.getTabButtons();
+        if (tabButtons == null || tabButtons.isEmpty()) return;
 
+        int currentTabIndex = tabButtons.indexOf(recipeBookComponentAccessor.getSelectedTab());
         int nextTabIndex = currentTabIndex + (goForward ? 1 : -1);
-        nextTabIndex = Mth.clamp(nextTabIndex, 0, recipeBookComponentAccessor.getTabButtons().size() - 1);
+        nextTabIndex = Mth.clamp(nextTabIndex, 0, tabButtons.size() - 1);
 
-        int x = recipeBookComponentAccessor.getTabButtons().get(nextTabIndex).getX() + 9;
-        int y = recipeBookComponentAccessor.getTabButtons().get(nextTabIndex).getY() + 9;
+        var targetTab = tabButtons.get(nextTabIndex);
+
+        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK.value(), 1.0F));
+
+        int x = targetTab.getX() + 9;
+        int y = targetTab.getY() + 9;
 
         MouseUtils.Coordinates p = MouseUtils.calcRealPositionOfWidget(x, y);
         MouseUtils.moveAndLeftClick(p.x(), p.y());
-        moveToSlotItem(currentSlotItem, 100);
 
-        try {
-            var selectedTab = recipeBookComponentAccessor.getSelectedTab();
-            if (selectedTab != null) {
-                ExtendedRecipeBookCategory category = selectedTab.getCategory();
-                log.debug("Change tab to {}", category != null ? category.toString() : "null");
+        String categoryName = getRecipeCategoryName(targetTab.getCategory());
+
+        // Refresh groups and select recipes group
+        currentSlotsGroupList = GroupGenerator.generateGroupsFromSlots(currentScreen);
+        SlotsGroup recipesGroup = null;
+        if (currentSlotsGroupList != null) {
+            for (int i = 0; i < currentSlotsGroupList.size(); i++) {
+                if ("recipes".equals(currentSlotsGroupList.get(i).getGroupKey())) {
+                    currentGroupIndex = i;
+                    recipesGroup = currentSlotsGroupList.get(i);
+                    currentGroup = recipesGroup;
+                    break;
+                }
             }
-        } catch (Exception e) {
-            log.debug("Could not log recipe tab change", e);
         }
+
+        RecipeBookPageAccessor pageAccessor = (RecipeBookPageAccessor) recipeBookComponentAccessor.getRecipeBookPage();
+        RecipePageStats stats = getPageStats(pageAccessor);
+        String statsSummary = stats.formatSummary();
+        String baseCat = I18n.get("minecraft_access.inventory_controls.recipe_category", categoryName);
+        String categoryPrefix = statsSummary.isEmpty() ? baseCat : baseCat + ", " + statsSummary;
+
+        if (recipesGroup != null && !recipesGroup.slotItems.isEmpty()) {
+            currentSlotItem = recipesGroup.getFirstGroupItem();
+            moveToSlotItem(currentSlotItem, 100);
+
+            List<RecipeButton> buttons = pageAccessor.getButtons();
+            if (!buttons.isEmpty() && buttons.getFirst().visible && buttons.getFirst().getCollection() != null) {
+                RecipeButton firstButton = buttons.getFirst();
+                ItemStack displayStack = firstButton.getDisplayStack();
+                String itemName = displayStack.getHoverName().getString();
+                String craftable = firstButton.getCollection().hasCraftable() ? I18n.get("minecraft_access.other.craftable") : I18n.get("minecraft_access.other.not_craftable");
+                String firstRecipeText = "%s %d %s".formatted(craftable, displayStack.getCount(), itemName);
+                String narration = categoryPrefix + ". " + firstRecipeText;
+                lastActionNarrationTime = System.currentTimeMillis();
+                previousSlotText = firstRecipeText;
+                MainClass.narrate(narration, true);
+                return;
+            }
+        }
+
+        String narration = (recipesGroup == null || recipesGroup.slotItems.isEmpty())
+                ? I18n.get("minecraft_access.inventory_controls.recipe_category_empty", categoryName)
+                : categoryPrefix;
+        lastActionNarrationTime = System.currentTimeMillis();
+        MainClass.narrate(narration, true);
+    }
+
+    public record RecipePageStats(int total, int craftable, int notCraftable) {
+        public String formatSummary() {
+            if (total == 0) return "";
+            if (notCraftable == 0) {
+                return (total == 1)
+                        ? I18n.get("minecraft_access.inventory_controls.recipe_page_stats_single_craftable")
+                        : I18n.get("minecraft_access.inventory_controls.recipe_page_stats_all_craftable", total);
+            }
+            if (craftable == 0) {
+                return (total == 1)
+                        ? I18n.get("minecraft_access.inventory_controls.recipe_page_stats_single_not_craftable")
+                        : I18n.get("minecraft_access.inventory_controls.recipe_page_stats_none_craftable", total);
+            }
+            String craftText = (craftable == 1)
+                    ? I18n.get("minecraft_access.inventory_controls.recipe_page_stats_craftable_one")
+                    : I18n.get("minecraft_access.inventory_controls.recipe_page_stats_craftable_count", craftable);
+            String notCraftText = (notCraftable == 1)
+                    ? I18n.get("minecraft_access.inventory_controls.recipe_page_stats_not_craftable_one")
+                    : I18n.get("minecraft_access.inventory_controls.recipe_page_stats_not_craftable_count", notCraftable);
+            return I18n.get("minecraft_access.inventory_controls.recipe_page_stats_mixed", total, craftText, notCraftText);
+        }
+    }
+
+    private RecipePageStats getPageStats(RecipeBookPageAccessor pageAccessor) {
+        int total = 0;
+        int craftable = 0;
+        int notCraftable = 0;
+        for (RecipeButton button : pageAccessor.getButtons()) {
+            if (button.visible && button.getCollection() != null) {
+                total++;
+                if (button.getCollection().hasCraftable()) {
+                    craftable++;
+                } else {
+                    notCraftable++;
+                }
+            }
+        }
+        return new RecipePageStats(total, craftable, notCraftable);
+    }
+
+    private String getRecipeCategoryName(@Nullable ExtendedRecipeBookCategory category) {
+        if (category == null) return I18n.get("minecraft_access.inventory_controls.Unknown");
+
+        String path = null;
+        if (category instanceof SearchRecipeBookCategory searchCat) {
+            path = searchCat.name().toLowerCase(Locale.ROOT) + "_search";
+        } else if (category instanceof RecipeBookCategory recipeCat) {
+            Identifier id = BuiltInRegistries.RECIPE_BOOK_CATEGORY.getKey(recipeCat);
+            if (id != null) {
+                path = id.getPath();
+            }
+        }
+
+        if (path != null) {
+            String transKey = "minecraft_access.recipe_category." + path;
+            if (Language.getInstance().has(transKey)) {
+                return I18n.get(transKey);
+            }
+            String clean = path.replace('_', ' ').replace("crafting ", "").replace("furnace ", "");
+            if (!clean.isEmpty()) {
+                return Character.toUpperCase(clean.charAt(0)) + clean.substring(1);
+            }
+        }
+
+        String fallback = category.toString();
+        if (fallback.contains("@")) {
+            return I18n.get("minecraft_access.inventory_controls.Unknown");
+        }
+        return fallback;
     }
 
     private boolean narrateRecipeInfo() {

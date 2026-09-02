@@ -123,3 +123,47 @@ Il test in-game eseguito sul server dedicato ha confermato la perfetta stabilit�
   - **Tagliapietre (`StonecutterScreen`)**: Annuncio numero tagli e focus prima opzione all'inserimento del blocco.
   - **Telaio (`LoomScreen`)**: Annuncio motivi disponibili all'inserimento di stendardo e tintura.
   - **Fornace / Alambicco**: Notifiche vocali discrete sul completamento ciclo/cottura.
+
+---
+
+## 5. Esiti del Collaudo In-Game Revisioni 26.1-26.4 (Sessione 02/09/2026 02:41)
+
+- **Navigazione Pagine (`Shift+I` / `Shift+K`)**: ✅ **Eccellente**. Pagine calcolate con precisione, cursore posizionato sulla prima ricetta.
+- **Navigazione Griglia a 4 Frecce**: ✅ **Eccellente**. Slot navigabili fluidamente su tutte le finestre.
+- **Raffinamento Specifico Limiti di Pagina (UX Luca)**:
+  - *Tentativo `Shift+I` a Pagina 1*: vocalizzare `"Prima pagina. Realizzabile [X] [Ricetta]"` anziché generico `"Nessun'altra pagina"`.
+  - *Tentativo `Shift+K` all'Ultima Pagina*: vocalizzare `"Ultima pagina. Realizzabile [Y] [Ricetta]"`.
+  - *Categoria con 1 sola Pagina*: vocalizzare `"Unica pagina. Realizzabile [X] [Ricetta]"`.
+- **Anomalie Identificate & Correzioni Registrate**:
+  1. *Risoluzione Categoria*: Passare da `.toString()` a `BuiltInRegistries.RECIPE_BOOK_CATEGORY.getKey(recipeCat)` e `SearchRecipeBookCategory` per vocalizzare i nomi in italiano (*"Costruzione"*, *"Attrezzatura"*, *"Varie"*, *"Pietrarossa"*, *"Tutte le ricette"*, *"Cibi"*, *"Blocchi"*).
+  2. *Chiave Categoria Vuota*: Inserita `"minecraft_access.inventory_controls.recipe_category_empty": "Categoria: %s. Nessuna ricetta disponibile"` in `it_it.json` ed `en_us.json`.
+
+---
+
+## 6. Esiti del Collaudo In-Game Rifiniture (Sessione 02/09/2026 03:04)
+
+- **Telemetria**: ✅ **100% Successo**. Categorie e limiti pagina risolti in modo perfetto senza alcuna anomalia tecnica.
+- **Revisione Linguistica Categoria Redstone**: Adottata la dicitura *"Meccanismi e Redstone"* in `it_it.json` in sostituzione di *"Pietrarossa"*, eliminando l'ambiguità con i materiali edili.
+
+### 🟢 Revisione 26.5 — Armonizzazione Sistemica Statistiche di Pagina (`V`, `Shift+I`/`K`, `R`)
+- **Obiettivo**: Arricchire ogni evento di navigazione e filtraggio con il conteggio sistemico delle ricette presenti nella pagina:
+  - Miste ($R > 0, N > 0$): `"[T] ricette: [R] realizzabili, [N] non realizzabili"`.
+  - Tutte realizzabili ($N == 0$): `"[T] ricette realizzabili"`.
+  - Nessuna realizzabile ($R == 0$): `"[T] ricette non realizzabili"`.
+- **Eventi Collegati**:
+  1. *Cambio Categoria (`V` / `Shift+V`)*.
+  2. *Cambio Pagina e Limiti (`Shift+I` / `Shift+K`)*.
+  3. *Filtro Realizzabili (`R`)*: annuncio stato filtro, statistiche pagina e auto-focus prima ricetta.
+
+---
+
+## 7. Esiti del Collaudo In-Game Revisione 26.5 (Sessione 02/09/2026 03:27)
+
+- **Telemetria**: ✅ **100% Precisione Tecnica**. Cambio categoria fluido, naming *"Meccanismi e Redstone"* perfettamente vocalizzato, statistiche di pagina corrette.
+- **Raffinamento Grammaticale Rilevato**: Quando il conteggio è pari a `1`, la sintesi vocale usava il plurale (es. *"1 ricette realizzabili"* o *"1 realizzabili"*), richiedendo l'introduzione della concordanza singolare/plurale.
+
+### 🟢 Revisione 26.6 — Concordanza Grammaticale Singolare/Plurale nelle Statistiche
+- **Obiettivo**: Garantire la corretta flessione grammaticale per i conteggi unitari ($1$) in italiano e inglese:
+  - *Tutte Realizzabili ($N=0$)*: $T=1 \rightarrow$ `"1 ricetta realizzabile"`; $T>1 \rightarrow$ `"%d ricette realizzabili"`.
+  - *Nessuna Realizzabile ($R=0$)*: $T=1 \rightarrow$ `"1 ricetta non realizzabile"`; $T>1 \rightarrow$ `"%d ricette non realizzabili"`.
+  - *Miste ($R>0, N>0$)*: Realizzabile ($1 \rightarrow$ `"1 realizzabile"`, $>1 \rightarrow$ `"%d realizzabili"`), Non realizzabile ($1 \rightarrow$ `"1 non realizzabile"`, $>1 \rightarrow$ `"%d non realizzabili"`).
