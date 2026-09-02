@@ -423,12 +423,24 @@ public final class Config implements ConfigData {
         public boolean includeCompassDegrees = true;
         public boolean includePitchAngle = true;
 
+        @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
+        public MovementFeedbackMode movementFeedbackMode = MovementFeedbackMode.TARGET_AND_DISTANCE;
+        public boolean narrateDistanceChangeInMovement = true;
+        public long movementDebounceIntervalMs = 350;
+
         @ConfigEntry.Gui.CollapsibleObject
         public RelativePositionSoundCue relativePositionSoundCue = new RelativePositionSoundCue();
         @ConfigEntry.Gui.CollapsibleObject
         public Filter filter = new Filter();
 
         private NarrateCrosshair() {
+        }
+
+        public enum MovementFeedbackMode {
+            TARGET_AND_DISTANCE,
+            TARGET_ONLY,
+            FULL_FORMAT,
+            OFF
         }
 
         public static final class RelativePositionSoundCue {

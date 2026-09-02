@@ -39,6 +39,7 @@ import org.mcaccess.minecraftaccess.utils.events.ClientPlayingTick;
 public class NarrateCrosshair implements BalmClientModule {
     private static final SessionLocal<@Nullable Object> previousTarget = new SessionLocal<>(() -> null);
     private static final SessionLocal<@Nullable String> previousNarration = new SessionLocal<>(() -> null);
+    private static final SessionLocal<@Nullable Integer> previousDistance = new SessionLocal<>(() -> null);
     private final SessionLocal<@Nullable Vec3> previousSoundPos = new SessionLocal<>(() -> null);
     private final Interval repetitionInterval = Interval.defaultDelay();
     private static final Config.NarrateCrosshair CONFIG = Config.getInstance().narrateCrosshair;
@@ -52,6 +53,7 @@ public class NarrateCrosshair implements BalmClientModule {
         if (rayCast == null) {
             previousTarget.value = null;
             previousNarration.value = null;
+            previousDistance.value = null;
             return;
         }
         Object target = switch (rayCast) {
@@ -61,6 +63,10 @@ public class NarrateCrosshair implements BalmClientModule {
         };
         previousTarget.value = target;
         previousNarration.value = narration;
+        Minecraft client = Minecraft.getInstance();
+        if (client.player != null) {
+            previousDistance.value = (int) Math.round(client.player.getEyePosition().distanceTo(rayCast.getLocation()));
+        }
     }
 
     @Override
@@ -84,6 +90,7 @@ public class NarrateCrosshair implements BalmClientModule {
         if (rayCast == null || rayCast.getType() == HitResult.Type.MISS) {
             previousTarget.value = null;
             previousNarration.value = null;
+            previousDistance.value = null;
             return;
         }
 
@@ -94,13 +101,28 @@ public class NarrateCrosshair implements BalmClientModule {
             default -> rayCast;
         };
 
-        if (Objects.equals(target, previousTarget.value) && Objects.equals(narration, previousNarration.value) && !repetitionInterval.isReady()) {
+        double distance = player.getEyePosition().distanceTo(rayCast.getLocation());
+        int roundedDistance = (int) Math.round(distance);
+
+        Vec3 delta = player.getDeltaMovement();
+        double speedSq = delta.x * delta.x + delta.z * delta.z;
+        boolean isMoving = speedSq > 0.0001;
+        boolean hasMoveInput = client.options.keyUp.isDown() || client.options.keyDown.isDown() || client.options.keyLeft.isDown() || client.options.keyRight.isDown();
+        boolean inActiveMovement = isMoving || hasMoveInput;
+
+        boolean targetChanged = !Objects.equals(target, previousTarget.value) || !Objects.equals(narration, previousNarration.value);
+        boolean distanceChanged = CONFIG.narrateDistanceChangeInMovement && (previousDistance.value == null || !previousDistance.value.equals(roundedDistance));
+
+        if (!targetChanged && !distanceChanged && !repetitionInterval.isReady()) {
             previousTarget.value = target;
             previousNarration.value = narration;
+            previousDistance.value = roundedDistance;
             return;
         }
+
         previousTarget.value = target;
         previousNarration.value = narration;
+        previousDistance.value = roundedDistance;
 
         if (narration == null) {
             return;
@@ -143,7 +165,11 @@ public class NarrateCrosshair implements BalmClientModule {
             }
         }
 
-        CrosshairFeedbackManager.onCrosshairTargetChanged(rayCast, narration);
+        if (inActiveMovement) {
+            CrosshairFeedbackManager.onCrosshairTargetChangedInMovement(rayCast, narration, distance);
+        } else {
+            CrosshairFeedbackManager.onCrosshairTargetChanged(rayCast, narration);
+        }
     }
 
     private boolean isIgnored(Identifier identifier) {

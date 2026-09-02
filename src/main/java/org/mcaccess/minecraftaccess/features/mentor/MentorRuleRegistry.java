@@ -50,7 +50,16 @@ public final class MentorRuleRegistry {
                 true,
                 120_000L,
                 s -> s.isStuckAgainstWall(),
-                "minecraft_access.mentor.wall_stuck"
+                "minecraft_access.mentor.wall_stuck",
+                s -> {
+                    net.minecraft.client.Minecraft client = net.minecraft.client.Minecraft.getInstance();
+                    String jumpKey = ContextualMentor.formatKeyMapping(client != null ? client.options.keyJump : null, "Spazio");
+                    String inspectKey = ContextualMentor.formatManagedKey(org.mcaccess.minecraftaccess.features.ObstacleDetector.getKeyInspectObstacle(), "Alt + V");
+                    String dir = (s.collisionDirectionWord() != null && !s.collisionDirectionWord().isBlank())
+                            ? s.collisionDirectionWord()
+                            : net.minecraft.client.resources.language.I18n.get("minecraft_access.obstacle_detector.dir_forward").toLowerCase();
+                    return new Object[]{dir, jumpKey, inspectKey};
+                }
         ));
 
         // 6. First wood collected -> advise crafting planks

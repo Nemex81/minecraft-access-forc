@@ -68,13 +68,13 @@ public class ContextualMentor implements BalmClientModule {
 
             // Evaluate condition
             if (rule.evaluate(snapshot)) {
-                deliverHint(rule, now);
+                deliverHint(rule, snapshot, now);
                 break; // Deliver at most one hint per context cycle
             }
         }
     }
 
-    private void deliverHint(MentorRule rule, long now) {
+    private void deliverHint(MentorRule rule, PlayerContextSnapshot snapshot, long now) {
         lastDeliveredTime.put(rule.id(), now);
 
         if (!rule.repeatable()) {
@@ -84,10 +84,42 @@ public class ContextualMentor implements BalmClientModule {
             }
         }
 
-        String translatedMessage = I18n.get(rule.messageKey());
+        Object[] args = rule.getArgs(snapshot);
+        String translatedMessage;
+        if (args != null && args.length > 0) {
+            translatedMessage = I18n.get(rule.messageKey(), args);
+        } else {
+            translatedMessage = I18n.get(rule.messageKey());
+        }
+
         HelpNarrator.playHintChime();
         HelpNarrator.narrateHelp(translatedMessage, false);
         log.info("Delivered contextual mentor hint: {}", rule.id());
+    }
+
+    public static String formatKeyMapping(net.minecraft.client.KeyMapping keyMapping, String fallback) {
+        if (keyMapping == null) return fallback;
+        try {
+            net.minecraft.network.chat.Component comp = keyMapping.getTranslatedKeyMessage();
+            if (comp != null) {
+                String str = comp.getString();
+                if (!str.isBlank()) return str;
+            }
+        } catch (Exception ignored) {
+        }
+        return fallback;
+    }
+
+    public static String formatManagedKey(net.blay09.mods.kuma.api.ManagedKeyMapping managedKey, String fallback) {
+        if (managedKey == null) return fallback;
+        try {
+            net.blay09.mods.kuma.api.InputBinding binding = managedKey.getBinding();
+            if (binding != null && binding.key() != null) {
+                return fallback;
+            }
+        } catch (Exception ignored) {
+        }
+        return fallback;
     }
 
     public void resetDeliveredHints() {

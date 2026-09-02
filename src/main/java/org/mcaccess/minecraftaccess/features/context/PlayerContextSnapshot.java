@@ -15,6 +15,7 @@ public record PlayerContextSnapshot(
         String biome,
         int blockLight,
         boolean isStuckAgainstWall,
+        String collisionDirectionWord,
         boolean isMoving,
         boolean isSneaking,
         boolean isSprinting,
@@ -36,6 +37,36 @@ public record PlayerContextSnapshot(
         GameType gameMode,
         int idleTicks
 ) {
+    public PlayerContextSnapshot(
+            Vec3 pos,
+            BlockPos blockPos,
+            String biome,
+            int blockLight,
+            boolean isStuckAgainstWall,
+            boolean isMoving,
+            boolean isSneaking,
+            boolean isSprinting,
+            boolean isFlying,
+            boolean isInWater,
+            HitResult crosshairTarget,
+            double crosshairDistance,
+            int woodLogsCount,
+            int planksCount,
+            int cobblestoneCount,
+            int torchesCount,
+            int foodCount,
+            int craftingTableCount,
+            float health,
+            float maxHealth,
+            int foodLevel,
+            long timeOfDay,
+            int nearbyHostilesCount,
+            GameType gameMode,
+            int idleTicks
+    ) {
+        this(pos, blockPos, biome, blockLight, isStuckAgainstWall, "davanti", isMoving, isSneaking, isSprinting, isFlying, isInWater, crosshairTarget, crosshairDistance, woodLogsCount, planksCount, cobblestoneCount, torchesCount, foodCount, craftingTableCount, health, maxHealth, foodLevel, timeOfDay, nearbyHostilesCount, gameMode, idleTicks);
+    }
+
     public boolean isSurvivalOrAdventure() {
         return gameMode == GameType.SURVIVAL || gameMode == GameType.ADVENTURE;
     }

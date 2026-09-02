@@ -8,9 +8,27 @@
 Questo documento costituisce il **Diario Ufficiale delle Modifiche del Fork Personale in lingua Italiana**.
 Poiché il `README.md` pubblico e la documentazione del repository upstream rimangono in lingua Inglese per la community internazionale con la sola sezione `## [Unreleased]`, tutte le novità, i refactoring e i miglioramenti sviluppati sui nostri rami (`mymaster`, `dev`) vengono tracciati qui secondo la disciplina AVF (`V.A.R[.M]`).
 
+## 🚀 [v26.2-1.17.0] — 2026-09-02 (Feed Mirino WASD, Riqualificazione Tasto B, Alt+B & Mentor Adattivo — Versione Attuale)
+
+### 🌟 Mirino, Movimento & Tasti Rapidi
+- **Feed Mirino in Movimento (`WASD`)**:
+  - Tracciamento automatico dei blocchi sui passi laterali (`A`/`D`) e della distanza sui passi frontali (`W`/`S`) in `NarrateCrosshair.java`.
+  - Nuove modalità in Cloth Config (`MovementFeedbackMode`): `TARGET_AND_DISTANCE` (default), `TARGET_ONLY`, `FULL_FORMAT` e `OFF`.
+- **Riqualificazione Tasto `B` (Mano Sinistra)**:
+  - Comando rapido a 1 tocco per la lettura istantanea e completa del mirino integrato in `CrosshairFeedbackManager.java` con supporto al vuoto (*"Nessun bersaglio nel mirino"*).
+- **Blindatura Tracciatore Risorse (`Alt + B`)**:
+  - Separazione netta dei modificatori in Kuma/GLFW per garantire piena parità di funzionamento con `Alt + Numpad 7`.
+- **Armonizzazione con `ObstacleDetector`**:
+  - Finestra di grazia preventiva (250ms) per azzerare troncamenti vocali in cammino.
+
+### 🧠 Mentor Vocale Adattivo (Rev MC-27.1)
+- **Direzione Spaziale Dinamica**: Riconoscimento dell'asse reale WASD di collisione (*"a sinistra"*, *"a destra"*, *"davanti"*, *"dietro"*).
+- **Keybinding Introspection**: Risoluzione dinamica dei tasti a runtime da Minecraft/Kuma per Salto (*"Spazio"*) e Ispezione Ostacolo (*"Alt + V"*).
+- **Eliminazione Prefisso Spurio**: Risoluzione diretta `I18n.get(key, args)` senza artefatti di formato.
+
 ---
 
-## 🚀 [v26.2-1.16.1] — 2026-09-02 (Feedback Eventi Visivi & Auto-Focus Schermate Specialistiche — Versione Attuale)
+## 🚀 [v26.2-1.16.1] — 2026-09-02 (Feedback Eventi Visivi & Auto-Focus Schermate Specialistiche)
 
 ### 🌟 Accessibilità & Interfacce Specialistiche (GUI)
 - **Tagliapietre (`StonecutterScreen`)**:

@@ -1,4 +1,4 @@
-# Registro Attivo delle Revisioni & Affinamenti Post-Collaudo (RRU)
+﻿# Registro Attivo delle Revisioni & Affinamenti Post-Collaudo (RRU)
 # Progetto: Minecraft Access (Fork 26.2 / 1.21.x)
 # Autore: Luca (Sviluppatore & Collaudatore) & Antigravity (AI Pair Programmer)
 # Percorso: docs/report/REGISTRO_REVISIONI.md
@@ -11,8 +11,6 @@ Questo documento costituisce il **Registro Attivo Snello** del progetto Minecraf
 ## 📋 REVISIONI ATTIVE IN CORSO
 
 ---
-
-
 
 ### 🔵 Rev MC-26.7 — Resilienza & Fallback Traduzioni per Blocchi di Mod Terze (es. Macaw's Doors)
 - **Stato**: `[APERTA]`

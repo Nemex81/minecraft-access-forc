@@ -1,4 +1,4 @@
-# Archivio Storico delle Revisioni & Collaudi Conclusi (RRU)
+﻿# Archivio Storico delle Revisioni & Collaudi Conclusi (RRU)
 # Progetto: Minecraft Access (Fork 26.2 / 1.21.x)
 # Autore: Luca (Sviluppatore & Collaudatore) & Antigravity (AI Pair Programmer)
 # Percorso: docs/report/ARCHIVIO_REVISIONI.md
@@ -10,6 +10,22 @@ Questo documento raccoglie la memoria storica di tutte le anomalie, correzioni e
 ---
 
 ## 🏛️ STORICO REVISIONI COLLAUDATE CON SUCCESSO (CICLO 26.2)
+
+---
+
+### 🟢 Rev MC-27.1 — Mentor Vocale: Direzione Spaziale Contestuale & Keybinding Introspection
+- **Stato**: `[COLLAUDATA CON SUCCESSO]`
+- **Versione Chiusura**: 26.2-1.12.0 (Data 2026-09-02)
+- **Problema Riscontrato (Esperienza Luca)**: Muovendosi lateralmente con `A` o `D` contro una parete, il Mentor pronunciava la frase fissa *"Hai un ostacolo di fronte..."* e non forniva il comando reale per ispezionare l'ostacolo.
+- **Evidenza Telemetrica / Log**: `[16:13:01] Delivered contextual mentor hint: HINT_WALL_STUCK`.
+- **Causa Radice**: La regola `HINT_WALL_STUCK` usava una stringa hardcodata senza contestualizzazione dell'input WASD e senza interrogazione dei keybinding reali di gioco.
+- **Soluzione Applicata (PRAPI)**:
+  1. Riconoscimento dinamico dell'asse reale di collisione/movimento (`a sinistra`, `a destra`, `davanti`, `dietro`, `avanti a sinistra`, ecc.) in `PlayerContextEngine`;
+  2. Risoluzione dei tasti a runtime (*Keybinding Introspection*) per Salto (`keyJump` -> *"Spazio"*) e Ispezione Ostacolo ([`ObstacleDetector`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/src/main/java/org/mcaccess/minecraftaccess/features/ObstacleDetector.java#L66) -> *"Alt + V"*);
+  3. Passaggio diretto degli argomenti a `I18n.get(key, args)` eliminando il prefisso spurio *"Format error:"*;
+  4. Frase finale erogata: *"Hai un ostacolo a sinistra. Premi Spazio per saltare se è basso, oppure premi Alt + V per ispezionarlo."*.
+- **Piano Tecnico di Riferimento**: `docs/piani/completati/PIANO_TECNICO_FEED_MIRINO_IN_MOVIMENTO_E_LETTURA_MANUALE.md`
+- **Esito Collaudo**: Superato con pieno successo in telemetria live e convalidato da Luca.
 
 ---
 

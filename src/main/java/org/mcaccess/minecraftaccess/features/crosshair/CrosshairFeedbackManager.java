@@ -142,6 +142,15 @@ public final class CrosshairFeedbackManager {
         return getI18nString("minecraft_access.crosshair_feedback.block_then_facing", "%s, %s", targetPart, orientationPart);
     }
 
+    private static long movementSuppressedUntil = 0;
+
+    /**
+     * Temporarily suppresses the movement-based crosshair feed (e.g. during obstacle alerts).
+     */
+    public static void suppressMovementFeed(long durationMillis) {
+        movementSuppressedUntil = System.currentTimeMillis() + durationMillis;
+    }
+
     /**
      * Triggered by NarrateCrosshair when the targeted block or entity changes during normal movement.
      */
@@ -182,6 +191,120 @@ public final class CrosshairFeedbackManager {
 
         if (!Strings.isEmpty(message)) {
             lastNarrationTime = now;
+            MainClass.narrate(message, true);
+        }
+    }
+
+    /**
+     * Triggered during active linear player movement (WASD / strafe / walk) when target or distance changes.
+     */
+    public static void onCrosshairTargetChangedInMovement(@Nullable HitResult rayCast, @Nullable String targetName, double distance) {
+        Config.NarrateCrosshair config = Config.getInstance().narrateCrosshair;
+        if (!config.enabled) return;
+        if (config.movementFeedbackMode == Config.NarrateCrosshair.MovementFeedbackMode.OFF) return;
+
+        long now = System.currentTimeMillis();
+        if (now < movementSuppressedUntil) return;
+        if (now - lastNarrationTime < config.movementDebounceIntervalMs) return;
+
+        Minecraft client = Minecraft.getInstance();
+        Player player = client.player;
+        if (player == null) return;
+
+        if (config.movementFeedbackMode == Config.NarrateCrosshair.MovementFeedbackMode.TARGET_ONLY) {
+            if (targetName == null || targetName.isBlank()) return;
+            lastNarrationTime = now;
+            NarrateCrosshair.synchronizeTarget(rayCast, targetName);
+            MainClass.narrate(targetName.trim(), true);
+            return;
+        }
+
+        if (config.movementFeedbackMode == Config.NarrateCrosshair.MovementFeedbackMode.TARGET_AND_DISTANCE) {
+            if (targetName == null || targetName.isBlank()) return;
+            int rounded = (int) Math.round(distance);
+            String distStr = (rounded <= 1)
+                    ? getI18nString("minecraft_access.crosshair_feedback.distance_blocks_single", "1 blocco")
+                    : getI18nString("minecraft_access.crosshair_feedback.distance_blocks", "%d blocchi", rounded);
+            String message = getI18nString("minecraft_access.crosshair_feedback.at_distance", "%s, a %s", targetName.trim(), distStr);
+            lastNarrationTime = now;
+            NarrateCrosshair.synchronizeTarget(rayCast, targetName);
+            MainClass.narrate(message, true);
+            return;
+        }
+
+        if (config.movementFeedbackMode == Config.NarrateCrosshair.MovementFeedbackMode.FULL_FORMAT) {
+            String cardinal = PlayerPositionUtils.getHorizontalFacingDirectionInWords();
+            int degrees = PlayerPositionUtils.getCompassDegrees();
+            String pitch = PlayerPositionUtils.getVerticalFacingDirectionInWords();
+
+            String message = formatFeedback(
+                    targetName,
+                    distance,
+                    cardinal,
+                    degrees,
+                    pitch,
+                    config.readingOrder,
+                    config.includeBlock,
+                    config.includeDistance,
+                    config.includeCardinal,
+                    config.includeCompassDegrees,
+                    config.includePitchAngle
+            );
+
+            if (!Strings.isEmpty(message)) {
+                lastNarrationTime = now;
+                NarrateCrosshair.synchronizeTarget(rayCast, targetName);
+                MainClass.narrate(message, true);
+            }
+        }
+    }
+
+    /**
+     * Triggered when the user explicitly requests manual target narration (e.g. key B).
+     */
+    public static void onManualCrosshairRequested() {
+        Config.NarrateCrosshair config = Config.getInstance().narrateCrosshair;
+        Minecraft client = Minecraft.getInstance();
+        Player player = client.player;
+        if (player == null) return;
+
+        NarrateCrosshair.suppressNarration(100);
+
+        String cardinal = PlayerPositionUtils.getHorizontalFacingDirectionInWords();
+        int degrees = PlayerPositionUtils.getCompassDegrees();
+        String pitch = PlayerPositionUtils.getVerticalFacingDirectionInWords();
+
+        String targetName = null;
+        Double distance = null;
+
+        WorldNarrator narrator = MainClass.registry(WorldNarrator.class).get(config.narrator);
+        HitResult rayCast = (narrator != null) ? narrator.rayCast() : null;
+
+        if (rayCast != null && rayCast.getType() != HitResult.Type.MISS) {
+            targetName = narrator.narrate(rayCast);
+            distance = player.getEyePosition().distanceTo(rayCast.getLocation());
+            NarrateCrosshair.synchronizeTarget(rayCast, targetName);
+        } else {
+            targetName = getI18nString("minecraft_access.crosshair_feedback.no_target", "Nessun bersaglio");
+            NarrateCrosshair.synchronizeTarget(null, null);
+        }
+
+        String message = formatFeedback(
+                targetName,
+                distance,
+                cardinal,
+                degrees,
+                pitch,
+                config.readingOrder,
+                config.includeBlock,
+                config.includeDistance,
+                config.includeCardinal,
+                config.includeCompassDegrees,
+                config.includePitchAngle
+        );
+
+        if (!Strings.isEmpty(message)) {
+            lastNarrationTime = System.currentTimeMillis();
             MainClass.narrate(message, true);
         }
     }

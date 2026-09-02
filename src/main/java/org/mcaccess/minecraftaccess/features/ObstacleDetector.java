@@ -3,12 +3,14 @@ package org.mcaccess.minecraftaccess.features;
 import java.time.Clock;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.blay09.mods.balm.client.platform.module.BalmClientModule;
 import net.blay09.mods.kuma.api.InputBinding;
 import net.blay09.mods.kuma.api.KeyModifier;
 import net.blay09.mods.kuma.api.KeyModifiers;
 import net.blay09.mods.kuma.api.Kuma;
+import net.blay09.mods.kuma.api.ManagedKeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
@@ -26,6 +28,7 @@ import org.mcaccess.minecraftaccess.Config;
 import org.mcaccess.minecraftaccess.MainClass;
 import org.mcaccess.minecraftaccess.features.ObstacleDetectionUtils.ObstacleScanResult;
 import org.mcaccess.minecraftaccess.features.ObstacleDetectionUtils.ObstacleState;
+import org.mcaccess.minecraftaccess.features.crosshair.CrosshairFeedbackManager;
 import org.mcaccess.minecraftaccess.utils.KeyMappingCategories;
 import org.mcaccess.minecraftaccess.utils.events.ClientPlayingTick;
 import org.mcaccess.minecraftaccess.utils.position.PlayerPositionUtils;
@@ -58,11 +61,14 @@ public class ObstacleDetector implements BalmClientModule {
         return Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "obstacle_detector");
     }
 
+    @Getter
+    private static ManagedKeyMapping keyInspectObstacle;
+
     @Override
     public void initialize() {
         ClientPlayingTick.AFTER.register(this::tick);
 
-        Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "obstacle_detector.inspect_obstacle"))
+        keyInspectObstacle = Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "obstacle_detector.inspect_obstacle"))
                 .withDefault(InputBinding.key(InputConstants.KEY_V, KeyModifiers.of(KeyModifier.ALT)))
                 .overrideCategory(KeyMappingCategories.OTHER)
                 .handleWorldInput(_ -> {
@@ -128,6 +134,7 @@ public class ObstacleDetector implements BalmClientModule {
                 lastWarnedState = result.state();
 
                 if (config.voiceWarning) {
+                    CrosshairFeedbackManager.suppressMovementFeed(250);
                     String msg = ObstacleDetectionUtils.getNarrationMessage(result, config.narrationStyle, relAngleForNarration, config.directionFeedbackMode);
                     MainClass.narrate(msg, true);
                 }

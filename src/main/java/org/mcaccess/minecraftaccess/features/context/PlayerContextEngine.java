@@ -102,9 +102,24 @@ public class PlayerContextEngine implements BalmClientModule {
         int blockLight = level.getBrightness(LightLayer.BLOCK, playerPos);
 
         // Stuck detection: player is pressing movement keys but horizontal collision blocks forward motion
-        boolean hasMoveInput = client.options.keyUp.isDown() || client.options.keyDown.isDown()
-                || client.options.keyLeft.isDown() || client.options.keyRight.isDown();
+        boolean up = client.options.keyUp.isDown();
+        boolean down = client.options.keyDown.isDown();
+        boolean left = client.options.keyLeft.isDown();
+        boolean right = client.options.keyRight.isDown();
+        Double intendedRelAngle = org.mcaccess.minecraftaccess.features.ObstacleDetectionUtils.calculateIntendedMoveAngle(up, down, left, right);
+        boolean hasMoveInput = intendedRelAngle != null;
         boolean isStuck = hasMoveInput && player.horizontalCollision;
+
+        String collisionDirectionWord = net.minecraft.client.resources.language.I18n.get("minecraft_access.obstacle_detector.dir_forward").toLowerCase();
+        if (hasMoveInput) {
+            String dir = org.mcaccess.minecraftaccess.features.ObstacleDetectionUtils.getRelativeDirectionString(
+                    intendedRelAngle,
+                    org.mcaccess.minecraftaccess.Config.ObstacleDetector.DirectionFeedbackMode.EIGHT_DIRECTIONS
+            );
+            if (dir != null && !dir.isBlank()) {
+                collisionDirectionWord = dir.toLowerCase();
+            }
+        }
 
         boolean isMoving = player.getDeltaMovement().horizontalDistanceSqr() > 0.001;
         boolean isSneaking = player.isCrouching();
@@ -169,6 +184,7 @@ public class PlayerContextEngine implements BalmClientModule {
                 biomeKey,
                 blockLight,
                 isStuck,
+                collisionDirectionWord,
                 isMoving,
                 isSneaking,
                 isSprinting,
