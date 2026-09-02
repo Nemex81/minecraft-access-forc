@@ -91,3 +91,18 @@ Per prevenire qualsiasi falso allarme vocale e garantire la massima precisione n
      - *Disattivazione (`OFF`)*: Rilascia all'istante l'accovacciamento e sblocca il salto per consentire tuffi e balzi volontari.
      - *Riattivazione (`ON`)*: Se il giocatore si trova fermo sul ciglio, esegue il check radiale e lo riaccovaccia all'istante nello stesso tick.
 
+---
+
+## 7. Geometria Voxel della Hitbox Giocatore per il Salto Automatico del Navigatore
+
+1. **Il Paradosso della Distanza Euclidea dal Centro Voxel**:
+   - I blocchi voxel di Minecraft hanno dimensione $1.0 \times 1.0\text{ m}$ con centro a $(X+0.5, Z+0.5)$.
+   - La hitbox del giocatore ha larghezza $0.6\text{ m}$ (raggio $0.3\text{ m}$).
+   - Quando il giocatore tocca la parete frontale di un gradino solido, la fisica di Minecraft lo arresta a una distanza orizzontale minima pari a:
+     $$d_{\text{min}} = 0.5\text{ (parete blocco)} + 0.3\text{ (hitbox giocatore)} = 0.80\text{ metri (fino a 1.0 m su approcci diagonali)}$$
+2. **Regola di Calibrazione del Salto Automatico (`AutoWalkController`)**:
+   - **Divieto di Soglie Sottodimensionate**: Non esigere mai $\text{distH} < 0.65\text{ m}$ per azionare il salto, poiché esigerebbe una compenetrazione fisica impossibile dentro il solido prima di premere Spazio.
+   - **Finestra di Approccio Naturale**: Attivare il salto con dislivello $0.30 < \Delta Y \le 1.25$ quando $\text{distH} \le 1.25\text{ m}$ oppure in presenza di collisione fisica (`player.horizontalCollision == true`) con appoggio al suolo (`onGround == true`).
+   - **Spinta Verticale Stabile**: Mantenere la pressione di `keyJump` per 4 tick ($200\text{ ms}$) per garantire l'impulso completo e l'atterraggio a quota $+1$.
+
+

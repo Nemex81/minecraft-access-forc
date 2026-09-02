@@ -93,3 +93,16 @@ In conformità al nostro standard architetturale:
 - **Doppio Canale di Regolazione**:
   - *Configurativo*: Cursore percentuale da `0%` a `300%` (default `100%`) in `Config.java` (`playerStepSoundVolume`).
   - *On-The-Fly (Zero Sneak)*: Tasti rapidi **`Alt + Page Up`** (+10%) e **`Alt + Page Down`** (-10%) con vocalizzazione istantanea del livello e salvataggio automatico persistente.
+
+---
+
+## 7. Auto-Focus Immediato su Menu di Gioco (`PauseScreen`) & Disaccoppiamento Mouse
+
+1. **Il Problema dell'Assenza di Focus Iniziale all'Apertura dei Menu**:
+   - In Minecraft vanilla, premendo `Esc` in partita per aprire `PauseScreen`, il sistema non assegna automaticamente il focus della tastiera al primo pulsante se il cursore del mouse era posizionato altrove.
+   - Questo costringeva il giocatore non vedente a premere `Tab` prima di poter iniziare a scorrere le voci del menu con le 4 frecce direzionali.
+2. **La Soluzione Integrata in `MenuFix.java`**:
+   - **Inclusione `PauseScreen.class`**: Il menu di pausa è registrato nel set `MENUS_NEED_FIX`.
+   - **Riposizionamento Mouse a Coordinate di Sicurezza**: Il cursore del mouse viene istantaneamente spostato a $(10, 10)$ per non interferire visivamente o acusticamente con gli hover.
+   - **Iniezione Auto-Focus Logico (`ensureInitialFocus`)**: Se `screen.getFocused() == null`, il focus viene immediatamente agganciato al primo `AbstractWidget` attivo ("Torna al gioco").
+   - **Accessibilità Istantanea**: NVDA vocalizza all'istante il primo pulsante e le frecce Su/Giù e Sinistra/Destra sono immediatamente attive al primo tocco senza dover mai premere `Tab`.
