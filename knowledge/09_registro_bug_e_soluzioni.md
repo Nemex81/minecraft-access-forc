@@ -305,3 +305,25 @@ Questo registro documenta i problemi tecnici complessi risolti nel tempo, preser
   1. In `InventoryControls.java`, rimozione del cast insicuro in favore di `category != null ? category.toString() : "null"` con protezione try-catch difensiva.
   2. In `Config.java`, aggiunta di `@ConfigEntry.Gui.Excluded` sul campo `instance`.
 - **Riferimento Dettagliato**: [`docs/report/REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md)
+
+---
+
+### Record 26 — Risoluzione Categorie Ricettario 26.2 (BuiltInRegistries vs toString), Statistiche di Pagina e Navigazione a 4 Frecce (Rev 26.1 - 26.6)
+- **Data**: 2026-09-02
+- **Moduli Coinvolti**: `InventoryControls.java`, `RecipeBookPageAccessor.java`, `it_it.json`, `en_us.json`
+- **Sintomi**:
+  1. Il cambio scheda ricettario (`V`/`Shift+V`) pronunciava la stringa Java grezza `net.minecraft.world.item.crafting.RecipeBookCategory@78b56307` anziché il nome in italiano.
+  2. Le categorie vuote pronunciavano la chiave non localizzata `minecraft_access.inventory_controls.recipe_category_empty`.
+  3. Il cambio pagina girava visivamente ma non comunicava all'utente non vedente lo stato delle ricette, né distingueva i limiti di inizio/fine lista.
+  4. La categoria Redstone era tradotta letteralmente come *"Pietrarossa"*, inducendo confusione con i materiali da costruzione edili.
+- **Causa Radice**:
+  1. In Minecraft 26.2, `RecipeBookCategory` è data-driven e non sovrascrive `.toString()`, richiedendo l'estrazione della chiave tramite `BuiltInRegistries.RECIPE_BOOK_CATEGORY`.
+  2. Mancanza della chiave `recipe_category_empty` nei dizionari linguistici.
+  3. Mancanza di accessors per `currentPage` / `totalPages` e di un modulo di calcolo statistiche aggregate sui `RecipeButton` visibili.
+- **Soluzione Definitiva**:
+  1. Risoluzione dei nomi categoria tramite `BuiltInRegistries.RECIPE_BOOK_CATEGORY.getKey()` e `SearchRecipeBookCategory`.
+  2. Adozione della dicitura contestuale *"Meccanismi e Redstone"* in `it_it.json`.
+  3. Esposizione di `getCurrentPage()` e `getTotalPages()` in `RecipeBookPageAccessor`.
+  4. Implementazione del modulo `RecipePageStats` per comporre dinamicamente la sintesi delle ricette (totali, realizzabili, non realizzabili) con concordanza grammaticale singolare/plurale.
+  5. Boundary gating intelligente: blocco preventivo dei click a vuoto e annuncio differenziato per *"Prima pagina"*, *"Ultima pagina"* e *"Unica pagina"*.
+  6. Mappatura delle 4 Frecce Direzionali per navigare tutti i container con disaccoppiamento da `EditBox`.
