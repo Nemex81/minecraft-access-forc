@@ -8,7 +8,23 @@
 Questo documento costituisce il **Diario Ufficiale delle Modifiche del Fork Personale in lingua Italiana**.
 Poiché il `README.md` pubblico e la documentazione del repository upstream rimangono in lingua Inglese per la community internazionale con la sola sezione `## [Unreleased]`, tutte le novità, i refactoring e i miglioramenti sviluppati sui nostri rami (`mymaster`, `dev`) vengono tracciati qui secondo la disciplina AVF (`V.A.R[.M]`).
 
-## 🚀 [v26.2-1.17.0] — 2026-09-02 (Feed Mirino WASD, Riqualificazione Tasto B, Alt+B & Mentor Adattivo — Versione Attuale)
+## 🚀 [v26.2-1.17.1] — 2026-09-02 (Salto Automatico Pilota & Auto-Focus Menu di Pausa Esc — Versione Attuale)
+
+### 🌟 Pilota Automatico & Movimento (Rev MC-28.0)
+- **Calibrazione Fisica Salto Automatico (`AutoWalkController.java`)**:
+  - Superata la soglia di compenetrazione impossibile `distH < 0.65` con una finestra di approccio naturale $\text{distH} \le 1.25\text{ m}$ o contatto d'impatto con la parete (`player.horizontalCollision`).
+  - Spinta verticale prolungata a `jumpHoldingTicks = 4` (200ms) per garantire il superamento completo del gradino $+1$.
+  - Rispetto assoluto della guardia Cloth Config: se `config.autoJump == false`, il pilota non salta e si arresta regolarmente per il controllo manuale.
+
+### 🎛️ Menu & Accessibilità Tastiera (Rev MC-28.1)
+- **Auto-Focus Immediato Menu di Pausa `Esc` (`MenuFix.java`)**:
+  - Inclusione di `PauseScreen.class` in `MENUS_NEED_FIX`.
+  - Posizionamento automatico del focus logico sul primo pulsante attivo (*"Torna al gioco"*) all'apertura dello schermo con `ensureInitialFocus(screen)`.
+  - Navigazione con le 4 Frecce (Su/Giù) immediatamente operativa al primo tocco senza dover premere `Tab`.
+
+---
+
+## 🚀 [v26.2-1.17.0] — 2026-09-02 (Feed Mirino WASD, Riqualificazione Tasto B, Alt+B & Mentor Adattivo)
 
 ### 🌟 Mirino, Movimento & Tasti Rapidi
 - **Feed Mirino in Movimento (`WASD`)**:

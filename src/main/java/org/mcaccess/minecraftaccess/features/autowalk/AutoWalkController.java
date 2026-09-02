@@ -316,10 +316,11 @@ public class AutoWalkController {
             }
         } else {
             // 10. Step-Up Jump Timing
-            if (config.autoJump && deltaY > 0.40 && distH < 0.65 && onGround) {
+            boolean isApproachingStep = (distH <= 1.25 || player.horizontalCollision) && deltaY > 0.30 && deltaY <= 1.25;
+            if (config.autoJump && isApproachingStep && onGround) {
                 state = State.JUMPING;
                 client.options.keyJump.setDown(true);
-                jumpHoldingTicks = 3;
+                jumpHoldingTicks = 4;
             } else {
                 if (jumpHoldingTicks > 0) {
                     jumpHoldingTicks--;

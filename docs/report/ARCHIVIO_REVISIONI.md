@@ -13,6 +13,36 @@ Questo documento raccoglie la memoria storica di tutte le anomalie, correzioni e
 
 ---
 
+### 🟢 Rev MC-28.0 — Navigatore Automatico: Calibrazione Fisica Salto Automatico su Dislivelli & Guardia Cloth Config
+- **Stato**: `[COLLAUDATA CON SUCCESSO]`
+- **Versione Chiusura**: 26.2-1.17.1 (Data 2026-09-02)
+- **Problema Riscontrato (Esperienza Luca)**: Con opzione "Salto automatico ostacoli superabili" attiva (`config.autoJump == true`), il pilota automatico si arrestava davanti a un blocco saltabile (+1 Y) e dichiarava *"Percorso ostruito, marcia arrestata"* invece di eseguire il salto.
+- **Evidenza Telemetrica / Log**: `[17:08:03] Percorso ostruito, marcia arrestata` $\rightarrow$ Risolto in telemetria live: `[17:38:33] Arrivato a destinazione: Aperto Porta di betulla` e `[17:39:47] Arrivato a destinazione`.
+- **Causa Radice**: In `AutoWalkController.java:319`, il salto richiedeva rigidamente `distH < 0.65`. Essendo il centro del blocco distante $0.5\text{ m}$ e il raggio della hitbox del giocatore $0.3\text{ m}$, la collisione fisica contro il blocco avviene a $\text{distH} \approx 0.80\text{ m}$. La soglia $< 0.65$ richiedeva una compenetrazione fisica impossibile dentro il blocco solido.
+- **Soluzione Applicata (PRAPI)**:
+  1. Ricalibrata la condizione di salto automatico: $\text{distH} \le 1.25\text{ m}$ oppure `player.horizontalCollision == true`, con dislivello saltabile $0.30 < \Delta Y \le 1.25$ e appoggio al suolo `onGround == true`;
+  2. Spinta verticale estesa a `jumpHoldingTicks = 4` (200ms) per garantire il superamento del blocco;
+  3. Tutela assoluta della guardia `config.autoJump`: se disattivato in Cloth Config, il pilota non salta e si arresta per il controllo manuale.
+- **Piano Tecnico di Riferimento**: `docs/piani/completati/PIANO_TECNICO_SALTO_AUTOMATICO_PILOTA_E_CALIBRAZIONE_HITBOX.md`
+- **Esito Collaudo**: Superato con successo al 100% in telemetria live su rotte da 16 e 53 metri.
+
+---
+
+### 🟢 Rev MC-28.1 — Menu di Pausa (`Esc`): Auto-Focus Iniziale & Navigazione Immediata a Frecce Direzionali
+- **Stato**: `[COLLAUDATA CON SUCCESSO]`
+- **Versione Chiusura**: 26.2-1.17.1 (Data 2026-09-02)
+- **Problema Riscontrato (Esperienza Luca)**: Premendo `Esc` in partita per aprire il menu di gioco (`PauseScreen`), il focus della tastiera rimaneva perso o bloccato altrove, costringendo a premere `Tab` per iniziare a scorrere i pulsanti con le frecce.
+- **Evidenza Telemetrica / Log**: `PauseScreen.class` non era incluso nel set `MENUS_NEED_FIX` e `screen.getFocused() == null`.
+- **Causa Radice**: Assenza di gestione di `PauseScreen` in `MenuFix.java` e mancata focalizzazione proattiva del primo widget.
+- **Soluzione Applicata (PRAPI)**:
+  1. Aggiunto `PauseScreen.class` in `MENUS_NEED_FIX` in `MenuFix.java`;
+  2. Implementato `ensureInitialFocus(screen)` per focalizzare all'istante il primo pulsante attivo ("Torna al gioco");
+  3. Spostamento preventivo del mouse a coordinate (10, 10) per non interferire.
+- **Piano Tecnico di Riferimento**: `docs/piani/completati/PIANO_TECNICO_SALTO_AUTOMATICO_PILOTA_E_CALIBRAZIONE_HITBOX.md`
+- **Esito Collaudo**: Superato con successo in telemetria live: `[17:39:55] Pulsante Riprendi la partita. Elemento a schermo 1 di 9` annunciato all'istante all'apertura del menu.
+
+---
+
 ### 🟢 Rev MC-27.1 — Mentor Vocale: Direzione Spaziale Contestuale & Keybinding Introspection
 - **Stato**: `[COLLAUDATA CON SUCCESSO]`
 - **Versione Chiusura**: 26.2-1.12.0 (Data 2026-09-02)

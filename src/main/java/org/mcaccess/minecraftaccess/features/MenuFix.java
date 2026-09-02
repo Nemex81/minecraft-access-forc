@@ -13,6 +13,7 @@ import net.blay09.mods.kuma.api.Kuma;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.DirectJoinServerScreen;
 import net.minecraft.client.gui.screens.ManageServerScreen;
+import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
@@ -50,6 +51,7 @@ public final class MenuFix implements BalmClientModule {
     private static Screen previous;
     private static final Set<Class<? extends Screen>> MENUS_NEED_FIX = Set.of(
             TitleScreen.class,
+            PauseScreen.class,
             OptionsScreen.class,
             ControlsScreen.class,
             OnlineOptionsScreen.class,
@@ -85,9 +87,10 @@ public final class MenuFix implements BalmClientModule {
                 .overrideCategory(KeyMappingCategories.OTHER)
                 .handleScreenInput(_ -> {
                     Minecraft client = Minecraft.getInstance();
-                    if (MENUS_NEED_FIX.contains(client.gui.screen().getClass())) {
+                    if (client.gui.screen() != null && MENUS_NEED_FIX.contains(client.gui.screen().getClass())) {
                         log.debug("Performing menu fix on {}", client.gui.screen().getTitle().getString());
                         moveMouseCursor();
+                        ensureInitialFocus(client.gui.screen());
                     }
                     return true;
                 })
@@ -108,6 +111,19 @@ public final class MenuFix implements BalmClientModule {
         if (MENUS_NEED_FIX.contains(client.gui.screen().getClass())) {
             log.debug("Performing menu fix on {}", client.gui.screen().getTitle().getString());
             moveMouseCursor();
+            ensureInitialFocus(client.gui.screen());
+        }
+    }
+
+    private static void ensureInitialFocus(Screen screen) {
+        if (screen == null) return;
+        if (screen.getFocused() == null) {
+            for (var child : screen.children()) {
+                if (child.isFocused() || (child instanceof net.minecraft.client.gui.components.AbstractWidget widget && widget.active && widget.visible)) {
+                    screen.setFocused(child);
+                    break;
+                }
+            }
         }
     }
 
