@@ -327,3 +327,20 @@ Questo registro documenta i problemi tecnici complessi risolti nel tempo, preser
   4. Implementazione del modulo `RecipePageStats` per comporre dinamicamente la sintesi delle ricette (totali, realizzabili, non realizzabili) con concordanza grammaticale singolare/plurale.
   5. Boundary gating intelligente: blocco preventivo dei click a vuoto e annuncio differenziato per *"Prima pagina"*, *"Ultima pagina"* e *"Unica pagina"*.
   6. Mappatura delle 4 Frecce Direzionali per navigare tutti i container con disaccoppiamento da `EditBox`.
+
+---
+
+### Record 27 — Reattività Container Specialistici, Auto-Focus Dinamico (`selectGroupByKey`) e Notifiche Fine Ciclo (Rev MC-26.4)
+- **Data**: 2026-09-02
+- **Moduli Coinvolti**: `InventoryControls.java`, `it_it.json`, `en_us.json`
+- **Sintomi**:
+  1. All'inserimento di un blocco di pietra nel Tagliapietre (`StonecutterScreen`), l'utente non vedente non riceveva l'auto-focus sulle forme tagliabili ed era costretto a premere `C` per ciclare tutti i gruppi.
+  2. Il Telaio (`LoomScreen`) non annunciava il numero di motivi disponibili per lo stendardo dopo l'inserimento di stendardo e tintura.
+  3. Le Fornaci (`AbstractFurnaceMenu`) e l'Alambicco (`BrewingStandMenu`) non offrivano alcun feedback discreto sul completamento della cottura o della distillazione per chi non fissava visivamente la barra di avanzamento.
+- **Causa Radice**: Assenza di monitoraggio dello stato differenziale ($N > 0 \land N_{prev} == 0$) per i container specialistici nel tick loop e mancato riposizionamento del focus sul gruppo `recipes`.
+- **Soluzione Definitiva**:
+  1. *Tagliapietre*: All'inserimento del blocco, vocalizzazione delle forme disponibili (*"%d forme disponibili per il taglio"*) e invocazione automatica di `selectGroupByKey("recipes", false)` per posizionare cursore e focus direttamente sul primo taglio.
+  2. *Telaio*: Tracciamento di `previousLoomPatternsCount`, vocalizzazione dei motivi sbloccati (*"%d motivi disponibili per lo stendardo"*) e selezione automatica del selettore motivi.
+  3. *Fornaci & Alambicco*: Monitoraggio differenziale di `furnace.getBurnProgress()` e `brewingStand.getBrewingTicks()` con emissione di notifiche vocali discrete (*"Cottura completata"*, *"Distillazione completata"*).
+  4. *Helper `selectGroupByKey`*: Metodo di utilità per rigenerare `currentSlotsGroupList` e saltare direttamente al gruppo con chiave corrispondente (es. `"recipes"`), eliminando i passaggi intermedi a vuoto.
+  5. *CI/CD Compliance*: Inserimento delle nuove chiavi I18N con rigoroso rispetto dell'ordinamento alfabetico crescente in `it_it.json` ed `en_us.json`.
