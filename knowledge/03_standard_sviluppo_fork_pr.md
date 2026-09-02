@@ -143,3 +143,25 @@ Per conciliare rigore architetturale, stabilità di `mymaster` e agilità operat
 - **Traduzioni e Refusi I18N**: Correzione o inserimento di poche chiavi nei file `.json` di lingua.
 - **Fix Minori One-Line**: Piccole correzioni puntuali già verificate e approvate da Luca.
 
+---
+
+## 8. Disciplina Dual-Track Changelog & Regola di Isolamento PR Upstream
+
+Per garantire perfetta igiene verso i maintainer upstream e contestuale sovranità del fork personale:
+
+1. **Il Doppio Binario dei Changelog**:
+   - **Binario Pubblico Upstream (`CHANGELOG.md` di radice)**:
+     * Redatto in **lingua inglese pura** seguendo lo standard *Keep a Changelog*;
+     * Raccoglie tutte le novità sviluppate sotto la sola sezione **`## [Unreleased]`**;
+     * Zero version forcing: non inventa numeri di versione ufficiali per evitare conflitti di merge nelle PR.
+   - **Binario Sovrano Locale (`knowledge/13_diario_modifiche_e_contributi_fork.md`)**:
+     * Redatto in **lingua italiana**;
+     * Governa il **versionamento semantico personale AVF** (`V.A.R[.M]`) per le build locali di Luca;
+     * Traccia il razionale architetturale, i feedback per screen reader NVDA e la cronologia completa delle release.
+
+2. **Regola Inviolabile di Isolamento delle Pull Request Upstream**:
+   - Quando si prepara una PR verso `upstream/dev`:
+     * **Consentito nella PR**: Codice sorgente Java/Mixin (`src/main/java`), risorse e traduzioni (`src/main/resources`), test automatici (`src/test/java`) e le righe di `CHANGELOG.md` `## [Unreleased]`.
+     * **Tassativamente Vietato nella PR**: `gemini.md`, l'intera cartella `knowledge/`, le cartelle `docs/piani/` e `docs/report/`, prompt o script locali di ASTRALIS.
+
+

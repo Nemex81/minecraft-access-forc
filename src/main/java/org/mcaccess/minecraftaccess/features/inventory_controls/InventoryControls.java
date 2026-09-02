@@ -26,6 +26,7 @@ import net.minecraft.client.gui.screens.inventory.BrewingStandScreen;
 import net.minecraft.client.gui.screens.inventory.CraftingScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.gui.screens.inventory.LoomScreen;
 import net.minecraft.client.gui.screens.inventory.StonecutterScreen;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
 import net.minecraft.client.gui.screens.recipebook.RecipeButton;
@@ -75,6 +76,7 @@ import org.mcaccess.minecraftaccess.mixin.AbstractRecipeBookScreenAccessor;
 import org.mcaccess.minecraftaccess.mixin.AnvilScreenAccessor;
 import org.mcaccess.minecraftaccess.mixin.CreativeModeInventoryScreenAccessor;
 import org.mcaccess.minecraftaccess.mixin.EditBoxAccessor;
+import org.mcaccess.minecraftaccess.mixin.LoomScreenAccessor;
 import org.mcaccess.minecraftaccess.mixin.RecipeBookComponentAccessor;
 import org.mcaccess.minecraftaccess.mixin.RecipeBookPageAccessor;
 import org.mcaccess.minecraftaccess.utils.KeyMappingCategories;
@@ -115,6 +117,9 @@ public class InventoryControls implements BalmClientModule {
     private int previousQueuedCrafts = 0;
     private int previousCarriedCount = 0;
     private int previousStonecutterOptionsCount = 0;
+    private int previousLoomPatternsCount = 0;
+    private boolean wasFurnaceSmelting = false;
+    private boolean wasBrewing = false;
     private ItemStack previousResultStack = ItemStack.EMPTY;
     private static long lastActionNarrationTime = 0;
 
@@ -433,6 +438,9 @@ public class InventoryControls implements BalmClientModule {
             previousQueuedCrafts = 0;
             previousCarriedCount = 0;
             previousStonecutterOptionsCount = 0;
+            previousLoomPatternsCount = 0;
+            wasFurnaceSmelting = false;
+            wasBrewing = false;
             previousResultStack = ItemStack.EMPTY;
             return;
         }
@@ -458,6 +466,9 @@ public class InventoryControls implements BalmClientModule {
             previousQueuedCrafts = 0;
             previousCarriedCount = 0;
             previousStonecutterOptionsCount = 0;
+            previousLoomPatternsCount = 0;
+            wasFurnaceSmelting = false;
+            wasBrewing = false;
             previousResultStack = ItemStack.EMPTY;
             if (currentScreen instanceof AnvilScreen anvilScreen) {
                 setSearchBoxFocus(((AnvilScreenAccessor) anvilScreen).getName(), false);
@@ -483,10 +494,43 @@ public class InventoryControls implements BalmClientModule {
             int visibleCount = stonecutterScreen.getMenu().getNumberOfVisibleRecipes();
             if (visibleCount > 0 && previousStonecutterOptionsCount == 0) {
                 MainClass.narrate(I18n.get("minecraft_access.inventory_controls.stonecutter_options", visibleCount), false);
+                selectGroupByKey("recipes", false);
             }
             previousStonecutterOptionsCount = visibleCount;
         } else {
             previousStonecutterOptionsCount = 0;
+        }
+
+        if (currentScreen instanceof LoomScreen loomScreen) {
+            boolean displayPatterns = ((LoomScreenAccessor) loomScreen).isDisplayPatterns();
+            int patternsCount = displayPatterns ? loomScreen.getMenu().getSelectablePatterns().size() : 0;
+            if (patternsCount > 0 && previousLoomPatternsCount == 0) {
+                MainClass.narrate(I18n.get("minecraft_access.inventory_controls.loom_patterns", patternsCount), false);
+                selectGroupByKey("recipes", false);
+            }
+            previousLoomPatternsCount = patternsCount;
+        } else {
+            previousLoomPatternsCount = 0;
+        }
+
+        if (currentScreen.getMenu() instanceof AbstractFurnaceMenu furnace) {
+            int burnProgress = Math.round(furnace.getBurnProgress() * 100);
+            if (wasFurnaceSmelting && burnProgress == 0 && furnace.isLit()) {
+                MainClass.narrate(I18n.get("minecraft_access.inventory_controls.furnace_smelt_complete"), false);
+            }
+            wasFurnaceSmelting = burnProgress > 0;
+        } else {
+            wasFurnaceSmelting = false;
+        }
+
+        if (currentScreen.getMenu() instanceof BrewingStandMenu brewingStand) {
+            int brewingTicks = brewingStand.getBrewingTicks();
+            if (wasBrewing && brewingTicks == 0) {
+                MainClass.narrate(I18n.get("minecraft_access.inventory_controls.brewing_complete"), false);
+            }
+            wasBrewing = brewingTicks > 0;
+        } else {
+            wasBrewing = false;
         }
 
         if (currentSlotsGroupList == null || currentSlotsGroupList.isEmpty()) return;
@@ -1057,6 +1101,20 @@ public class InventoryControls implements BalmClientModule {
     private void refreshGroupListAndSelectFirstGroup(boolean interrupt) {
         currentSlotsGroupList = GroupGenerator.generateGroupsFromSlots(currentScreen);
         if (currentSlotsGroupList == null || currentSlotsGroupList.isEmpty()) return;
+        currentGroupIndex = 0;
+        selectGroup(interrupt);
+    }
+
+    private void selectGroupByKey(String groupKey, boolean interrupt) {
+        currentSlotsGroupList = GroupGenerator.generateGroupsFromSlots(currentScreen);
+        if (currentSlotsGroupList == null || currentSlotsGroupList.isEmpty()) return;
+        for (int i = 0; i < currentSlotsGroupList.size(); i++) {
+            if (groupKey.equals(currentSlotsGroupList.get(i).getGroupKey())) {
+                currentGroupIndex = i;
+                selectGroup(interrupt);
+                return;
+            }
+        }
         currentGroupIndex = 0;
         selectGroup(interrupt);
     }
