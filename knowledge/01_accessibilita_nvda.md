@@ -44,6 +44,19 @@ La navigazione degli inventari (`features.inventory_controls`) non usa il puntam
   - Tasto **`X`**: Lettura prerequisiti ed ingredienti della ricetta selezionata (con bypass focus via `.ignoreScreenFocus()`).
   - Tasto **`V` / `Shift + V`**: Scorrimento schede del ricettario.
 
+### 3.1 Standard di Feedback Atomico su Cambi di Contesto GUI (Prevenzione "Silent Actions")
+
+In tutte le schermate a griglia, inventari e ricettari:
+1. **Feedback Acustico Istantaneo**: Ogni pressione di tasti per cambio scheda, categoria o pagina (`V`, `Shift+V`, `Shift+I`, `Shift+K`, `R`) deve riprodurre immediatamente il suono di click di interfaccia (`SoundEvents.UI_BUTTON_CLICK`).
+2. **Vocalizzazione Atomica del Contesto**:
+   - *Cambio Categoria (`V` / `Shift+V`)*: Enunciazione esplicita del nome della categoria selezionata (es. *"Categoria: Attrezzatura"*).
+   - *Cambio Pagina (`Shift+I` / `Shift+K`)*: Enunciazione del numero di pagina (es. *"Pagina 2 di 4"*).
+3. **Auto-Posizionamento Intelligente del Focus (Smart Focus Relocation)**:
+   - Al cambio categoria o pagina, il cursore/focus logico si posiziona automaticamente sulla prima ricetta o slot disponibile del nuovo contesto, leggendone immediatamente il nome (es. *"Categoria: Attrezzatura. Realizzabile 1 Ascia di legno"*).
+4. **Navigazione Universale Dual-Binding a Griglia**:
+   - Gli slot di tutte le interfacce (`AbstractContainerScreen`) sono navigabili sia con i tasti storici **`I, K, J, L`**, sia con le **`4 Frecce Direzionali` (Su, Giù, Sinistra, Destra)**.
+   - Quando una casella di testo (`EditBox`) è attiva con `T`, le frecce muovono il cursore di testo; premendo `Invio`, le frecce tornano istantaneamente a navigare gli slot.
+
 ---
 
 ## 4. Controlli della Visuale e Navigazione nel Mondo
