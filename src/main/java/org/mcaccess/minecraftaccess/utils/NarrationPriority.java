@@ -70,16 +70,8 @@ public final class NarrationPriority {
     }
 
     private static void defaultSuppressScanners(long durationMillis) {
-        try {
-            NarrateCrosshair.suppressNarration(durationMillis);
-        } catch (Throwable ignored) {
-            // Safely ignored in headless test environments without Minecraft/AutoConfig runtime
-        }
-        try {
-            ObstacleDetector.suppressWarnings(durationMillis);
-        } catch (Throwable ignored) {
-            // Safely ignored in headless test environments without Minecraft/AutoConfig runtime
-        }
+        NarrateCrosshair.suppressNarration(durationMillis);
+        ObstacleDetector.suppressWarnings(durationMillis);
     }
 
     /**
