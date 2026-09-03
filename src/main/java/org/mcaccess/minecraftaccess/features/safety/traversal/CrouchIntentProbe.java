@@ -3,7 +3,7 @@ package org.mcaccess.minecraftaccess.features.safety.traversal;
 @FunctionalInterface
 public interface CrouchIntentProbe {
     /**
-     * Returns true if the user is physically pressing the crouch / sneak input on keyboard/controller.
+     * Reads physical crouch intent independently from state written by the safety system.
      */
-    boolean isPhysicalCrouchHeld();
+    CrouchIntent readIntent();
 }

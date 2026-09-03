@@ -1,77 +1,104 @@
 package org.mcaccess.minecraftaccess.features.safety.traversal;
 
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@DisplayName("Safety Movement Guard Ownership & Crouch Control Unit Tests (Rev MC-26.8)")
+@DisplayName("SafetyMovementGuard: system token and raw crouch ownership")
 class SafetyMovementGuardTest {
 
+    private static final String LADDER_ID = "ladder:10,68,4";
+
     @Test
-    @DisplayName("1. engageFallProtection engages system override and applies shift true")
-    void testEngageFallProtection() {
-        AtomicBoolean appliedState = new AtomicBoolean(false);
-        SafetyMovementGuard guard = new SafetyMovementGuard(() -> false);
-        guard.setShiftStateApplier(appliedState::set);
+    @DisplayName("engaging protection writes the effective crouch state through the port")
+    void engageFallProtectionEngagesSystemToken() {
+        List<Boolean> writes = new ArrayList<>();
+        SafetyMovementGuard guard = new SafetyMovementGuard(() -> new CrouchIntent(false, true), writes::add);
 
         guard.engageFallProtection();
 
         assertTrue(guard.isSystemOverrideActive());
-        assertTrue(appliedState.get());
         assertNull(guard.getCurrentAllowedDescentId());
+        assertEquals(List.of(true), writes);
     }
 
     @Test
-    @DisplayName("2. allowValidatedDescent releases shift when user is NOT physically holding shift")
-    void testAllowValidatedDescentReleasesShift() {
-        AtomicBoolean appliedState = new AtomicBoolean(false);
-        SafetyMovementGuard guard = new SafetyMovementGuard(() -> false); // User is not pressing shift
-        guard.setShiftStateApplier(appliedState::set);
+    @DisplayName("validated descent releases a synthetic Shift when raw Shift is not held")
+    void validatedDescentBreaksTheFormerSyntheticShiftDeadlock() {
+        List<Boolean> writes = new ArrayList<>();
+        SafetyMovementGuard guard = new SafetyMovementGuard(() -> new CrouchIntent(false, true), writes::add);
 
         guard.engageFallProtection();
-        assertTrue(appliedState.get());
+        guard.allowValidatedDescent(LADDER_ID);
 
-        guard.allowValidatedDescent("ladder:10,68,4");
-
-        assertFalse(guard.isSystemOverrideActive(), "System override must be deactivated for validated descent");
-        assertFalse(appliedState.get(), "Shift must be released so player bounding box can enter ladder");
-        assertTrue(guard.isDescentAllowedFor("ladder:10,68,4"));
+        assertFalse(guard.isSystemOverrideActive());
+        assertTrue(guard.isDescentAllowedFor(LADDER_ID));
+        assertEquals(List.of(true, false), writes,
+                "The raw probe remains false even after the guard itself wrote synthetic Shift=true.");
     }
 
     @Test
-    @DisplayName("3. allowValidatedDescent PRESERVES shift if user is physically holding shift key")
-    void testAllowValidatedDescentPreservesManualShift() {
-        AtomicBoolean appliedState = new AtomicBoolean(false);
-        // User IS physically pressing shift with their finger!
-        SafetyMovementGuard guard = new SafetyMovementGuard(() -> true);
-        guard.setShiftStateApplier(appliedState::set);
+    @DisplayName("manual physical Shift remains effective after the system token is released")
+    void validatedDescentPreservesManualCrouch() {
+        List<Boolean> writes = new ArrayList<>();
+        SafetyMovementGuard guard = new SafetyMovementGuard(() -> new CrouchIntent(true, true), writes::add);
 
         guard.engageFallProtection();
+        guard.allowValidatedDescent(LADDER_ID);
+
+        assertFalse(guard.isSystemOverrideActive());
+        assertTrue(guard.isDescentAllowedFor(LADDER_ID));
+        assertEquals(List.of(true), writes);
+    }
+
+    @Test
+    @DisplayName("unreliable raw input cannot open a validated-descent authorization")
+    void unreliableRawInputFailsClosed() {
+        List<Boolean> writes = new ArrayList<>();
+        SafetyMovementGuard guard = new SafetyMovementGuard(() -> new CrouchIntent(false, false), writes::add);
+
+        guard.engageFallProtection();
+        guard.allowValidatedDescent(LADDER_ID);
+
         assertTrue(guard.isSystemOverrideActive());
-
-        appliedState.set(true);
-        guard.allowValidatedDescent("ladder:10,68,4");
-
-        assertFalse(guard.isSystemOverrideActive(), "System override is cleared");
-        assertTrue(appliedState.get(), "Physical shift MUST NOT be released when user is holding the key manually!");
-        assertTrue(guard.isDescentAllowedFor("ladder:10,68,4"));
+        assertNull(guard.getCurrentAllowedDescentId());
+        assertEquals(List.of(true), writes);
     }
 
     @Test
-    @DisplayName("4. clearSystemOverride restores normal state and clears allowed descent")
-    void testClearSystemOverride() {
-        AtomicBoolean appliedState = new AtomicBoolean(false);
-        SafetyMovementGuard guard = new SafetyMovementGuard(() -> false);
-        guard.setShiftStateApplier(appliedState::set);
+    @DisplayName("revoking a descent removes its authorization immediately")
+    void revokeValidatedDescentClearsOnlyTheAuthorization() {
+        List<Boolean> writes = new ArrayList<>();
+        SafetyMovementGuard guard = new SafetyMovementGuard(() -> new CrouchIntent(false, true), writes::add);
 
         guard.engageFallProtection();
-        guard.allowValidatedDescent("ladder:10,68,4");
-        guard.clearSystemOverride();
+        guard.allowValidatedDescent(LADDER_ID);
+        guard.revokeValidatedDescent();
 
         assertFalse(guard.isSystemOverrideActive());
         assertNull(guard.getCurrentAllowedDescentId());
-        assertFalse(appliedState.get());
+        assertEquals(List.of(true, false), writes);
+    }
+
+    @Test
+    @DisplayName("a later manual Shift change is reconciled without restoring the system token")
+    void reconciliationFollowsPhysicalInputAfterDescent() {
+        AtomicReference<CrouchIntent> intent = new AtomicReference<>(new CrouchIntent(false, true));
+        List<Boolean> writes = new ArrayList<>();
+        SafetyMovementGuard guard = new SafetyMovementGuard(intent::get, writes::add);
+
+        guard.engageFallProtection();
+        guard.allowValidatedDescent(LADDER_ID);
+        intent.set(new CrouchIntent(true, true));
+        guard.reconcileCrouchState();
+        intent.set(new CrouchIntent(false, true));
+        guard.reconcileCrouchState();
+
+        assertFalse(guard.isSystemOverrideActive());
+        assertEquals(List.of(true, false, true, false), writes);
     }
 }

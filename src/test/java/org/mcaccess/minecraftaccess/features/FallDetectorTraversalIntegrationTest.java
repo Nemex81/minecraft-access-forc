@@ -15,6 +15,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mcaccess.minecraftaccess.features.cognitive.CognitiveCoordinator;
 import org.mcaccess.minecraftaccess.features.cognitive.CognitiveEvent;
+import org.mcaccess.minecraftaccess.features.safety.traversal.CrouchIntent;
 import org.mcaccess.minecraftaccess.features.safety.traversal.SafeDescentCandidate;
 import org.mcaccess.minecraftaccess.features.safety.traversal.SafeDescentType;
 import org.mcaccess.minecraftaccess.features.safety.traversal.SafetyMovementGuard;
@@ -59,7 +60,10 @@ class FallDetectorTraversalIntegrationTest {
         );
 
         // Movement guard test
-        SafetyMovementGuard guard = new SafetyMovementGuard(() -> false);
+        SafetyMovementGuard guard = new SafetyMovementGuard(
+                () -> new CrouchIntent(false, true),
+                crouching -> {}
+        );
         guard.engageFallProtection();
         assertTrue(guard.isSystemOverrideActive());
 

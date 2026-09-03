@@ -267,6 +267,8 @@ public class FallDetector implements BalmClientModule {
 
         // 1. High-frequency Directional Look-Ahead Safety Check (Runs every tick)
         checkLookAheadSafety(client, player, level);
+        // Re-apply the effective state only from the safety token and raw user intent.
+        getMovementGuard().reconcileCrouchState();
 
         // 2. Periodic Ambient 3D Audio Area Scan
         long currentTimeInMillis = clock.millis();
@@ -301,14 +303,14 @@ public class FallDetector implements BalmClientModule {
         }
 
         if (moveDir == null) {
+            // A descent authorization is valid only while the matching movement is observed.
+            getMovementGuard().revokeValidatedDescent();
             // Presidio Fisico del Ciglio da Fermo (Sticky Sneak on Edge)
             if (config.autoSneakOnEdge && isStandingOnDangerousEdge(player, level)) {
-                if (getMovementGuard().getCurrentAllowedDescentId() == null) {
-                    autoSneakActive = true;
-                    safetyInterventionActive = true;
-                    getMovementGuard().engageFallProtection();
-                    return;
-                }
+                autoSneakActive = true;
+                safetyInterventionActive = true;
+                getMovementGuard().engageFallProtection();
+                return;
             }
             handleDangerCleared(client, player);
             return;
@@ -338,6 +340,8 @@ public class FallDetector implements BalmClientModule {
             getMovementGuard().engageFallProtection();
         }
 
+        // Any result other than a confirmed descent revokes the previous authorization.
+        getMovementGuard().revokeValidatedDescent();
         DangerInfo danger = findDangerAhead(player, level, moveDir);
         if (danger != null) {
             handleDangerDetected(player, danger.pos, danger.depth, danger.distance);
