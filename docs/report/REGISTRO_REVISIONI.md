@@ -28,6 +28,10 @@ Questo documento costituisce il **Registro Attivo Snello** del progetto Minecraf
 ---
 
 ### 🔵 Rev MC-26.8 — Discesa Sicura su Scale a Pioli ed Elementi Arrampicabili (Climbable Bypass in FallDetector)
+- **Stato**: `[CHIUSA]`
+- **Data Chiusura**: 2026-09-03
+- **Esito Collaudo**: ✅ Discesa autorizzata confermata in entrambe le istanze (`Discesa sicura` nei log).
+---
 
 
 
