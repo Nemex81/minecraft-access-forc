@@ -165,4 +165,38 @@ public record CognitiveEvent(
                 System.currentTimeMillis()
         );
     }
+
+    /**
+     * Dedicated factory for safety domain alerts (FallDetector and ObstacleDetector),
+     * providing full control over OutputType (VOICE_AND_SOUND, VOICE_ONLY, SOUND_ONLY).
+     */
+    public static CognitiveEvent createSafetyAlert(
+            String semanticKey,
+            CognitivePriority priority,
+            StateSignature signature,
+            String text,
+            @Nullable BlockPos targetPos,
+            double distance,
+            SpatialDirection direction,
+            OutputType outputType,
+            @Nullable SoundCue soundCue,
+            long ttlMillis,
+            long timestamp
+    ) {
+        return new CognitiveEvent(
+                SourceDomain.SAFETY,
+                priority,
+                semanticKey,
+                signature,
+                java.util.Objects.requireNonNull(text, "text"),
+                targetPos,
+                distance,
+                direction,
+                outputType,
+                soundCue,
+                ttlMillis,
+                false,
+                timestamp
+        );
+    }
 }

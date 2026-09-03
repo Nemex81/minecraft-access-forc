@@ -48,6 +48,12 @@ import org.mcaccess.minecraftaccess.utils.KeyMappingCategories;
 import org.mcaccess.minecraftaccess.utils.ModifierUtils;
 import org.mcaccess.minecraftaccess.utils.NarrationUtils;
 import org.mcaccess.minecraftaccess.utils.events.ClientPlayingTick;
+import org.mcaccess.minecraftaccess.features.cognitive.CognitiveCoordinator;
+import org.mcaccess.minecraftaccess.features.cognitive.CognitiveEvent;
+import org.mcaccess.minecraftaccess.features.cognitive.CognitivePriority;
+import org.mcaccess.minecraftaccess.features.cognitive.SoundCue;
+import org.mcaccess.minecraftaccess.features.cognitive.SpatialDirection;
+import org.mcaccess.minecraftaccess.features.cognitive.StateSignature;
 
 @Slf4j
 public class FallDetector implements BalmClientModule {
@@ -61,6 +67,122 @@ public class FallDetector implements BalmClientModule {
     private static boolean autoSneakActive = false;
     private @Nullable BlockPos lastWarnedDangerPos = null;
     private long lastEdgeBumpTime = 0;
+
+    // Package-private test seams for deterministic headless testing without Minecraft runtime
+    static java.util.function.BiConsumer<String, Boolean> legacyNarrationConsumer = MainClass::narrate;
+    static java.util.function.Consumer<SoundCue> legacyAudioConsumer = cue -> {
+        Minecraft client = Minecraft.getInstance();
+        if (client.level != null && cue.soundEvent() != null) {
+            BlockPos pos = cue.position() != null ? cue.position() : (client.player != null ? client.player.blockPosition() : BlockPos.ZERO);
+            client.level.playLocalSound(pos, cue.soundEvent(), cue.soundSource(), cue.volume(), cue.pitch(), true);
+        }
+    };
+    static java.util.function.Consumer<CognitiveEvent> cognitiveEventConsumer = CognitiveCoordinator::submitEvent;
+    static java.util.function.Supplier<net.minecraft.sounds.SoundEvent> fallSoundSupplier = () -> SoundEvents.ANVIL_HIT;
+
+    static void resetTestSeams() {
+        legacyNarrationConsumer = MainClass::narrate;
+        legacyAudioConsumer = cue -> {
+            Minecraft client = Minecraft.getInstance();
+            if (client.level != null && cue.soundEvent() != null) {
+                BlockPos pos = cue.position() != null ? cue.position() : (client.player != null ? client.player.blockPosition() : BlockPos.ZERO);
+                client.level.playLocalSound(pos, cue.soundEvent(), cue.soundSource(), cue.volume(), cue.pitch(), true);
+            }
+        };
+        cognitiveEventConsumer = CognitiveCoordinator::submitEvent;
+        fallSoundSupplier = () -> SoundEvents.ANVIL_HIT;
+    }
+
+    static void setLegacyNarrationConsumer(java.util.function.BiConsumer<String, Boolean> consumer) {
+        legacyNarrationConsumer = consumer;
+    }
+
+    static void setLegacyAudioConsumer(java.util.function.Consumer<SoundCue> consumer) {
+        legacyAudioConsumer = consumer;
+    }
+
+    static void setCognitiveEventConsumer(java.util.function.Consumer<CognitiveEvent> consumer) {
+        cognitiveEventConsumer = consumer;
+    }
+
+    static void setFallSoundSupplier(java.util.function.Supplier<net.minecraft.sounds.SoundEvent> supplier) {
+        fallSoundSupplier = supplier;
+    }
+
+    static @Nullable CognitiveEvent buildFallEvent(
+            BlockPos dangerPos,
+            int depth,
+            double distance,
+            boolean isEdgeBump,
+            boolean voiceEnabled,
+            boolean soundEnabled,
+            float volume,
+            @NotNull String msg,
+            long now
+    ) {
+        if (!voiceEnabled && !soundEnabled) {
+            return null;
+        }
+
+        java.util.Objects.requireNonNull(msg, "narrationText cannot be null");
+        if (msg.isBlank()) {
+            throw new IllegalArgumentException("narrationText cannot be blank");
+        }
+
+        CognitiveEvent.OutputType outputType;
+        if (voiceEnabled && soundEnabled) {
+            outputType = CognitiveEvent.OutputType.VOICE_AND_SOUND;
+        } else if (voiceEnabled) {
+            outputType = CognitiveEvent.OutputType.VOICE_ONLY;
+        } else {
+            outputType = CognitiveEvent.OutputType.SOUND_ONLY;
+        }
+
+        String semanticKey = isEdgeBump ? "safety.fall.edge_bump" : "safety.fall.warning";
+        StateSignature signature = isEdgeBump
+                ? StateSignature.of(0, depth, "fall:edge_bump")
+                : StateSignature.of((int) Math.round(distance), depth, "fall:warning");
+
+        SoundCue cue = soundEnabled
+                ? SoundCue.of(fallSoundSupplier != null ? fallSoundSupplier.get() : null, SoundSource.BLOCKS, dangerPos, volume, 1.0f)
+                : null;
+
+        return CognitiveEvent.createSafetyAlert(
+                semanticKey,
+                CognitivePriority.CRITICAL,
+                signature,
+                msg,
+                dangerPos,
+                distance,
+                SpatialDirection.FORWARD,
+                outputType,
+                cue,
+                2000,
+                now
+        );
+    }
+
+    static void dispatchFallAlert(
+            @Nullable CognitiveEvent event,
+            boolean coordinatorEnabled,
+            boolean voiceEnabled,
+            boolean soundEnabled,
+            String legacyMsg,
+            BlockPos dangerPos,
+            float volume
+    ) {
+        if (coordinatorEnabled && event != null) {
+            cognitiveEventConsumer.accept(event);
+        } else {
+            if (voiceEnabled && legacyMsg != null && !legacyMsg.isBlank()) {
+                legacyNarrationConsumer.accept(legacyMsg, true);
+            }
+            if (soundEnabled) {
+                SoundCue cue = SoundCue.of(fallSoundSupplier != null ? fallSoundSupplier.get() : null, SoundSource.BLOCKS, dangerPos, volume, 1.0f);
+                legacyAudioConsumer.accept(cue);
+            }
+        }
+    }
 
     public static boolean isAutoSneakActive() {
         return autoSneakActive;
@@ -518,31 +640,26 @@ public class FallDetector implements BalmClientModule {
             lastWarnedDangerPos = dangerPos;
             lastEdgeBumpTime = now;
 
-            // Pre-allerta vocale (Zona 1 + Zona 2)
-            if (config.voiceWarning) {
+            boolean voiceWanted = config.voiceWarning;
+            boolean soundWanted = config.playAudioCues;
+            if (voiceWanted || soundWanted) {
                 String relPos = NarrationUtils.narrateRelativePositionOfPlayerAnd(dangerPos);
                 String msg = I18n.get("minecraft_access.fall_detector.warning", relPos, NarrationUtils.narrateNumber(depth));
-                MainClass.narrate(msg, true);
-            }
-
-            // Rintocco sonoro 3D posizionale (Zona 1 + Zona 2)
-            if (config.playAudioCues) {
-                assert Minecraft.getInstance().level != null;
-                Minecraft.getInstance().level.playLocalSound(dangerPos, SoundEvents.ANVIL_HIT, SoundSource.BLOCKS, config.volume, 1.0f, true);
+                CognitiveEvent event = buildFallEvent(dangerPos, depth, distance, false, voiceWanted, soundWanted, config.volume, msg, now);
+                dispatchFallAlert(event, CognitiveCoordinator.isCoordinatorEnabled(), voiceWanted, soundWanted, msg, dangerPos, config.volume);
             }
         } else if (autoSneakActive && now - lastEdgeBumpTime >= 1500) {
             // Edge Bump debounced — solo quando in Zona 2 e si insiste verso il vuoto
             lastEdgeBumpTime = now;
             Config.FallDetector.EdgeBumpFeedbackMode bumpMode = config.edgeBumpFeedbackMode;
-            if (bumpMode == Config.FallDetector.EdgeBumpFeedbackMode.SOUND_AND_VOICE || bumpMode == Config.FallDetector.EdgeBumpFeedbackMode.SOUND_ONLY) {
-                if (Minecraft.getInstance().level != null) {
-                    Minecraft.getInstance().level.playLocalSound(dangerPos, SoundEvents.ANVIL_HIT, SoundSource.BLOCKS, config.volume, 1.0f, true);
-                }
-            }
-            if (bumpMode == Config.FallDetector.EdgeBumpFeedbackMode.SOUND_AND_VOICE || bumpMode == Config.FallDetector.EdgeBumpFeedbackMode.VOICE_ONLY) {
+            boolean soundWanted = bumpMode == Config.FallDetector.EdgeBumpFeedbackMode.SOUND_AND_VOICE || bumpMode == Config.FallDetector.EdgeBumpFeedbackMode.SOUND_ONLY;
+            boolean voiceWanted = bumpMode == Config.FallDetector.EdgeBumpFeedbackMode.SOUND_AND_VOICE || bumpMode == Config.FallDetector.EdgeBumpFeedbackMode.VOICE_ONLY;
+
+            if (voiceWanted || soundWanted) {
                 String relPos = NarrationUtils.narrateRelativePositionOfPlayerAnd(dangerPos);
                 String msg = I18n.get("minecraft_access.fall_detector.edge_bump", relPos, NarrationUtils.narrateNumber(depth));
-                MainClass.narrate(msg, true);
+                CognitiveEvent event = buildFallEvent(dangerPos, depth, distance, true, voiceWanted, soundWanted, config.volume, msg, now);
+                dispatchFallAlert(event, CognitiveCoordinator.isCoordinatorEnabled(), voiceWanted, soundWanted, msg, dangerPos, config.volume);
             }
         }
     }

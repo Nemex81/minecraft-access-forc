@@ -203,6 +203,7 @@ public class CognitiveCoordinator implements BalmClientModule {
         Long lastEmitted = recentEvents.get(key);
         boolean isDuplicate = lastEmitted != null && (now - lastEmitted) < deduplicationWindowMs;
 
+        boolean emittedVoice = false;
         // S1: Audio debounce for critical duplicates on edge
         if (event.isSoundEnabled() && event.soundCue() != null) {
             if (!isDuplicate) {
@@ -212,7 +213,6 @@ public class CognitiveCoordinator implements BalmClientModule {
 
         if (event.isVoiceEnabled() && !event.narrationText().isBlank()) {
             if (!isDuplicate) {
-                recentEvents.put(key, now);
                 if (criticalCountInTick == 0) {
                     // First critical in tick: interrupt background noise immediately
                     narrationConsumer.accept(event.narrationText(), true);
@@ -221,7 +221,12 @@ public class CognitiveCoordinator implements BalmClientModule {
                     narrationConsumer.accept(event.narrationText(), false);
                 }
                 criticalCountInTick++;
+                emittedVoice = true;
             }
+        }
+
+        if (!isDuplicate && (emittedVoice || (event.isSoundEnabled() && event.soundCue() != null))) {
+            recentEvents.put(key, now);
         }
     }
 

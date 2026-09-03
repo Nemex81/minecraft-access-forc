@@ -467,4 +467,39 @@ class CognitiveCoordinatorTest {
         CognitiveCoordinator.flushTick(now + 100);
         assertTrue(emittedNarrations.isEmpty());
     }
+
+    @Test
+    @DisplayName("14. [Fase 3A] Critical SOUND_ONLY events are properly debounced by deduplicationWindowMs")
+    void testCriticalSoundOnlyDebounce() {
+        long t0 = 10000;
+        SoundCue cue = SoundCue.of(null, SoundSource.BLOCKS, BlockPos.ZERO, 0.8f, 1.0f);
+        CognitiveEvent soundAlert = CognitiveEvent.createSafetyAlert(
+                "safety.fall.warning",
+                CognitivePriority.CRITICAL,
+                StateSignature.of(1, 3, "fall:warning"),
+                "Attenzione caduta",
+                BlockPos.ZERO,
+                1.0,
+                SpatialDirection.FORWARD,
+                CognitiveEvent.OutputType.SOUND_ONLY,
+                cue,
+                2000,
+                t0
+        );
+
+        // First emission at t0: sound emitted, no narration
+        CognitiveCoordinator.submitEvent(soundAlert, t0);
+        assertEquals(1, emittedSounds.size(), "Sound must be emitted immediately on fast-path");
+        assertTrue(emittedNarrations.isEmpty(), "SOUND_ONLY event must produce zero narrations");
+
+        // Duplicate emission within window (t0 + 500ms < 1500ms window): must be debounced!
+        CognitiveCoordinator.submitEvent(soundAlert, t0 + 500);
+        assertEquals(1, emittedSounds.size(), "Duplicate sound within debounce window must be suppressed");
+        assertTrue(emittedNarrations.isEmpty());
+
+        // Emission after window expires (t0 + 1600ms > 1500ms window): must be emitted again
+        CognitiveCoordinator.submitEvent(soundAlert, t0 + 1600);
+        assertEquals(2, emittedSounds.size(), "Sound must be emitted again after debounce window expires");
+        assertTrue(emittedNarrations.isEmpty());
+    }
 }
