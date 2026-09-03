@@ -4,7 +4,7 @@ import java.util.function.Consumer;
 import net.minecraft.client.Minecraft;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
+import org.mcaccess.minecraftaccess.features.safety.traversal.RawCrouchIntentProvider;
 public class SafetyMovementGuard {
 
     private boolean systemOverrideActive = false;
@@ -30,16 +30,7 @@ public class SafetyMovementGuard {
     }
 
     public static SafetyMovementGuard createDefault() {
-        return new SafetyMovementGuard(() -> {
-            try {
-                Minecraft client = Minecraft.getInstance();
-                if (client != null && client.options != null && client.options.keyShift != null) {
-                    return client.options.keyShift.isDown();
-                }
-            } catch (Exception ignored) {
-            }
-            return false;
-        });
+        return new SafetyMovementGuard(new RawCrouchIntentProvider());
     }
 
     /**
