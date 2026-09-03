@@ -322,6 +322,7 @@
     "minecraft_access.fall_detector.edge_bump": "Sul ciglio: burrone %s, profondità %s blocchi",
     "minecraft_access.fall_detector.no_pit_nearby": "Nessuna buca nei paraggi",
     "minecraft_access.fall_detector.pit_found": "Burrone %s, profondità %s blocchi",
+    "minecraft_access.fall_detector.safe_descent": "Discesa sicura",
     "minecraft_access.fall_detector.warning": "Attenzione: burrone %s, profondità %s blocchi",
     "minecraft_access.gui.academy_hub.auto_advance_off": "Avanzamento Automatico: [Disattivato] (Premi per attivare)",
     "minecraft_access.gui.academy_hub.auto_advance_on": "Avanzamento Automatico: [Attivo] (Premi per disattivare)",

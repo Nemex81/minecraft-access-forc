@@ -52,8 +52,15 @@ import org.mcaccess.minecraftaccess.features.cognitive.CognitiveCoordinator;
 import org.mcaccess.minecraftaccess.features.cognitive.CognitiveEvent;
 import org.mcaccess.minecraftaccess.features.cognitive.CognitivePriority;
 import org.mcaccess.minecraftaccess.features.cognitive.SoundCue;
+import org.mcaccess.minecraftaccess.features.cognitive.SourceDomain;
 import org.mcaccess.minecraftaccess.features.cognitive.SpatialDirection;
 import org.mcaccess.minecraftaccess.features.cognitive.StateSignature;
+import org.mcaccess.minecraftaccess.features.safety.traversal.SafeDescentCandidate;
+import org.mcaccess.minecraftaccess.features.safety.traversal.SafetyMovementGuard;
+import org.mcaccess.minecraftaccess.features.safety.traversal.TraversalSafetyAnalyzer;
+import org.mcaccess.minecraftaccess.features.safety.traversal.TraversalSafetyContext;
+import org.mcaccess.minecraftaccess.features.safety.traversal.TraversalSafetyResult;
+import org.mcaccess.minecraftaccess.features.safety.traversal.TraversalSafetyStatus;
 
 @Slf4j
 public class FallDetector implements BalmClientModule {
@@ -66,6 +73,8 @@ public class FallDetector implements BalmClientModule {
     private boolean wasSprintingBeforeIntervention = false;
     private static boolean autoSneakActive = false;
     private @Nullable BlockPos lastWarnedDangerPos = null;
+    private final SafetyMovementGuard movementGuard;
+    private @Nullable String lastNotifiedDescentId = null;
     private long lastEdgeBumpTime = 0;
 
     // Package-private test seams for deterministic headless testing without Minecraft runtime
@@ -79,6 +88,7 @@ public class FallDetector implements BalmClientModule {
     };
     static java.util.function.Consumer<CognitiveEvent> cognitiveEventConsumer = CognitiveCoordinator::submitEvent;
     static java.util.function.Supplier<net.minecraft.sounds.SoundEvent> fallSoundSupplier = () -> SoundEvents.ANVIL_HIT;
+    static SafetyMovementGuard testMovementGuard = null;
 
     static void resetTestSeams() {
         legacyNarrationConsumer = MainClass::narrate;
@@ -91,6 +101,7 @@ public class FallDetector implements BalmClientModule {
         };
         cognitiveEventConsumer = CognitiveCoordinator::submitEvent;
         fallSoundSupplier = () -> SoundEvents.ANVIL_HIT;
+        testMovementGuard = null;
     }
 
     static void setLegacyNarrationConsumer(java.util.function.BiConsumer<String, Boolean> consumer) {
@@ -107,6 +118,14 @@ public class FallDetector implements BalmClientModule {
 
     static void setFallSoundSupplier(java.util.function.Supplier<net.minecraft.sounds.SoundEvent> supplier) {
         fallSoundSupplier = supplier;
+    }
+
+    static void setMovementGuard(@Nullable SafetyMovementGuard guard) {
+        testMovementGuard = guard;
+    }
+
+    SafetyMovementGuard getMovementGuard() {
+        return testMovementGuard != null ? testMovementGuard : movementGuard;
     }
 
     static @Nullable CognitiveEvent buildFallEvent(
@@ -192,6 +211,7 @@ public class FallDetector implements BalmClientModule {
         clock = Clock.systemDefaultZone();
         previousTimeInMillis = clock.millis();
         config = Config.getInstance().fallDetector;
+        movementGuard = SafetyMovementGuard.createDefault();
     }
 
     @Override
@@ -248,11 +268,6 @@ public class FallDetector implements BalmClientModule {
         // 1. High-frequency Directional Look-Ahead Safety Check (Runs every tick)
         checkLookAheadSafety(client, player, level);
 
-        if (autoSneakActive) {
-            client.options.keyShift.setDown(true);
-            player.setShiftKeyDown(true);
-        }
-
         // 2. Periodic Ambient 3D Audio Area Scan
         long currentTimeInMillis = clock.millis();
         if (currentTimeInMillis - previousTimeInMillis >= config.delay) {
@@ -288,14 +303,39 @@ public class FallDetector implements BalmClientModule {
         if (moveDir == null) {
             // Presidio Fisico del Ciglio da Fermo (Sticky Sneak on Edge)
             if (config.autoSneakOnEdge && isStandingOnDangerousEdge(player, level)) {
-                autoSneakActive = true;
-                safetyInterventionActive = true;
-                client.options.keyShift.setDown(true);
-                player.setShiftKeyDown(true);
-                return;
+                if (getMovementGuard().getCurrentAllowedDescentId() == null) {
+                    autoSneakActive = true;
+                    safetyInterventionActive = true;
+                    getMovementGuard().engageFallProtection();
+                    return;
+                }
             }
             handleDangerCleared(client, player);
             return;
+        }
+
+        int playerBaseY = (int) Math.floor(player.getY());
+        TraversalSafetyContext traversalContext = new TraversalSafetyContext(
+                player.position(),
+                player.getBoundingBox(),
+                playerBaseY,
+                moveDir,
+                true,
+                config.depth,
+                level
+        );
+        TraversalSafetyResult traversalResult = TraversalSafetyAnalyzer.analyzeTraversal(traversalContext);
+
+        if (traversalResult.status() == TraversalSafetyStatus.SAFE_DESCENT_AVAILABLE && traversalResult.candidate() != null) {
+            getMovementGuard().allowValidatedDescent(traversalResult.candidate().columnId());
+            handleSafeDescentAvailable(traversalResult.candidate(), client, player);
+            return;
+        } else if (traversalResult.status() == TraversalSafetyStatus.DANGEROUS_DROP && traversalResult.dangerPos() != null) {
+            getMovementGuard().engageFallProtection();
+            handleDangerDetected(player, traversalResult.dangerPos(), traversalResult.dangerDepth(), 0.5);
+            return;
+        } else if (traversalResult.status() == TraversalSafetyStatus.AMBIGUOUS_OR_UNSAFE_DESCENT) {
+            getMovementGuard().engageFallProtection();
         }
 
         DangerInfo danger = findDangerAhead(player, level, moveDir);
@@ -460,76 +500,31 @@ public class FallDetector implements BalmClientModule {
         return false;
     }
 
-    private boolean isClimbableBlock(BlockState state) {
-        return state.is(BlockTags.CLIMBABLE) || state.getBlock() instanceof LadderBlock || state.getBlock() instanceof VineBlock || state.getBlock() instanceof ScaffoldingBlock;
-    }
-
-    private boolean isSafeLandingBlock(BlockState state) {
-        return state.is(Blocks.COBWEB) || state.getBlock() instanceof HayBlock || state.getBlock() instanceof HoneyBlock || state.getBlock() instanceof SlimeBlock || state.getBlock() instanceof PowderSnowBlock;
-    }
-
-    private boolean isSafeClimbableDescender(Level level, BlockPos startPos) {
-        BlockPos cur = startPos;
-        int scanned = 0;
-        while (scanned < 64) {
-            BlockState st = level.getBlockState(cur);
-            if (isClimbableBlock(st) || !level.getFluidState(cur).isEmpty()) {
-                cur = cur.below();
-                scanned++;
-                continue;
-            }
-            int fallBelowClimbable = 0;
-            while (fallBelowClimbable <= 3) {
-                if (!level.getFluidState(cur).isEmpty() || isSafeLandingBlock(level.getBlockState(cur))) {
-                    return true;
-                }
-                if (!level.getBlockState(cur).isAir() && !level.getBlockState(cur).getCollisionShape(level, cur).isEmpty()) {
-                    return true;
-                }
-                fallBelowClimbable++;
-                cur = cur.below();
-            }
-            return false;
-        }
-        return true;
-    }
-
     private int calculateDangerousDrop(Level level, BlockPos checkGround, int playerBaseY) {
         BlockPos current = checkGround;
-
-        // Check if current step position or immediately above is a climbable (e.g. ladder to descend from roof)
-        if (isClimbableBlock(level.getBlockState(current)) || isClimbableBlock(level.getBlockState(current.above()))) {
-            if (isSafeClimbableDescender(level, current)) {
-                return 0; // Safe ladder/climbable descent!
-            }
-        }
 
         int depth = 0;
         while (depth < 64) {
             FluidState fluid = level.getFluidState(current);
-            if (!fluid.isEmpty()) {
-                // Water or other fluid completely negates fall damage, safe landing!
-                return 0;
+            if (TraversalSafetyAnalyzer.isSafeWater(fluid)) {
+                return 0; // Safe water landing!
+            }
+            if (fluid.is(FluidTags.LAVA)) {
+                return 999; // Lethal lava is never safe
             }
 
             BlockState state = level.getBlockState(current);
-            if (isClimbableBlock(state)) {
-                if (isSafeClimbableDescender(level, current)) {
-                    return 0;
-                }
+            if (TraversalSafetyAnalyzer.isClimbable(state)) {
+                return 0; // Climbable column
             }
 
-            if (isSafeLandingBlock(state)) {
-                return 0; // Soft landing (hay, cobweb, honey, slime, powder snow)
-            }
-
-            if (!state.isAir() && !state.getCollisionShape(level, current).isEmpty()) {
-                // Landed on a solid block at 'current'
+            if (TraversalSafetyAnalyzer.isSafeLanding(level, current)) {
                 if (isSafeWalkableStaircase(level, current, playerBaseY)) {
-                    return 0; // Safe staircase, not a dangerous fall
+                    return 0; // Safe staircase
                 }
                 return depth;
             }
+
             depth++;
             current = current.below();
         }
@@ -632,6 +627,7 @@ public class FallDetector implements BalmClientModule {
         if (config.autoSneakOnEdge && distance <= EDGE_SNEAK_THRESHOLD) {
             autoSneakActive = true;
             safetyInterventionActive = true;
+            getMovementGuard().engageFallProtection();
         }
 
         boolean isNewDanger = (lastWarnedDangerPos == null || !lastWarnedDangerPos.equals(dangerPos));
@@ -664,6 +660,35 @@ public class FallDetector implements BalmClientModule {
         }
     }
 
+    private void handleSafeDescentAvailable(SafeDescentCandidate candidate, Minecraft client, Player player) {
+        safetyInterventionActive = false;
+        autoSneakActive = false;
+        lastWarnedDangerPos = null;
+
+        if (lastNotifiedDescentId == null || !lastNotifiedDescentId.equals(candidate.columnId())) {
+            lastNotifiedDescentId = candidate.columnId();
+            String msg = I18n.get("minecraft_access.fall_detector.safe_descent");
+
+            SoundCue cue = SoundCue.of(SoundEvents.LADDER_STEP, SoundSource.PLAYERS, candidate.entryPos(), 0.7f, 1.2f);
+            CognitiveEvent event = CognitiveEvent.createOperational(
+                    SourceDomain.SAFETY,
+                    "safety.traversal.safe_descent",
+                    StateSignature.of(0, 0, candidate.columnId()),
+                    msg,
+                    candidate.entryPos(),
+                    0.5,
+                    cue
+            );
+
+            if (CognitiveCoordinator.isCoordinatorEnabled()) {
+                cognitiveEventConsumer.accept(event);
+            } else {
+                legacyNarrationConsumer.accept(msg, false);
+                legacyAudioConsumer.accept(cue);
+            }
+        }
+    }
+
     private void handleDangerCleared(Minecraft client, Player player) {
         if (safetyInterventionActive) {
             if (config.autoRestoreSprint && wasSprintingBeforeIntervention) {
@@ -676,17 +701,12 @@ public class FallDetector implements BalmClientModule {
     }
 
     private void resetSafetyState() {
-        if (autoSneakActive) {
-            Minecraft client = Minecraft.getInstance();
-            if (client.options != null && client.player != null) {
-                client.options.keyShift.setDown(false);
-                client.player.setShiftKeyDown(false);
-            }
-        }
+        getMovementGuard().clearSystemOverride();
         safetyInterventionActive = false;
         wasSprintingBeforeIntervention = false;
         autoSneakActive = false;
         lastWarnedDangerPos = null;
+        lastNotifiedDescentId = null;
     }
 
     private void inspectNearbyFalls() {

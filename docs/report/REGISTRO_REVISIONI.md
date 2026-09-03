@@ -26,3 +26,21 @@ Questo documento costituisce il **Registro Attivo Snello** del progetto Minecraf
 - **Esito Collaudo**: In attesa di lavorazione e collaudo.
 
 ---
+
+### 🔵 Rev MC-26.8 — Discesa Sicura su Scale a Pioli ed Elementi Arrampicabili (Climbable Bypass in FallDetector)
+- **Stato**: `[APERTA]`
+- **Data Rilevamento**: 2026-09-03
+- **Problema Riscontrato (Esperienza Luca)**: Salendo sul tetto tramite scala a pioli, l'utente non riesce più a scendere: `FallDetector` classifica il vuoto attorno alla scala come burrone letale (`profondità 4 blocchi`), attiva lo sticky-sneak sul ciglio e l'auto-sneak forzato, bloccando fisicamente il giocatore e costringendolo a disattivare la protezione anticaduta (`Ctrl + Alt + F`) per poter scendere la scala.
+- **Evidenza Telemetrica / Log**: `[15:43:35] Narrating(interrupt:true)= Sul ciglio: burrone 1 blocchi in basso , profondità 4 blocchi`, `[15:44:33] Narrating(interrupt:true)= Attenzione: burrone 1 blocchi avanti 1 blocchi in basso , profondità 3 blocchi`.
+- **Causa Radice**: 
+  1. `isStandingOnDangerousEdge` campiona radialmente 8 punti attorno alla hitbox: i campioni laterali/diagonali rilevano aria e vuoto oltre il perimetro del tetto (dove non c'è la scala), forzando lo sticky-sneak anche se davanti c'è una colonna di discesa sicura;
+  2. Il motore fisico nativo di Minecraft impedisce a un giocatore accovacciato (Shift attivo) di scendere da un blocco solido;
+  3. Il raycast di look-ahead non riconosce la scala a pioli attaccata alla parete o a quota piedi/sottostante quando la traiettoria punta deliberatamente alla scala.
+- **Soluzione Proposta (PRAPI / Protocollo 5)**:
+  1. Estendere il riconoscimento degli elementi di discesa sicura a tutti i blocchi arrampicabili: scale a pioli (`LadderBlock`), liane (`VineBlock`, `WeepingVinesBlock`, `TwistingVinesBlock`, `CaveVinesBlock`), impalcature (`ScaffoldingBlock`), botole aperte sopra scale (`TrapDoorBlock`) e tag `#minecraft:climbable`;
+  2. Quando il giocatore punta e si muove deliberatamente verso una colonna discendente sicura, sospendere temporaneamente l'auto-sneak forzato (`keyShift.setDown(false)`), consentendo l'aggancio fisico alla scala;
+  3. Escludere la colonna della scala dalla segnalazione di burrone e fornire riscontro acustico/vocale positivo di discesa sicura anziché allarme di caduta.
+- **Piano Tecnico di Riferimento**: In fase di consultazione e pianificazione.
+- **Esito Collaudo**: Segnalata in-game durante il collaudo della Fase 3A.
+
+---

@@ -322,6 +322,7 @@
     "minecraft_access.fall_detector.edge_bump": "On the edge: pit %s, depth %s blocks",
     "minecraft_access.fall_detector.no_pit_nearby": "No pits nearby",
     "minecraft_access.fall_detector.pit_found": "Pit %s, depth %s blocks",
+    "minecraft_access.fall_detector.safe_descent": "Safe descent",
     "minecraft_access.fall_detector.warning": "Warning: pit %s, depth %s blocks",
     "minecraft_access.gui.academy_hub.auto_advance_off": "Auto-Advance: [Disabled] (Press to enable)",
     "minecraft_access.gui.academy_hub.auto_advance_on": "Auto-Advance: [Enabled] (Press to disable)",
