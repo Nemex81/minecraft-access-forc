@@ -153,3 +153,36 @@ Per risolvere l'illusione cognitiva di vicinanza quando i mob si trovano all'est
 3. **Armonizzazione Colonna Unica $XZ$ & Frase Multidirezionale**:
    - *Cammino Frontale (`W`)*: Fusione automatica di sguardo e piedi se condividono la colonna orizzontale $(X, Z)$ o la direzione frontale $\rightarrow$ *"Davanti: Ostacolo di Pannello di vetro, a 3 blocchi"*.
    - *Cammino Laterale/Retro (`A`/`D`/`S`)*: Composizione atomica con il mirino frontale $\rightarrow$ *"A destra: Salita su Fornace. Davanti: Assi di quercia, a 2 blocchi"*.
+
+---
+
+## 6. Il Cognitive Coordinator Centralizzato: Gerarchia Dinamica e Contratti (Fasi 1 e 2)
+
+L'evoluzione dal modello a scudi sincroni sparsi verso il **Cognitive Coordinator** centralizza l'arbitraggio vocale e sonoro del personaggio:
+
+1. **La Gerarchia Dinamica a 4 Livelli (`CognitivePriority`)**:
+   - `CRITICAL` (Rank 4): Emergenze vitali (burrone immediato, lava a contatto, danni gravi). Latenza zero assoluta (Fast-Path a 0 ms).
+   - `OPERATIONAL` (Rank 3): Azioni motorie e informative esplicite (AutoWalk arrival/turn, lock waypoint, ispezioni). Voce deterministica con scudo locale.
+   - `CONTEXTUAL` (Rank 2): Variazioni ambientali non letali (ostacoli superabili con dislivello, buio fitto, stato fame). Emessi a fine tick se non soppressi.
+   - `PASSIVE` (Rank 1): Esplorazione continua di sottofondo (mirino su blocchi/entità, orientamento). Scartabili o differiti a bassa priorità.
+
+2. **Fast-Path & Concorrenza Non Tronca su Allarmi Critici Multipli**:
+   - Il primo evento critico nel tick emette `MainClass.narrate(text, true)` per zittire all'istante qualsiasi chiacchiericcio o scansione in corso.
+   - Un secondo critico concorrente nel medesimo tick emette `MainClass.narrate(text, false)` (micro-burst): viene accodato senza troncare la prima parola salvavita.
+   - Debounce audio: sul ciglio di un burrone, per la medesima firma di stato (`StateSignature`), il cue sonoro non spamma a 60 FPS ma rispetta la finestra di deduplicazione; suona nuovamente solo in caso di escalation di distanza o gravità.
+
+3. **Scudo Critico Vincolante sugli Operativi**:
+   - Durante `criticalShieldUntil` (1500 ms dopo un critico), nessun evento non critico può parlare.
+   - Gli eventi `OPERATIONAL` non vengono distrutti: vengono custoditi nella coda breve (`shortQueue`) con il loro TTL e pronunciati automaticamente non appena lo scudo critico decade.
+
+4. **Regola di Compatibilità Spaziale (`SpatialDirection`)**:
+   - Due eventi possono essere fusi vocalmente solo se spazialmente coerenti: entrambi frontali (`FORWARD`), o con la medesima direzione, oppure se uno è omnidirezionale (`OMNI`).
+   - Direzioni opposte o contrastanti (es. minaccia a sinistra e risorsa a destra) non vengono mai fuse insieme per non disorientare la mappa mentale del non vedente.
+
+5. **Regola del Fallback I18N (Divieto di Punteggiatura Hardcoded)**:
+   - La fusione vocale è subordinata all'esistenza di un template I18N semantico autorizzato (`minecraft_access.cognitive.join_*`).
+   - Se il template non esiste o il resolver restituisce `null`, è fatto divieto assoluto di unire le stringhe con `". "` a mano. Il primario parla da solo; il secondario valido (anche se `PASSIVE`) viene preservato nella `shortQueue` con il suo TTL ed emesso al tick successivo se ancora valido.
+
+6. **Facciata `NarrationPriority` e `DirectInteractionShield`**:
+   - La facciata preserva al 100% le 4 firme storiche per i chiamanti legacy, propagando direttamente gli errori senza catch-all e offrendo seam di test dedicati (`scannerSuppressor`).
+   - `DirectInteractionShield` è riservato esclusivamente all'input diretto (tastiera/GUI). I toast e i pacchetti non lo attivano, garantendo che gli eventi critici mantengano sempre latenza 0 ms.

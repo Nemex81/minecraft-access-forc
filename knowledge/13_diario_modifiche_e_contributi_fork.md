@@ -8,7 +8,24 @@
 Questo documento costituisce il **Diario Ufficiale delle Modifiche del Fork Personale in lingua Italiana**.
 Poiché il `README.md` pubblico e la documentazione del repository upstream rimangono in lingua Inglese per la community internazionale con la sola sezione `## [Unreleased]`, tutte le novità, i refactoring e i miglioramenti sviluppati sui nostri rami (`mymaster`, `dev`) vengono tracciati qui secondo la disciplina AVF (`V.A.R[.M]`).
 
-## 🚀 [v26.2-1.18.0] — 2026-09-02 (Feedback Dislivello Adattivo, Verbosità Faccia, Micro-Voxel Raymarch & Armonizzazione SSOT Mirino/Ostacoli — Versione Attuale)
+## 🚀 [v26.2-1.19.0-dev] — 2026-09-03 (Refactor Architetturale Cognitive Coordinator — Fasi 1 e 2 — Branch feat/cognitive-orchestrator)
+
+### 🧠 Fase 1: Nucleo Cognitivo Centralizzato Certificato (Commit e41c3f9d)
+- **Fast-Path Emergenze a 0 ms**: Elaborazione immediata per eventi `CRITICAL` con micro-burst accodato per eventi critici concorrenti nel medesimo tick (prevenzione troncamento prime sillabe salvavita).
+- **Arbitraggio Deterministico a Fine Tick**: Matrice gerarchica dinamica a 4 priorità (`CRITICAL`, `OPERATIONAL`, `CONTEXTUAL`, `PASSIVE`).
+- **Scudo Critico Vincolante (`criticalShieldUntil`)**: Soppressione totale dei messaggi non critici per 1500 ms con custodia sicura degli `OPERATIONAL` in `shortQueue` ed emissione differita automatica.
+- **Fusione Vocale Vincolata a I18N (`SpatialDirection`)**: Concatenazione ammessa unicamente con template I18N semantico autorizzato (`minecraft_access.cognitive.join_*`) e coerenza spaziale (stessa direzione o omni). Divieto assoluto di fallback hardcoded con punteggiatura fissa; differimento del secondario valido in coda breve.
+- **14 Test Unitari Deterministiche a 0 ms**: Suite completa con iniezione temporale controllata.
+
+### ⚙️ Fase 2: Configurazione Cloth Config & Facciata Retrocompatibile (Commit 88c3ddb7, 580c060a)
+- **Categoria Cloth Config `cognitiveCoordinator`**: Gestione unificata con binding runtime di `cognitiveCoordinatorEnabled`, `chainedNarrationEnabled` e normalizzazione `deduplicationWindowMs` (500–5000 ms). Rinvio trasparente delle opzioni non ancora attive (anti-pattern controlli decorativi per screen reader).
+- **Facciata `NarrationPriority` Trasparente**: Conservazione integrale delle 4 firme legacy, rimozione del blocco catch-all `Throwable` e introduzione di seam package-private dedicati (`scannerSuppressor`, `narrationConsumer`, `timeSupplier`) per test deterministici headless.
+- **Localizzazioni IT/EN Rigorosamente Alfabetiche**: 7 nuove chiavi configurative e tooltip conformi ai controlli CI.
+- **8 Nuovi Test Unitari di Fase 2**: Test mirati sulla facciata e sul binding configurativo (22 test cognitivi totali superati, intera suite del progetto verde in 21s).
+
+---
+
+## 🚀 [v26.2-1.18.0] — 2026-09-02 (Feedback Dislivello Adattivo, Verbosità Faccia, Micro-Voxel Raymarch & Armonizzazione SSOT Mirino/Ostacoli)
 
 ### 🌟 Feedback Dislivello Adattivo & Altezza Cubi (Rev MC-29.0)
 - **4 Modalità Operative (`SoundCueMode`)**: `SOUND_AND_VOICE`, `SOUND_ONLY`, `VOICE_ONLY`, `OFF` configurabili in Cloth Config.

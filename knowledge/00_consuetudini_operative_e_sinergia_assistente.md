@@ -135,3 +135,18 @@ Nei sistemi operativi Windows, molti comandi nativi di PowerShell (come `Set-Con
    ```powershell
    [System.IO.File]::WriteAllText($filePath, $content, (New-Object System.Text.UTF8Encoding($false)))
    ```
+
+---
+
+## 7. Checkpoint di Auto-Apprendimento Inter-Fase nei Grandi Refactor Multi-Fase
+
+Nelle epiche architetturali di grandi dimensioni o nei refactoring sistemici complessi suddivisi in molteplici fasi sequenziali (es. Fase 1, Fase 2, Fase 3A, Fase 3B...):
+
+1. **Il Principio di Consolidamento Frattale**:
+   - Attendere il completamento dell'intera epica rischia di diluire o dimenticare scoperte tecniche fondamentali e impedisce alle fasi successive di beneficiare immediatamente delle lezioni apprese.
+2. **Trigger di Attivazione Proattivo**:
+   - *Se* una fase intermedia viene verificata, corretta e convalidata con successo (con relativo commit di checkpoint);
+   - *E* durante tale fase sono emersi imprevisti significativi, standard di framework, pattern di test o lezioni metodologiche ad alto valore formativo;
+   - *Allora* Antigravity propone esplicitamente a Luca un **Checkpoint di Auto-Apprendimento Inter-Fase** prima di passare alla pianificazione della sotto-fase successiva.
+3. **Effetto Operativo**:
+   - La conoscenza viene immediatamente formalizzata nelle schede `knowledge/` e nel Master Hub, rendendola attiva e vincolante per proteggere l'esecuzione delle fasi immediatamente successive della medesima epica.

@@ -366,3 +366,56 @@ Questo registro documenta i problemi tecnici complessi risolti nel tempo, preser
   3. *Dispacciamento Diretto al Manager*: Invocazione diretta `CrosshairFeedbackManager.onObstacleDetected(result, msg, relAngle)` da `ObstacleDetector.java`, garantendo sincronia totale al 100% tra suono OpenAL e voce narrante.
   4. *Armonizzazione Colonna Unica $XZ$*: Merge deterministico degli annunci frontali se $X_{\text{target}} == X_{\text{ostacolo}} \land Z_{\text{target}} == Z_{\text{ostacolo}}$ (*"Davanti: Ostacolo di Pannello di vetro, a 3 blocchi"*), preservando la frase multidirezionale per i lati e il retro (*"A destra: Salita su Fornace. Davanti: Assi di quercia, a 2 blocchi"*).
   5. *Podometro Parete*: Preservata la ripetizione continua metro per metro dei blocchi in cammino per mantenere il sonar di velocità e cadenza per il non vedente.
+
+---
+
+### Record 29 — Cloud Locking di OneDrive sulla Cartella `build/` e Risoluzione Atomica PowerShell (Refactor Cognitivo)
+- **Data**: 2026-09-03
+- **Moduli Coinvolti**: Gradle Build Pipeline (`build/`, Loom, Daemon)
+- **Sintomi**: Errore `java.io.IOException: Cannot snapshot ... ar_sa.json: not a regular file` oppure `Unable to delete directory 'build'` durante `.\gradlew.bat --no-daemon clean test`.
+- **Causa Radice**: Il motore di sincronizzazione cloud di OneDrive o Dropbox aggancia i file di classe o di lingua estratti in `build/` durante l'indicizzazione in background, bloccandone l'eliminazione da parte del plugin Gradle JavaBase/LifecycleBase.
+- **Soluzione Definitiva**:
+  1. Arrestare eventuali processi orfani o daemon con `.\gradlew.bat --stop`.
+  2. Eseguire l'eliminazione forzata nativa PowerShell bypassando i lock ereditari di processo:
+     `Remove-Item -Recurse -Force build -ErrorAction SilentlyContinue; Test-Path build`
+  3. Rilanciare la build Gradle con il flag obbligatorio `--no-daemon`.
+
+---
+
+### Record 30 — Risoluzione Traduzioni in Minecraft 1.21.x / Balm (`I18n.get` vs `I18n.exists`)
+- **Data**: 2026-09-03
+- **Moduli Coinvolti**: `CognitiveCoordinator.java`, Fabric Loom, Mojang `I18n`
+- **Sintomi**: Errore del compilatore Java `error: cannot find symbol: method exists(String) in class I18n`.
+- **Causa Radice**: A differenza di vecchie versioni Forge o wrapper custom, la classe `net.minecraft.client.resources.language.I18n` in 1.21.x / 26.2 non espone un metodo `exists(String)`.
+- **Soluzione Definitiva**:
+  Adottare il pattern canonico Mojang/Balm per verificare se una chiave è effettivamente tradotta:
+  ```java
+  String translated = I18n.get(key, args);
+  if (!translated.equals(key)) {
+      return translated; // Traduzione valida trovata
+  }
+  return null; // Chiave inesistente o non tradotta
+  ```
+
+---
+
+### Record 31 — Iniezione Temporale e Determinismo nei Test Unitari con TTL (`currentTimeMillis` vs `now`)
+- **Data**: 2026-09-03
+- **Moduli Coinvolti**: `CognitiveCoordinatorTest.java`, `CognitiveCoordinator.java`, `CognitiveEvent.java`
+- **Sintomi**: Fallimento di test con asserzioni su eventi differiti o scaduti (`isExpired`), dove l'evento non veniva scartato o non veniva recapitato come previsto.
+- **Causa Radice**: Le factory creavano istanze di evento con `timestamp = System.currentTimeMillis()`, mentre il test simulava il flusso del tempo con un valore virtuale arbitrario (es. `now = 10000`). La differenza `now - timestamp` produceva numeri negativi enormi ($\approx -1.7 \times 10^{12}$), rendendo i controlli di scadenza matematicamente insensati.
+- **Soluzione Definitiva**:
+  1. Sovraccaricare i metodi di sottomissione per accettare un timestamp esplicito: `submitEvent(@NotNull CognitiveEvent event, long now)`.
+  2. Esporre costruttori/factory con timestamp parametrico per i test.
+  3. Nei test unitari con clock virtuale, usare sempre lo stesso riferimento `now` per la creazione dell'evento e per il `flushTick(now)`.
+
+---
+
+### Record 32 — Anti-Pattern `catch (Throwable ignored)` e Preservazione Trasparenza Errori (`NarrationPriority`)
+- **Data**: 2026-09-03
+- **Moduli Coinvolti**: `NarrationPriority.java`, `NarrationPriorityFacadeTest.java`
+- **Sintomi**: Inserimento di blocchi `try/catch (Throwable ignored)` attorno alle chiamate degli scanner legacy per evitare `NullPointerException` durante l'esecuzione dei test headless privi di ambiente Minecraft.
+- **Causa Radice**: Catturare `Throwable` nei metodi di produzione silenzia errori reali della JVM e bug di inizializzazione a runtime in gioco, rischiando di lasciare scanner attivi a insaputa del sistema e introducendo chatter vocale intermittente non diagnosticabile.
+- **Soluzione Definitiva**:
+  1. I componenti di produzione devono eseguire chiamate dirette senza mascherare le eccezioni, preservando la piena trasparenza degli errori.
+  2. L'isolamento per i test headless deve avvenire esclusivamente tramite **seam package-private dedicati** (es. `scannerSuppressor = duration -> ...`), iniettati in `@BeforeEach` e ripristinati in `@AfterEach`.

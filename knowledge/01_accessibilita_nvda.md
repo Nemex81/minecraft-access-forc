@@ -106,3 +106,14 @@ In conformità al nostro standard architetturale:
    - **Riposizionamento Mouse a Coordinate di Sicurezza**: Il cursore del mouse viene istantaneamente spostato a $(10, 10)$ per non interferire visivamente o acusticamente con gli hover.
    - **Iniezione Auto-Focus Logico (`ensureInitialFocus`)**: Se `screen.getFocused() == null`, il focus viene immediatamente agganciato al primo `AbstractWidget` attivo ("Torna al gioco").
    - **Accessibilità Istantanea**: NVDA vocalizza all'istante il primo pulsante e le frecce Su/Giù e Sinistra/Destra sono immediatamente attive al primo tocco senza dover mai premere `Tab`.
+
+---
+
+## 8. Onestà Percettiva delle Impostazioni Cloth Config & Divieto di Controlli Decorativi
+
+1. **Il Canone dell'Onestà Percettiva**:
+   - Per un utente vedente, un'opzione grigia o decorativa può essere interpretata visivamente come non implementata; per un utente non vedente che naviga con lo screen reader NVDA, ogni controllo focalizzabile viene annunciato con pari dignità e autorevolezza (nome, stato, valore).
+   - L'esposizione in Cloth Config di controlli prematuri (es. densità vocale o ducking audio prima che il codice li supporti) genera false aspettative e confusione sensoriale, spingendo il giocatore a chiedersi perché la modifica di un parametro non produca alcun effetto in-game.
+2. **Standard Operativo Vincolante**:
+   - **Zero Opzioni Decorative**: Una nuova categoria o opzione Cloth Config può essere esposta all'utente **esclusivamente se** il motore logico sottostante è già in grado di interpretarla e produrre un effetto misurabile a runtime.
+   - **Rinvio Trasparente**: Le opzioni pianificate per fasi future (es. `ambientSpeechDensity` o `criticalModAudioDucking`) rimangono confinate nel design document e vengono inserite in `Config.java` e nelle traduzioni I18N solo contestualmente all'attivazione del loro codice reale.
