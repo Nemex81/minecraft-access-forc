@@ -18,6 +18,7 @@ import org.mcaccess.minecraftaccess.MainClass;
 import org.mcaccess.minecraftaccess.api.WorldNarrator;
 import org.mcaccess.minecraftaccess.features.NarrateCrosshair;
 import org.mcaccess.minecraftaccess.features.ObstacleDetectionUtils;
+import org.mcaccess.minecraftaccess.features.ObstacleNarrationComposer;
 import org.mcaccess.minecraftaccess.utils.NarrationUtils;
 import org.mcaccess.minecraftaccess.utils.position.PlayerPositionUtils;
 
@@ -77,32 +78,13 @@ public final class CrosshairFeedbackManager {
         Player player = client.player;
         if (player == null) return;
 
-        String frontPrefix = I18n.get("minecraft_access.obstacle_detector.dir_forward");
-        if (frontPrefix.equals("minecraft_access.obstacle_detector.dir_forward")) {
-            frontPrefix = "Davanti";
-        }
-
-        boolean isFrontal = obstacleMsg.startsWith(frontPrefix);
-        String message;
-
-        if (isFrontal) {
-            Vec3 targetCenter = Vec3.atCenterOf(result.targetFootPos());
-            int distance = Math.max(1, (int) Math.round(Math.sqrt(player.distanceToSqr(targetCenter))));
-            String distStr = (distance <= 1)
-                    ? getI18nString("minecraft_access.crosshair_feedback.distance_blocks_single", "1 blocco")
-                    : getI18nString("minecraft_access.crosshair_feedback.distance_blocks", "%d blocchi", distance);
-            message = getI18nString("minecraft_access.crosshair_feedback.at_distance", "%s, a %s", obstacleMsg, distStr);
-        } else {
-            if (currentNarration != null && !currentNarration.isBlank()) {
-                String distStr = (currentDistance != null && currentDistance > 1)
-                        ? getI18nString("minecraft_access.crosshair_feedback.distance_blocks", "%d blocchi", currentDistance)
-                        : getI18nString("minecraft_access.crosshair_feedback.distance_blocks_single", "1 blocco");
-                String frontTarget = getI18nString("minecraft_access.crosshair_feedback.at_distance", "%s, a %s", currentNarration, distStr);
-                message = obstacleMsg + ". " + frontPrefix + ": " + frontTarget;
-            } else {
-                message = obstacleMsg;
-            }
-        }
+        Vec3 targetCenter = Vec3.atCenterOf(result.targetFootPos());
+        int distance = Math.max(1, (int) Math.round(Math.sqrt(player.distanceToSqr(targetCenter))));
+        String message = ObstacleNarrationComposer.composeFinalNarration(
+                obstacleMsg,
+                distance,
+                new ObstacleNarrationContext(currentNarration, currentDistance)
+        );
 
         if (!Strings.isEmpty(message)) {
             lastNarrationTime = System.currentTimeMillis();
@@ -122,7 +104,7 @@ public final class CrosshairFeedbackManager {
         if (!config.enabled) return;
         if (targetName == null || targetName.isBlank()) return;
 
-        long now = System.currentTimeMillis();
+        long now = clock.getAsLong();
 
         Minecraft client = Minecraft.getInstance();
         Player player = client.player;
@@ -135,6 +117,18 @@ public final class CrosshairFeedbackManager {
                 && (currentDistance == null || !currentDistance.equals(roundedDistance));
 
         if (!isTargetMutation && !isDistanceProgression) {
+            return;
+        }
+
+        if (absorbAutomaticMovementFeedbackIfSuppressed(
+                inActiveMovement,
+                isTargetMutation,
+                isDistanceProgression,
+                target,
+                targetName,
+                roundedDistance,
+                now
+        )) {
             return;
         }
 
@@ -654,12 +648,89 @@ public final class CrosshairFeedbackManager {
     }
 
     private static long movementSuppressedUntil = 0;
+    private static long automaticMovementSuppressedUntil = 0;
+
+    // Test seam for deterministic clock
+    static java.util.function.LongSupplier clock = System::currentTimeMillis;
 
     /**
      * Temporarily suppresses the movement-based crosshair feed (e.g. during obstacle alerts).
      */
     public static void suppressMovementFeed(long durationMillis) {
         movementSuppressedUntil = System.currentTimeMillis() + durationMillis;
+    }
+
+    /**
+     * Temporarily suppresses the automatic movement-based crosshair feed (e.g. during obstacle alerts).
+     * Deadline is updated monotonically via Math.max to prevent shortening from concurrent calls.
+     */
+    public static void suppressAutomaticMovementFeedback(long durationMillis) {
+        automaticMovementSuppressedUntil = Math.max(automaticMovementSuppressedUntil, clock.getAsLong() + durationMillis);
+    }
+
+    /**
+     * Package-private helper to check and absorb automatic movement feedback during an active suppression window.
+     * Applies silent commit to currentTarget, currentNarration, and currentDistance, returning true if caller must return early.
+     */
+    static boolean absorbAutomaticMovementFeedbackIfSuppressed(
+            boolean inActiveMovement,
+            boolean isTargetMutation,
+            boolean isDistanceProgression,
+            @Nullable Object target,
+            @Nullable String targetName,
+            int roundedDistance,
+            long now
+    ) {
+        if (inActiveMovement && now < automaticMovementSuppressedUntil) {
+            if (isTargetMutation || isDistanceProgression) {
+                currentTarget = target;
+                currentNarration = targetName;
+                currentDistance = roundedDistance;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static ObstacleNarrationContext getNarrationContextSnapshot() {
+        return new ObstacleNarrationContext(currentNarration, currentDistance);
+    }
+
+    public static long getAutomaticMovementSuppressedUntil() {
+        return automaticMovementSuppressedUntil;
+    }
+
+    public static @Nullable Object getCurrentTarget() {
+        return currentTarget;
+    }
+
+    public static @Nullable String getCurrentNarration() {
+        return currentNarration;
+    }
+
+    public static @Nullable Integer getCurrentDistance() {
+        return currentDistance;
+    }
+
+    public static void setTestState(@Nullable Object target, @Nullable String narration, @Nullable Integer distance) {
+        currentTarget = target;
+        currentNarration = narration;
+        currentDistance = distance;
+    }
+
+    public static void resetTestSeams() {
+        automaticMovementSuppressedUntil = 0;
+        movementSuppressedUntil = 0;
+        currentTarget = null;
+        currentNarration = null;
+        currentDistance = null;
+        lastNarrationTime = 0;
+        lastDistanceNarrationTime = 0;
+        clock = System::currentTimeMillis;
+    }
+
+    public static void setClock(java.util.function.LongSupplier customClock) {
+        clock = customClock;
     }
 
     /**

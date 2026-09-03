@@ -27,12 +27,22 @@ Questo documento costituisce il **Registro Attivo Snello** del progetto Minecraf
 
 ---
 
-### 🔵 Rev MC-26.8 — Discesa Sicura su Scale a Pioli ed Elementi Arrampicabili (Climbable Bypass in FallDetector)
-- **Stato**: `[CHIUSA]`
-- **Data Chiusura**: 2026-09-03
-- **Esito Collaudo**: ✅ Discesa autorizzata confermata in entrambe le istanze (`Discesa sicura` nei log).
+### 🔵 Rev MC-26.9 — NullPointer Guard su currentScreen in InventoryControls.moveToSlotItem
+- **Stato**: `[APERTA]`
+- **Data Rilevamento**: 2026-09-04 ore 00:59:03
+- **Ambito**: Accessibilità GUI & Navigazione Griglia Inventario (Autonoma, indipendente dal Cognitive Coordinator)
+- **Problema Riscontrato (Esperienza Luca)**: Durante la transizione o chiusura rapida dell'inventario verso il menu di gioco, la pressione di un tasto di navigazione slot genera un'eccezione non gestita. Il gioco non è andato in crash e non sono stati creati crash report, ma il difetto va corretto con un guard difensivo.
+- **Evidenza Telemetrica / Log**:
+  ```text
+  Caused by: java.lang.NullPointerException: Cannot invoke "org.mcaccess.minecraftaccess.mixin.AbstractContainerScreenAccessor.getLeftPos()" because "this.currentScreen" is null
+      at knot//org.mcaccess.minecraftaccess.features.inventory_controls.InventoryControls.moveToSlotItem(InventoryControls.java:1022)
+      at knot//org.mcaccess.minecraftaccess.features.inventory_controls.InventoryControls.focusSlotItem(InventoryControls.java:1002)
+      at knot//org.mcaccess.minecraftaccess.features.inventory_controls.InventoryControls.selectGroup(InventoryControls.java:1134)
+  ```
+- **Causa Radice**: In `InventoryControls.moveToSlotItem` manca il controllo preventivo `if (this.currentScreen == null) return;` prima di accedere ai metodi dell'accessor durante eventi di input concorrenti alla chiusura dello schermo.
+- **Soluzione di Affinamento (PRAPI)**: Inserimento del null check difensivo `if (this.currentScreen == null) return;` in `moveToSlotItem` e `focusSlotItem`.
+- **Piano Tecnico di Riferimento**: In fase di pianificazione (sessione futura dedicata a GUI/Inventari).
+- **Esito Collaudo**: Aperta per lavorazione successiva.
+
 ---
 
-
-
----

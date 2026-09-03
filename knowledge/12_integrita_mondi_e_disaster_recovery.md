@@ -51,3 +51,14 @@ In caso di corruzione del mondo, blocco del personaggio nel vuoto o errore grave
    - Verificare che il file `singleplayer_<nome_mondo>.json` in `config/minecraft-access/waypoints/` sia preservato e non sovrascritto da dati vecchi.
 5. **Riavvio & Validazione In-Game**:
    - Avviare Minecraft, caricare il mondo ripristinato e verificare con il tasto Numpad `0` che le coordinate del giocatore siano corrette.
+
+## 4. Guard di Discesa Sicura (SafeMovementGuard)
+
+Il `SafetyMovementGuard` è stato introdotto nella **Rev MC‑26.8** per risolvere il problema di "burrone" rilevato dal `FallDetector` quando il giocatore tenta di scendere da una scala a pioli.
+
+- **Riconoscimento climbable**: ora tutti i blocchi con il tag `#minecraft:climbable` (scale a pioli, liane, impalcature, botole) sono esclusi dalla segnalazione di burrone.
+- **Token lifecycle**: `allowValidatedDescent` concede il permesso di discesa e produce una narrazione vocale "Discesa sicura"; `revokeValidatedDescent` revoca il token quando il giocatore si allontana.
+- **Fallback linguistico**: se la chiave di traduzione manca in `it_it.json`, si utilizza la voce `en_us`.
+- **Telemetria**: log vocali con `interrupt:true` per informare immediatamente l'utente.
+
+Questa sezione fornisce il contesto, la soluzione implementata e le linee guida per test unitari e integrazione in futuro.

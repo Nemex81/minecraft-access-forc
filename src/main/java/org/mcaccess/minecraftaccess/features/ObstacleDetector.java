@@ -28,7 +28,11 @@ import org.mcaccess.minecraftaccess.Config;
 import org.mcaccess.minecraftaccess.MainClass;
 import org.mcaccess.minecraftaccess.features.ObstacleDetectionUtils.ObstacleScanResult;
 import org.mcaccess.minecraftaccess.features.ObstacleDetectionUtils.ObstacleState;
+import org.mcaccess.minecraftaccess.features.cognitive.CognitiveCoordinator;
+import org.mcaccess.minecraftaccess.features.cognitive.CognitiveEvent;
+import org.mcaccess.minecraftaccess.features.cognitive.SoundCue;
 import org.mcaccess.minecraftaccess.features.crosshair.CrosshairFeedbackManager;
+import org.mcaccess.minecraftaccess.features.crosshair.ObstacleNarrationContext;
 import org.mcaccess.minecraftaccess.utils.KeyMappingCategories;
 import org.mcaccess.minecraftaccess.utils.events.ClientPlayingTick;
 import org.mcaccess.minecraftaccess.utils.position.PlayerPositionUtils;
@@ -44,6 +48,39 @@ public class ObstacleDetector implements BalmClientModule {
 
     public static void suppressWarnings(long durationMillis) {
         suppressUntil = System.currentTimeMillis() + durationMillis;
+    }
+
+    @FunctionalInterface
+    interface LegacyObstacleVoiceSink {
+        void accept(ObstacleScanResult result, String message, double relativeAngle);
+    }
+
+    @FunctionalInterface
+    interface LegacyObstacleAudioSink {
+        void accept(@Nullable Level level, SoundCue cue);
+    }
+
+    // Package-private test seams for deterministic headless testing without Minecraft runtime
+    static java.util.function.Consumer<CognitiveEvent> cognitiveEventConsumer = CognitiveCoordinator::submitEvent;
+    static LegacyObstacleVoiceSink legacyVoiceConsumer = CrosshairFeedbackManager::onObstacleDetected;
+    static LegacyObstacleAudioSink legacyAudioConsumer = ObstacleDetector::playLegacySound;
+
+    static void resetTestSeams() {
+        cognitiveEventConsumer = CognitiveCoordinator::submitEvent;
+        legacyVoiceConsumer = CrosshairFeedbackManager::onObstacleDetected;
+        legacyAudioConsumer = ObstacleDetector::playLegacySound;
+    }
+
+    static void setCognitiveEventConsumer(java.util.function.Consumer<CognitiveEvent> consumer) {
+        cognitiveEventConsumer = consumer;
+    }
+
+    static void setLegacyVoiceConsumer(LegacyObstacleVoiceSink consumer) {
+        legacyVoiceConsumer = consumer;
+    }
+
+    static void setLegacyAudioConsumer(LegacyObstacleAudioSink consumer) {
+        legacyAudioConsumer = consumer;
     }
 
     public ObstacleDetector() {
@@ -134,18 +171,138 @@ public class ObstacleDetector implements BalmClientModule {
                 lastWarnedObstaclePos = result.targetFootPos();
                 lastWarnedState = result.state();
 
-                if (config.voiceWarning) {
-                    String msg = ObstacleDetectionUtils.getNarrationMessage(result, config.narrationStyle, relAngleForNarration, config.directionFeedbackMode);
-                    CrosshairFeedbackManager.onObstacleDetected(result, msg, relAngleForNarration);
-                }
-
-                if (config.playAudioCues) {
-                    playSoundCue(level, result);
-                }
+                int obstacleDistance = Math.max(1, (int) Math.round(Math.sqrt(player.distanceToSqr(Vec3.atCenterOf(result.targetFootPos())))));
+                dispatchObstacleAlert(
+                        level,
+                        result,
+                        relAngleForNarration,
+                        obstacleDistance,
+                        config,
+                        currentTime
+                );
             }
         } else {
             lastWarnedState = ObstacleState.CLEAR;
             lastWarnedObstaclePos = null;
+        }
+    }
+
+    static void dispatchObstacleAlert(
+            ObstacleScanResult result,
+            double relAngle,
+            int obstacleDistance,
+            Config.ObstacleDetector config,
+            long now
+    ) {
+        dispatchObstacleAlert(
+                null,
+                result,
+                relAngle,
+                obstacleDistance,
+                config.voiceWarning,
+                config.playAudioCues,
+                config.volume,
+                config.narrationStyle,
+                config.directionFeedbackMode,
+                now
+        );
+    }
+
+    static void dispatchObstacleAlert(
+            @NotNull Level level,
+            ObstacleScanResult result,
+            double relAngle,
+            int obstacleDistance,
+            Config.ObstacleDetector config,
+            long now
+    ) {
+        dispatchObstacleAlert(
+                level,
+                result,
+                relAngle,
+                obstacleDistance,
+                config.voiceWarning,
+                config.playAudioCues,
+                config.volume,
+                config.narrationStyle,
+                config.directionFeedbackMode,
+                now
+        );
+    }
+
+    static void dispatchObstacleAlert(
+            ObstacleScanResult result,
+            double relAngle,
+            int obstacleDistance,
+            boolean voiceWanted,
+            boolean soundWanted,
+            float volume,
+            ObstacleDetectionUtils.NarrationStyle narrationStyle,
+            Config.ObstacleDetector.DirectionFeedbackMode directionFeedbackMode,
+            long now
+    ) {
+        dispatchObstacleAlert(
+                null,
+                result,
+                relAngle,
+                obstacleDistance,
+                voiceWanted,
+                soundWanted,
+                volume,
+                narrationStyle,
+                directionFeedbackMode,
+                now
+        );
+    }
+
+    static void dispatchObstacleAlert(
+            @Nullable Level legacyLevel,
+            ObstacleScanResult result,
+            double relAngle,
+            int obstacleDistance,
+            boolean voiceWanted,
+            boolean soundWanted,
+            float volume,
+            ObstacleDetectionUtils.NarrationStyle narrationStyle,
+            Config.ObstacleDetector.DirectionFeedbackMode directionFeedbackMode,
+            long now
+    ) {
+        if (!voiceWanted && !soundWanted) {
+            return;
+        }
+
+        String rawMsg = ObstacleDetectionUtils.getNarrationMessage(
+                result, narrationStyle, relAngle, directionFeedbackMode
+        );
+
+        boolean coordinatorActive = CognitiveCoordinator.isCoordinatorEnabled();
+        if (coordinatorActive) {
+            ObstacleNarrationContext crosshairContext = CrosshairFeedbackManager.getNarrationContextSnapshot();
+            String finalMsg = ObstacleNarrationComposer.composeFinalNarration(rawMsg, obstacleDistance, crosshairContext);
+            CognitiveEvent event = ObstacleSafetyEventFactory.createObstacleEvent(
+                    result, finalMsg, obstacleDistance, relAngle, voiceWanted, soundWanted, volume, now
+            );
+
+            if (event != null) {
+                if (event.isVoiceEnabled()) {
+                    CrosshairFeedbackManager.suppressAutomaticMovementFeedback(100);
+                }
+                cognitiveEventConsumer.accept(event);
+            }
+        } else {
+            if (voiceWanted) {
+                legacyVoiceConsumer.accept(result, rawMsg, relAngle);
+            }
+            if (soundWanted) {
+                SoundCue cue = ObstacleSafetyEventFactory.createSoundCue(result, volume);
+                legacyAudioConsumer.accept(legacyLevel, cue);
+            }
+        }
+    }
+
+    private static void playLegacySound(@Nullable Level level, SoundCue cue) {
+        if (level != null && cue.soundEvent() != null && cue.position() != null) {
+            level.playLocalSound(cue.position(), cue.soundEvent(), cue.soundSource(), cue.volume(), cue.pitch(), true);
         }
     }
 
@@ -193,11 +350,9 @@ public class ObstacleDetector implements BalmClientModule {
     }
 
     private void playSoundCue(Level level, ObstacleScanResult result) {
-        BlockPos soundPos = result.lookAtPos() != null ? result.lookAtPos() : result.targetFootPos();
-        if (result.state() == ObstacleState.STEP_CLIMBABLE) {
-            level.playLocalSound(soundPos, SoundEvents.NOTE_BLOCK_PLING.value(), SoundSource.BLOCKS, config.volume, 1.5f, true);
-        } else {
-            level.playLocalSound(soundPos, SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.BLOCKS, config.volume, 0.6f, true);
+        SoundCue cue = ObstacleSafetyEventFactory.createSoundCue(result, config.volume);
+        if (level != null && cue.soundEvent() != null) {
+            level.playLocalSound(cue.position(), cue.soundEvent(), cue.soundSource(), cue.volume(), cue.pitch(), true);
         }
     }
 

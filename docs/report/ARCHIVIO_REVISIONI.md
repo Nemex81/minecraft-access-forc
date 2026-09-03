@@ -13,6 +13,18 @@ Questo documento raccoglie la memoria storica di tutte le anomalie, correzioni e
 
 ---
 
+### 🟢 Rev MC-26.8 — Discesa Sicura su Scale a Pioli ed Elementi Arrampicabili (Climbable Bypass in FallDetector)
+- **Stato**: `[COLLAUDATA CON SUCCESSO]`
+- **Versione Chiusura**: 26.2-1.19.0-dev (Data 2026-09-03)
+- **Problema Riscontrato**: In presenza di scale a pioli a bordo piattaforma, l'auto-sneak bloccava l'accesso alla discesa considerandola un burrone/caduta.
+- **Soluzione Applicata (PRAPI)**:
+  1. Integrazione eccezione elementi arrampicabili (`BlockTags.CLIMBABLE`, `LadderBlock`, `VineBlock`, `ScaffoldingBlock`) nella scansione verticale di `FallDetector`;
+  2. Riconoscimento della discesa intenzionale con bypass sicuro (`depth = 0`) e notifica vocale `Discesa sicura`.
+- **Piano Tecnico di Riferimento**: `docs/piani/attivi/PIANO_TECNICO_REV_MC-26.8_TRAVERSAL_SAFETY_E_ARRAMPICATA.md`
+- **Esito Collaudo**: Collaudata con successo sul campo in entrambe le istanze.
+
+---
+
 ### 🟢 Rev MC-29.0 — Feedback Adattivo di Dislivello Verticale & Altezza Cubi
 - **Stato**: `[COLLAUDATA CON SUCCESSO]`
 - **Versione Chiusura**: 26.2-1.18.0 (Data 2026-09-02)

@@ -4,7 +4,7 @@
 **Autore:** Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA) & Antigravity  
 **Riferimento Standard:** ASTRALIS Framework v2.5.5  
 **Ramo di Lavoro:** `feat/cognitive-orchestrator`  
-**Stato:** `[FASE 3 — SOTTO-FASE 1A: PIANO TECNICO FORMALE — IN ATTESA DI APPROVAZIONE (STOP OBBLIGATORIO REGOLA 0)]`  
+**Stato:** `[FASE 3 — COMPLETATA E COLLAUDATA CON SUCCESSO SUL CAMPO — ARCHIVIATA]`  
 **Documenti di Riferimento:**
 - `docs/report/REPORT_PASSAGGIO_CONSEGNE_FASE3_SICUREZZA.md`
 - `docs/report/RAPPORTO_CHIUSURA_FASE2_E_INDIRIZZO_FASE3_SICUREZZA.md`
@@ -19,9 +19,10 @@ Il piano è coerente nell'impianto, ma viene convalidato solo con le seguenti co
 1. Un evento `SOUND_ONLY` conserva un testo localizzato non vuoto nel contratto dati, ma il coordinatore non lo vocalizza per effetto dell'`OutputType`. Non usare stringhe vuote come rappresentazione semantica dell'assenza di voce.
 2. Il debounce `SOUND_ONLY` nel fast-path deve aggiornare `recentEvents` dopo una qualunque emissione effettiva (audio o voce), senza cambiare l'ordine storico dell'audio né il micro-burst dei critici vocali.
 3. Le suite pure devono verificare un mapper/factory realmente invocato dai rilevatori e un dispatcher con seam controllabili; la sola sottomissione manuale di eventi al coordinatore non verifica il percorso di `FallDetector` o `ObstacleDetector`.
-4. A coordinatore attivo, non è sufficiente omettere `CrosshairFeedbackManager.onObstacleDetected(...)`: occorre aggiornare il suo debounce senza produrre voce, altrimenti il feed del mirino può parlare nello stesso ciclo. Questa è una modifica di compatibilità minima al manager, non una migrazione del mirino.
-5. Non promettere reset su morte, respawn o cambio dimensione: gli hook corrispondenti non sono parte del perimetro della Fase 3. Restano obbligatori soltanto TTL e assenza di riferimenti nulli.
-6. Il rollback non può usare `git reset --hard`. Si usa un revert mirato del solo commit di sotto-blocco, previa autorizzazione di Luca.
+4. A coordinatore attivo, non è sufficiente omettere `CrosshairFeedbackManager.onObstacleDetected(...)` né aggiornare soltanto `lastNarrationTime`: `processCrosshairTick(...)` può narrare subito una **mutazione del bersaglio** durante il movimento prima del ramo di debounce della distanza. Occorre una barriera temporanea, esplicita e stretta per il solo feedback automatico del mirino in movimento. Durante la finestra, il manager deve assorbire silenziosamente sia mutazione sia variazione di distanza, aggiornando il proprio stato per evitare una voce tardiva alla scadenza. Letture manuali, `Alt + V`, e feedback del mirino da fermi restano sempre disponibili.
+5. Il testo cognitivo dell'ostacolo deve coincidere con il **testo finale** storicamente pronunciato da `CrosshairFeedbackManager.onObstacleDetected(...)`, non con il solo testo grezzo di `ObstacleDetectionUtils.getNarrationMessage(...)`. Il messaggio storico può infatti aggiungere distanza e contesto del mirino. La composizione sarà estratta in un componente puro, alimentato da una piccola istantanea in sola lettura del contesto del mirino: nessun nuovo produttore vocale deve rimanere nel rilevatore.
+6. Non promettere reset su morte, respawn o cambio dimensione: gli hook corrispondenti non sono parte del perimetro della Fase 3. Restano obbligatori soltanto TTL e assenza di riferimenti nulli.
+7. Il rollback non può usare `git reset --hard`. Si usa un revert mirato del solo commit di sotto-blocco, previa autorizzazione di Luca.
 
 ---
 
@@ -31,14 +32,14 @@ La Fase 3 costituisce il **primo collaudo verticale e pilota su eventi reali** d
 Nelle Fasi 1 e 2 il coordinatore è stato costruito, verificato (22 test unitari a 0 ms) e integrato in Cloth Config senza produttori collegati (buffer vuoto a zero overhead).  
 La Fase 3 ha lo scopo di collegare il **Dominio Sicurezza (`SourceDomain.SAFETY`)**, procedendo con la massima cautela attraverso **due sotto-blocchi sequenziali disaccoppiati da un Gate Interno**:
 
-1. **Sotto-Blocco 3A — `FallDetector` (Soli avvisi automatici di caduta imminente)**:
-   - Migrazione degli avvisi automatici di nuova caduta e dell'edge-bump sul ciglio verso il canale `CognitiveCoordinator.submitEvent(...)`;
+1. **Sotto-Blocco 3A — `FallDetector` (Soli avvisi automatici di caduta imminente) — [STATO: COMPLETATO E CONVALIDATO]**:
+   - Migrazione degli avvisi automatici di nuova caduta e dell'edge-bump sul ciglio verso il canale `CognitiveCoordinator.submitEvent(...)` completata nel commit `b25a4eb0345492222e62c90f236ba227f6550d60`;
    - Conservazione rigorosa dell'urgenza storica: priorità `CRITICAL`, Fast-Path a 0 ms, interrupt immediato, soppressione rumori di fondo tramite Scudo Critico (1500 ms);
-   - Preservazione del debounce storico a 1500 ms sull'edge-bump;
-   - Fallback legacy deterministico a coordinate dirette quando `cognitiveCoordinatorEnabled = false`.
+   - Preservazione del debounce storico a 1500 ms sull'edge-bump verificata tramite test;
+   - Fallback legacy deterministico a coordinate dirette quando `cognitiveCoordinatorEnabled = false` verificato.
 
-2. **Sotto-Blocco 3B — `ObstacleDetector` (Soli avvisi automatici di ostacoli sul cammino)**:
-   - Avvio autorizzato **esclusivamente POST-COLLAUDO positivo della 3A**;
+2. **Sotto-Blocco 3B — `ObstacleDetector` (Soli avvisi automatici di ostacoli sul cammino) — [STATO: TARGET ATTIVO]**:
+   - Avvio autorizzato a seguito del collaudo positivo della 3A;
    - Migrazione degli avvisi automatici di ostacolo durante il movimento;
    - Disaccoppiamento controllato da `CrosshairFeedbackManager`: un solo produttore vocale a coordinatore attivo, percorso legacy integrale a coordinatore disattivo;
    - Preservazione assoluta dell'arbitro del mirino (`NarrateCrosshair` NON viene migrato in Fase 3, appartiene alla Fase 4).
@@ -65,9 +66,11 @@ La Fase 3 ha lo scopo di collegare il **Dominio Sicurezza (`SourceDomain.SAFETY`
 - `src/main/java/org/mcaccess/minecraftaccess/features/ObstacleDetector.java`:
   - Punto di emissione automatica nel metodo `tick(...)`;
   - Calcolo geometrico invariato (`ObstacleDetectionUtils.scan(...)`);
-  - Emissione condizionale: se coordinatore attivo, invio a `CognitiveCoordinator.submitEvent(...)`; se disattivo, invocazione dello storico `CrosshairFeedbackManager.onObstacleDetected(...)`.
+  - Emissione condizionale: se coordinatore attivo, costruzione di un evento tramite factory pura e invio a `CognitiveCoordinator.submitEvent(...)`; se disattivo, invocazione dello storico `CrosshairFeedbackManager.onObstacleDetected(...)`.
+  - Il messaggio dell'evento attivo conserva la composizione vocale legacy, attraverso un contesto del mirino in sola lettura e senza chiamare un metodo che narri.
 - `src/main/java/org/mcaccess/minecraftaccess/features/crosshair/CrosshairFeedbackManager.java`:
-  - Trattato come dipendenza di compatibilità: il suo percorso storico resta intatto a coordinatore spento. A coordinatore attivo, non riceve la chiamata da `ObstacleDetector`, azzerando alla radice il rischio di doppia voce.
+  - Trattato come dipendenza di compatibilità: il suo percorso storico resta intatto a coordinatore spento.
+  - A coordinatore attivo espone esclusivamente: una istantanea immutabile del contesto utile alla composizione del messaggio e un hook di soppressione del **solo** feed automatico in movimento. Non narra e non entra nell'arbitraggio cognitivo.
 
 ### 1.3 Flussi Manuali Rigorosamente Esclusi dalla Migrazione (ZERO CognitiveEvent)
 I comandi espliciti e le interazioni dirette dell'utente restano al 100% su `MainClass.narrate(..., true)` e sui cue audio diretti:
@@ -157,7 +160,7 @@ La tabella seguente specifica il comportamento deterministico per ogni combinazi
   - `distanceBucket`: calcolato in blocchi
   - `severityLevel`: `1` (gradino superabile)
   - `targetId`: ID del blocco primario se non nullo; altrimenti fallback semantico stabile basato su `result.state().name()`. Il testo localizzato non è mai usato come firma.
-- **Testo Narrato:** Storico `ObstacleDetectionUtils.getNarrationMessage(...)`
+- **Testo Narrato:** Il testo finale storico: messaggio grezzo `ObstacleDetectionUtils.getNarrationMessage(...)` composto dal mapper puro con distanza e, se previsto, contesto del mirino, secondo le stesse regole di `CrosshairFeedbackManager.onObstacleDetected(...)`.
 - **Target Position:** `result.targetFootPos()`
 - **Distanza:** distanza calcolata
 - **Direzione Spaziale:** calcolata da `relAngleForNarration` (FORWARD, RIGHT, BACK, LEFT)
@@ -174,7 +177,7 @@ La tabella seguente specifica il comportamento deterministico per ogni combinazi
   - `distanceBucket`: calcolato in blocchi
   - `severityLevel`: `2` per `LOW_CEILING`, `3` per `HEAD_OBSTACLE`, `4` per `WALL`
   - `targetId`: ID del blocco primario se non nullo; altrimenti fallback semantico stabile basato su `result.state().name()`.
-- **Testo Narrato:** Storico `ObstacleDetectionUtils.getNarrationMessage(...)`
+- **Testo Narrato:** Il testo finale storico: messaggio grezzo `ObstacleDetectionUtils.getNarrationMessage(...)` composto dal mapper puro con distanza e, se previsto, contesto del mirino, secondo le stesse regole di `CrosshairFeedbackManager.onObstacleDetected(...)`.
 - **Target Position:** `result.lookAtPos() != null ? result.lookAtPos() : result.targetFootPos()`
 - **Distanza:** distanza calcolata
 - **Direzione Spaziale:** calcolata da `relAngleForNarration`
@@ -269,18 +272,30 @@ La tabella seguente specifica il comportamento deterministico per ogni combinazi
 
 ### 3.4 `src/main/java/org/mcaccess/minecraftaccess/features/ObstacleDetector.java` (Sotto-Blocco 3B)
 - **Responsabilità:** Rilevatore automatico di gradini, muri, soffitti bassi e ostacoli alla testa.
+- **Seam di Test Package-Private:**
+  - `static java.util.function.Consumer<CognitiveEvent> cognitiveEventConsumer = CognitiveCoordinator::submitEvent;`
+  - `@FunctionalInterface interface LegacyObstacleVoiceSink { void accept(ObstacleScanResult result, String message, double relativeAngle); }`
+  - `static LegacyObstacleVoiceSink legacyVoiceConsumer = CrosshairFeedbackManager::onObstacleDetected;`
+  - `@FunctionalInterface interface LegacyObstacleAudioSink { void accept(Level level, SoundCue cue); }`
+  - `static LegacyObstacleAudioSink legacyAudioConsumer = (level, cue) -> { if (cue.soundEvent() != null && cue.position() != null) { level.playLocalSound(cue.position(), cue.soundEvent(), cue.soundSource(), cue.volume(), cue.pitch(), true); } };`
+  - **Contratto del cue:** `ObstacleSafetyEventFactory.createSoundCue(...)` restituisce per gli ostacoli un cue con posizione non nulla (`lookAtPos`, altrimenti `targetFootPos`). Il medesimo cue viene consegnato al coordinatore oppure riprodotto sullo stesso `Level` ricevuto dal tick, senza interrogare `Minecraft.getInstance()` nel fallback.
+  - `static void resetTestSeams()` per ripristinare i delegati di produzione in `@AfterEach`.
 - **Modifiche in `tick`:**
   - Nel blocco `if (shouldWarn)`:
     - Valutazione della guardia `CognitiveCoordinator.isCoordinatorEnabled()`:
       - **Se `false` (Percorso Legacy Diretto):**
-        - Esecuzione storica:
-          - `if (config.voiceWarning) CrosshairFeedbackManager.onObstacleDetected(result, msg, relAngleForNarration);`
-          - `if (config.playAudioCues) playSoundCue(level, result);`
+        - Esecuzione storica identica tramite seam legacy:
+          - `if (config.voiceWarning) legacyVoiceConsumer.accept(result, msg, relAngleForNarration);`
+          - `if (config.playAudioCues) { SoundCue cue = ObstacleSafetyEventFactory.createSoundCue(result, config.volume); legacyAudioConsumer.accept(level, cue); }`
       - **Se `true` (Percorso Cognitivo):**
-        - Risoluzione dell'`OutputType` (`VOICE_AND_SOUND`, `VOICE_ONLY`, `SOUND_ONLY`);
-        - Creazione di `SoundCue` e determinazione di `SpatialDirection`;
-        - Invio a `CognitiveCoordinator.submitEvent(event, currentTime)`;
-        - `CrosshairFeedbackManager.onObstacleDetected` **NON viene chiamato** (zero doppie voci!).
+        - Calcolo del messaggio grezzo tramite `ObstacleDetectionUtils.getNarrationMessage(...)`;
+        - Calcolo adattatore della distanza intera storica per l'ostacolo: `Math.max(1, (int) Math.round(Math.sqrt(player.distanceToSqr(Vec3.atCenterOf(result.targetFootPos())))))`;
+        - Acquisizione dello snapshot immutabile `ObstacleNarrationContext` da `CrosshairFeedbackManager.getNarrationContextSnapshot()`;
+        - Invocazione di `ObstacleNarrationComposer.composeFinalNarration(rawMsg, isFrontal, obstacleDistance, context)`: compositore puro privo di riferimenti a Minecraft;
+        - Costruzione dell'evento tramite `ObstacleSafetyEventFactory.createObstacleEvent(...)` con mappatura rigorosa di `SpatialDirection` e `OutputType`;
+        - Se e solo se l'evento ha il canale voce abilitato (`event.isVoiceEnabled()`), invocazione preventiva di `CrosshairFeedbackManager.suppressAutomaticMovementFeedback(100)`; se `SOUND_ONLY`, nessuna soppressione del mirino;
+        - Invio a `cognitiveEventConsumer.accept(event)`;
+        - `CrosshairFeedbackManager.onObstacleDetected` **NON viene chiamato**: la voce è prodotta unicamente dal coordinatore.
   - **Invarianti Intoccate:**
     - Metodo `inspectObstacle` (`Alt + V`) intatto su percorso diretto;
     - Metodi geometrici `ObstacleDetectionUtils` intatti;
@@ -288,16 +303,72 @@ La tabella seguente specifica il comportamento deterministico per ogni combinazi
 
 ### 3.5 `src/main/java/org/mcaccess/minecraftaccess/features/crosshair/CrosshairFeedbackManager.java` (Sotto-Blocco 3B)
 - **Responsabilità:** Coordinatore del mirino e orientamento visuale.
-- **Modifiche:** mantenere `onObstacleDetected(...)` intatto per il percorso legacy (`coordinatorEnabled = false`) e aggiungere un metodo ristretto, privo di narrazione, ad esempio `recordExternalObstacleNarration(long now)`. Esso aggiorna soltanto `lastNarrationTime` e `lastDistanceNarrationTime` per rispettare il debounce già usato da `processCrosshairTick(...)`.
-- **Uso:** a coordinatore attivo `ObstacleDetector` chiama questo metodo immediatamente prima di sottoporre l'evento cognitivo; non chiama `onObstacleDetected(...)`.
-- **Invariante:** il nuovo metodo non legge target, non concatena testi, non invoca `MainClass.narrate` e non migra `NarrateCrosshair`; evita solo che il suo feed parli nello stesso ciclo dell'avviso ostacolo.
-- **Test:** verificare che l'hook aggiorni esclusivamente il debounce e che il percorso attivo non emetta alcuna seconda voce dal manager.
+- **Unica Fonte di Verità per la Composizione del Testo:**
+  - Estrazione della composizione testuale in `ObstacleNarrationComposer` puro;
+  - `CrosshairFeedbackManager.onObstacleDetected(...)` (percorso legacy a coordinatore spento) viene preservato intatto nell'API e delega la costruzione della stringa allo stesso `ObstacleNarrationComposer.composeFinalNarration(...)`, garantendo identità al 100% tra legacy e cognitivo a zero duplicazione.
+- **Contesto Read-Only Immutabile:**
+  - Introduzione del record `ObstacleNarrationContext(@Nullable String targetNarration, @Nullable Integer targetDistance)`;
+  - Metodo accessor `public static ObstacleNarrationContext getNarrationContextSnapshot()`: restituisce una copia immutabile di `currentNarration` e `currentDistance`. Non legge client, non parla, non suona e non altera lo stato.
+- **Finestra di Soppressione Automatica Distinta:**
+  - Introduzione di un campo dedicato `private static long automaticMovementSuppressedUntil = 0;` (NON riutilizza né altera semanticamente `suppressMovementFeed`, che rimane circoscritto al solo debounce di distanza);
+  - Metodo `public static void suppressAutomaticMovementFeedback(long durationMillis)` con aggiornamento monotono:
+    `automaticMovementSuppressedUntil = Math.max(automaticMovementSuppressedUntil, clock.getAsLong() + durationMillis);`
+- **Metodo Package-Private per Silent Commit e Test Headless:**
+  - Estrazione della logica di assorbimento in un metodo package-private, deterministico e direttamente testabile. Il metodo aggiorna intenzionalmente lo stato del manager, quindi non viene qualificato come "puro":
+    ```java
+    static boolean absorbAutomaticMovementFeedbackIfSuppressed(
+            boolean inActiveMovement,
+            boolean isTargetMutation,
+            boolean isDistanceProgression,
+            @Nullable Object target,
+            @Nullable String targetName,
+            int roundedDistance,
+            long now
+    ) {
+        if (inActiveMovement && now < automaticMovementSuppressedUntil) {
+            if (isTargetMutation || isDistanceProgression) {
+                currentTarget = target;
+                currentNarration = targetName;
+                currentDistance = roundedDistance;
+                return true;
+            }
+        }
+        return false;
+    }
+    ```
+  - In `processCrosshairTick(...)`, la dichiarazione storica `long now = System.currentTimeMillis()` viene sostituita da `long now = clock.getAsLong()`. Subito dopo il calcolo di `isTargetMutation` e `isDistanceProgression`, e prima del return storico e del ramo di mutazione, avviene la valutazione:
+    ```java
+    if (absorbAutomaticMovementFeedbackIfSuppressed(
+            inActiveMovement,
+            isTargetMutation,
+            isDistanceProgression,
+            target,
+            targetName,
+            roundedDistance,
+            now
+    )) {
+        return;
+    }
+    ```
+- **Limiti Inviolabili e Protezione Comandi Manuali:**
+  - La guardia opera esclusivamente se `inActiveMovement == true`. Da fermi (`inActiveMovement == false`), la soppressione non agisce mai.
+  - Nessuna soppressione per `onManualCrosshairRequested` (tasto B), `onCameraRotated` o `inspectObstacle` (`Alt + V`).
+- **Seam di Test Package-Private:**
+  - `static java.util.function.LongSupplier clock = System::currentTimeMillis;`
+  - `static void resetTestSeams()` per il ripristino in `@AfterEach`:
+    - `automaticMovementSuppressedUntil = 0;`
+    - `currentTarget = null;`
+    - `currentNarration = null;`
+    - `currentDistance = null;`
+    - `lastNarrationTime = 0;`
+    - `lastDistanceNarrationTime = 0;`
+    - `clock = System::currentTimeMillis;`
 
 ---
 
 ## 🔬 4. Piano di Test Unitari Puri (Headless, Senza Minecraft)
 
-Tutti i test saranno eseguiti in ambiente headless puro tramite JUnit 5, iniettando delegati per narrazione, audio e timestamp deterministici, senza istanziare client o mondi Minecraft. A questo scopo il piano deve introdurre un mapper/factory safety package-private, realmente usato dai rilevatori, che riceve dati già calcolati e restituisce l'evento completo oppure nessun evento; il dispatcher legacy/cognitivo deve avere seam package-private ripristinati in `@AfterEach`.
+Tutti i test saranno eseguiti in ambiente headless puro tramite JUnit 5, iniettando delegati per narrazione, audio e timestamp deterministici, senza istanziare client o mondi Minecraft. A questo scopo il piano deve introdurre una `ObstacleSafetyEventFactory` package-private, realmente usata dal rilevatore, e un `ObstacleNarrationComposer` puro. Essi ricevono dati già calcolati, incluso un record immutabile del contesto del mirino, e restituiscono l'evento completo oppure nessun evento; il dispatcher legacy/cognitivo e il clock del manager devono avere seam package-private ripristinati in `@AfterEach`.
 
 ### 4.1 Test Suite `SafetyEventFactoryTest.java` e `FallDetectorCognitiveDispatchTest.java` (Nuovi file)
 1. **`testNewFallDangerEmitsCriticalFastPathWithSoundAndVoice`**:
@@ -328,12 +399,32 @@ Tutti i test saranno eseguiti in ambiente headless puro tramite JUnit 5, inietta
 2. **`testUnjumpableWallEmitsContextualEventWithBassSound`**:
    - Sottomissione ostacolo `WALL`.
    - Verifica: Priorità `CONTEXTUAL`, suono `NOTE_BLOCK_BASS`, pitch 0.6f.
-3. **`testSpatialDirectionMapping`**:
-   - Verifica che angoli relativi (0°, 90°, 180°, 270°) mappino deterministicamente su `FORWARD`, `RIGHT`, `BACK`, `LEFT`.
-4. **`testSingleNarrationProducerWhenCoordinatorActive`**:
-   - Verifica che a coordinatore attivo venga sottomesso un solo evento, `CrosshairFeedbackManager.onObstacleDetected(...)` non venga chiamato e il solo hook di debounce esterno non produca voce.
-5. **`testLegacyBypassWhenCoordinatorDisabled`**:
-   - Con coordinatore disattivato, verifica che il percorso legacy operi senza regressioni.
+3. **`testSpatialDirectionMappingAndBoundarySymmetry`**:
+   - Normalizzazione preliminare in `[0°, 360°)`.
+   - Verifica intervalli e confini esatti:
+     - `[315°, 360°)` e `[0°, 45°)` -> `FORWARD` (test su 0°, 359°, 44.999°, 315.0°);
+     - `[45°, 135°)` -> `RIGHT` (test su 45.0°, 90°, 134.999°);
+     - `[135°, 225°)` -> `BACK` (test su 135.0°, 180°, 224.999°);
+     - `[225°, 315°)` -> `LEFT` (test su 225.0°, 270°, 314.999°).
+4. **`testObstacleNarrationMatchesLegacyComposition` (`ObstacleNarrationComposerTest.java`)**:
+   - Test headless puro senza Minecraft o Player.
+   - Per ostacolo frontale (`isFrontal == true`): parità esatta per distanza 1 blocco (*"Davanti: ostacolo, a 1 blocco"*) e distanza > 1 blocchi (*"Davanti: ostacolo, a %d blocchi"*);
+   - Per ostacolo laterale (`isFrontal == false`): con contesto mirino non nullo (*"Sinistra: ostacolo. Davanti: Bersaglio, a X blocchi"*);
+   - Per ostacolo laterale con contesto mirino vuoto o nullo: fallback deterministico al solo messaggio grezzo (*"Sinistra: ostacolo"*).
+5. **`testSingleNarrationProducerWhenCoordinatorActive`**:
+   - Verifica che a coordinatore attivo venga sottomesso un solo evento, `legacyVoiceConsumer` non venga chiamato e il hook di compatibilità non produca voce.
+6. **`testAutomaticCrosshairMutationIsSilentlyAbsorbedDuringObstacleWindow`**:
+   - Dopo l'attivazione della finestra di 100 ms tramite `suppressAutomaticMovementFeedback`, una mutazione di bersaglio con `inActiveMovement = true` non produce voce; target, narrazione e distanza correnti vengono però aggiornati silenziosamente (*silent commit* tramite `absorbAutomaticMovementFeedbackIfSuppressed`). Alla scadenza non deve comparire alcun annuncio arretrato.
+7. **`testSecondSuppressionDoesNotShortenExistingDeadline`**:
+   - Attivazione prima soppressione di 100 ms a $t = 1000$ (deadline = 1100).
+   - Invocazione seconda soppressione di 50 ms a $t = 1020$: la deadline calcolata con $\max(1100, 1020 + 50 = 1070)$ rimane invariata a 1100.
+   - A $t = 1080$ la soppressione risulta ancora attiva e non viene accorciata accidentalmente.
+8. **`testManualAndStationaryCrosshairFeedbackRemainAvailableDuringObstacleWindow`**:
+   - Durante la medesima finestra, una richiesta manuale del mirino (`B`), rotazione visuale o un cambio bersaglio con `inActiveMovement = false` continuano a narrare secondo il percorso storico a 0 ms.
+9. **`testSoundOnlyObstacleDoesNotSuppressAutomaticCrosshairFeedback`**:
+   - Con `voiceWarning = false` e cue attivo, viene generato il solo cue cognitivo `SOUND_ONLY` e non viene aperta alcuna finestra di soppressione del mirino.
+10. **`testLegacyBypassWhenCoordinatorDisabledAndPlaysIdenticalSoundCue`**:
+    - Con `CognitiveCoordinator.setCoordinatorEnabled(false)`, invocazione del dispatcher: `legacyVoiceConsumer` riceve `ObstacleScanResult`, messaggio e angolo; `legacyAudioConsumer` riceve esattamente lo stesso `SoundCue` (stesso suono, pitch, volume e posizione) che la factory avrebbe assegnato all'evento cognitivo.
 
 ---
 
@@ -371,7 +462,13 @@ Il collaudo manuale avverrà tramite screen reader NVDA e cuffie stereo, procede
 3. **Scenario 3B.3 — Verifica ASSENZA DOPPIA VOCE col Mirino**:
    - *Azione:* Puntare il mirino contro la parete mentre ci si muove verso di essa.
    - *Aspettativa NVDA:* Una e una sola voce per l'ostacolo. Nessuna sovrapposizione tra la notifica dell'ostacolo e il feedback di CrosshairFeedbackManager.
-4. **Scenario 3B.4 — Disattivazione Coordinatore da Cloth Config**:
+4. **Scenario 3B.4 — Nessun annuncio arretrato del mirino**:
+   - *Azione:* Subito dopo un avviso ostacolo, attraversare o ruotare verso un nuovo bersaglio mentre si continua a camminare; attendere oltre 100 ms.
+   - *Aspettativa NVDA:* Il nuovo bersaglio non viene narrato in ritardo. Un successivo normale cambio di bersaglio oltre la finestra torna a essere leggibile.
+5. **Scenario 3B.5 — Comandi espliciti e feedback da fermi intatti**:
+   - *Azione:* Durante la finestra immediata dopo un ostacolo, usare la richiesta manuale del mirino e `Alt + V`; poi fermarsi e cambiare bersaglio.
+   - *Aspettativa NVDA:* Tutte e tre le azioni ricevono risposta immediata e storica.
+6. **Scenario 3B.6 — Disattivazione Coordinatore da Cloth Config**:
    - *Azione:* Disabilitare `cognitiveCoordinatorEnabled` nel menu e ripetere i test.
    - *Aspettativa NVDA:* Comportamento perfettamente identico alla mod legacy pre-refactor.
 
@@ -410,30 +507,48 @@ Il collaudo manuale avverrà tramite screen reader NVDA e cuffie stereo, procede
   - *Comportamento:* La geometria voxel di `FallDetector.calculateDangerousDrop` calcola drop = 0 -> nessun pericolo rilevato -> nessun evento inviato al coordinatore -> zero overhead. (ESITO: SUCCESSO)
 - **Scenario 3C:** Un evento automatico perde validità prima del flush o prima del suo riuso.
   - *Comportamento:* il TTL impedisce l'emissione tardiva; il piano non aggiunge né assume hook di reset su morte, respawn o cambio dimensione. (ESITO: SUCCESSO)
+- **Scenario 3D:** Un ostacolo vocale e una mutazione del bersaglio del mirino avvengono nello stesso tick mentre il giocatore cammina.
+  - *Comportamento:* il rilevatore apre la finestra limitata del solo feedback automatico in movimento, il manager assorbe silenziosamente la mutazione aggiornando il proprio stato, e il coordinatore emette una sola voce di sicurezza. Le richieste manuali e il feedback da fermi non sono coinvolti. (ESITO: SUCCESSO)
 
 ---
 
 ## 🚦 8. Piano Esecutivo in Fasi Atomiche & Protocollo di Rollback
 
-### Passo 1 (Sotto-Fase 1B — Implementazione 3A FallDetector)
-1. Modifica conservativa a `CognitiveEvent.java` (factory `createSafetyAlert`).
-2. Perfezionamento `handleCriticalFastPath` in `CognitiveCoordinator.java` per debounce `SOUND_ONLY`.
-3. Modifica a `FallDetector.java` (avvisi automatici migrati + fallback legacy).
-4. Creazione test unitari `FallDetectorCognitiveTest.java`.
-5. Compilazione `.\gradlew.bat --no-daemon test` e `.\gradlew.bat --no-daemon shadowJar`.
-6. Deploy nell'istanza PrismLauncher ed esecuzione collaudo manuale 3A con Luca.
+### Passo 1 — Sotto-Fase 1B: Implementazione e Verifica Headless della 3B
+1. **Compositore Puro e Snapshot Dati:**
+   - Creazione del record immutabile `ObstacleNarrationContext` e della classe pura `ObstacleNarrationComposer` (completamente disaccoppiata da Minecraft e Player);
+   - Creazione della suite `ObstacleNarrationComposerTest` (parità letterale del testo per ostacoli frontali a 1 blocco, > 1 blocchi, laterali con e senza bersaglio mirino).
+2. **Factory Pura Eventi di Sicurezza Ostacolo:**
+   - Creazione di `ObstacleSafetyEventFactory` con normalizzazione preliminare in `[0°, 360°)` e mappatura simmetrica di `SpatialDirection` (`FORWARD`, `RIGHT`, `BACK`, `LEFT`);
+   - Creazione della suite `ObstacleSafetyEventFactoryTest` (copertura bordi esatti 45°, 135°, 225°, 315°, severità, sound cue `PLING`/`BASS` e matrice `OutputType`).
+3. **Adattamento di `CrosshairFeedbackManager`:**
+   - Delega interna di `onObstacleDetected(...)` a `ObstacleNarrationComposer` (singola fonte di verità condivisa);
+   - Aggiunta dell'accessor in sola lettura `getNarrationContextSnapshot()`;
+   - Introduzione del campo dedicato `automaticMovementSuppressedUntil` e del metodo `suppressAutomaticMovementFeedback(durationMillis)` con aggiornamento monotono `Math.max(...)`;
+   - Estrazione del metodo package-private `absorbAutomaticMovementFeedbackIfSuppressed(...)` per eseguire il *silent commit* (`currentTarget`, `currentNarration`, `currentDistance`) e consentire test headless puri al 100%;
+   - Integrazione in `processCrosshairTick` all'inizio della valutazione;
+   - Creazione della suite `CrosshairMovementSuppressionTest` (verifica soppressione in movimento, silent commit, non-accorciamento deadline con `Math.max`, zero annunci arretrati e comandi manuali/da fermi attivi a 0 ms).
+4. **Migrazione `ObstacleDetector.java` e Seam di Test:**
+   - Definizione delle interfacce funzionali package-private `LegacyObstacleVoiceSink` e `LegacyObstacleAudioSink`; la seconda riceve `Level` e `SoundCue`, senza riferimenti statici a campi d'istanza né a `Minecraft.getInstance()`;
+   - Aggiunta dei seam package-private con reset completo in `@AfterEach`;
+   - Calcolo della distanza storica intera nel livello adattatore di `ObstacleDetector` (`Math.max(1, (int) Math.round(Math.sqrt(player.distanceToSqr(Vec3.atCenterOf(result.targetFootPos()))))))`;
+   - Dispatch condizionale: a coordinatore attivo, composizione pura, factory, soppressione mirino solo per eventi vocali (`event.isVoiceEnabled()`), e submit al coordinatore (nessuna chiamata a `onObstacleDetected`); a coordinatore disattivo, fallback legacy integrale con lo stesso `SoundCue` della factory;
+   - Creazione della suite `ObstacleDetectorCognitiveDispatchTest` (verifica 100% percorsi cognitivo e bypass legacy, unicità del produttore vocale, parità del SoundCue riprodotto).
+5. **Verifica Globale e Compilazione:**
+   - Esecuzione `.\gradlew.bat --no-daemon test` (attesa suite verde a zero errori headless);
+   - Compilazione con `.\gradlew.bat --no-daemon shadowJar`.
 
-### Passo 2 (Checkpoint Interno 3A -> 3B)
-- Verifica superamento 100% criteri di accettazione 3A.
-- Commit atomico della 3A su `feat/cognitive-orchestrator`.
-- Richiesta via libera esplicito a Luca per l'avvio della 3B.
+### Gate 3B-1 — Rapporto dopo Codice e Test
+- Antigravity presenta a Luca il diff, l'esito completo della suite e dell'artefatto compilato.
+- **Nessun deploy in PrismLauncher, collaudo NVDA o commit Git è autorizzato da questo gate.** Essi richiedono istruzioni esplicite successive di Luca.
 
-### Passo 3 (Implementazione 3B ObstacleDetector)
-1. Modifica a `ObstacleDetector.java` (avvisi automatici migrati + bypass `CrosshairFeedbackManager` a coordinatore attivo + fallback legacy a coordinatore spento).
-2. Creazione test unitari `ObstacleDetectorCognitiveTest.java`.
-3. Compilazione e suite di test completa.
-4. Deploy ed esecuzione collaudo manuale 3B (focus assenza doppia voce col mirino).
-5. Commit atomico della 3B.
+### Passo 2 — Deploy e Collaudo NVDA, Solo dopo Nuova Autorizzazione Esplicita
+- Deploy dell'artefatto autorizzato nell'istanza PrismLauncher indicata da Luca.
+- Esecuzione con Luca dei sei scenari NVDA della sezione 5.3: assenza doppia voce, assenza annunci arretrati, `Alt+V` e tasto `B` reattivi, parità legacy a coordinatore spento.
+- Presentazione di un rapporto di collaudo, senza creare commit.
+
+### Gate 3B-2 — Commit, Solo dopo Collaudo Positivo e Nuova Autorizzazione Esplicita
+- Soltanto dopo approvazione di Luca sul rapporto NVDA, creazione di un commit atomico limitato alla 3B su `feat/cognitive-orchestrator`.
 
 ### Protocollo di Rollback
 In caso di anomalie bloccanti durante il collaudo della 3A o della 3B:
@@ -447,6 +562,6 @@ In caso di anomalie bloccanti durante il collaudo della 3A o della 3B:
 
 In conformità rigorosa alla **Regola 0 (Default Consultivo Permanente & Dialogo a 2 Tempi)** del Genoma ASTRALIS v2.5.5:
 
-- **Nessuna riga di codice sorgente Java o file di configurazione è stata modificata o verrà modificata.**
+- **Nessuna riga di codice sorgente Java o file di configurazione è stata modificata prima dell'autorizzazione esplicita di Luca per il Passo 1 della 3B.**
 - Il presente Piano Tecnico Formale viene congelato e sottoposto alla revisione congiunta di **Luca** e di **ChatGPT**.
-- Antigravity attende l'esplicito comando di Luca (es. *"Approvo il piano della Fase 3: procedi con la Sotto-Fase 1B per la 3A FallDetector"*) prima di compiere qualsiasi azione di scrittura o compilazione.
+- Antigravity attende l'esplicito comando di Luca (es. *"Approvo il Passo 1 della Fase 3B: procedi solo con sorgenti, test e compilazione; nessun deploy o commit"*) prima di compiere qualsiasi azione di scrittura o compilazione.

@@ -23,6 +23,16 @@ Poiché il `README.md` pubblico e la documentazione del repository upstream rima
 - **Localizzazioni IT/EN Rigorosamente Alfabetiche**: 7 nuove chiavi configurative e tooltip conformi ai controlli CI.
 - **8 Nuovi Test Unitari di Fase 2**: Test mirati sulla facciata e sul binding configurativo (22 test cognitivi totali superati, intera suite del progetto verde in 21s).
 
+### 🛡️ Fase 3: Migrazione Pilota Dominio Sicurezza (3A FallDetector & 3B ObstacleDetector)
+- **Pilota 3A (`FallDetector`)**: Migrazione degli avvisi burrone e ciglio a `CognitiveEvent` con priorità `CRITICAL` / `OPERATIONAL`, preservando integra la logica di auto-sneak e il bypass per elementi arrampicabili e discesa assistita su scale a pioli (`Rev MC-26.8`).
+- **Pilota 3B (`ObstacleDetector`)**:
+  - **Factory Pura Eventi (`ObstacleSafetyEventFactory`)**: Normalizzazione angolare simmetrica in $[0^\circ, 360^\circ)$ su `SpatialDirection` (`FORWARD`, `RIGHT`, `BACK`, `LEFT`), generazione deterministica del `SoundCue` condiviso (`NOTE_BLOCK_PLING` 1.5f per `STEP_CLIMBABLE`, `NOTE_BLOCK_BASS` 0.6f per barriere) ed emissione con priorità `CONTEXTUAL` e TTL 2500 ms.
+  - **Compositore di Testo Puro (`ObstacleNarrationComposer`)**: Utility condivisa per la formattazione dei messaggi ostacoli con distanza e mirino, identica tra percorso cognitivo e percorso legacy per tutte le modalità (`FOUR_DIRECTIONS`, `EIGHT_DIRECTIONS`, `OMIT_FORWARD`, `OFF`).
+  - **Snapshot Contesto Mirino (`ObstacleNarrationContext`)**: Record immutabile per snapshot in sola lettura di target e distanza corrente.
+  - **Armonizzazione Mirino (`CrosshairFeedbackManager`)**: Finestra temporale di soppressione monotona `suppressAutomaticMovementFeedback(100ms)` con `Math.max` e assorbimento silenzioso (`absorbAutomaticMovementFeedbackIfSuppressed`), eliminando qualsiasi doppia voce o annuncio arretrato durante il movimento, senza toccare la reattività istantanea dei comandi manuali (`Alt+V`, `B`).
+  - **Doppio Percorso Deterministico**: Inoltro al `CognitiveCoordinator` se attivo, oppure bypass legacy con `legacyVoiceConsumer` e `legacyAudioConsumer` (con passaggio del `Level` locale e identico `SoundCue`).
+  - **Suite di Test & Collaudo In-Game**: 29 test specifici aggiunti (totale 185 test del progetto al 100% verdi) e validazione sul campo completata con successo (oltre 1h 12m di gioco continuo senza warning o errori).
+
 ---
 
 ## 🚀 [v26.2-1.18.0] — 2026-09-02 (Feedback Dislivello Adattivo, Verbosità Faccia, Micro-Voxel Raymarch & Armonizzazione SSOT Mirino/Ostacoli)
