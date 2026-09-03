@@ -79,6 +79,9 @@ public final class Config implements ConfigData {
     @ConfigEntry.Category("directionalPathScanner")
     @ConfigEntry.Gui.TransitiveObject
     public DirectionalPathScanner directionalPathScanner = new DirectionalPathScanner();
+    @ConfigEntry.Category("cognitiveCoordinator")
+    @ConfigEntry.Gui.TransitiveObject
+    public CognitiveSettings cognitiveCoordinator = new CognitiveSettings();
 
     private Config() {
     }
@@ -87,14 +90,41 @@ public final class Config implements ConfigData {
         ConfigExtension.apply(AutoConfigClient.getGuiRegistry(Config.class));
         AutoConfig.register(Config.class, ConfigExtension::serializer);
         instance = AutoConfig.getConfigHolder(Config.class).get();
+        applyCognitiveConfig();
     }
 
     public static void saveConfig() {
+        if (instance != null && instance.cognitiveCoordinator != null) {
+            instance.cognitiveCoordinator.deduplicationWindowMs = Math.clamp(
+                    instance.cognitiveCoordinator.deduplicationWindowMs, 500, 5000
+            );
+        }
         AutoConfig.getConfigHolder(Config.class).save();
+        applyCognitiveConfig();
+    }
+
+    public static void applyCognitiveConfig() {
+        if (instance != null) {
+            applyCognitiveSettings(instance.cognitiveCoordinator);
+        }
+    }
+
+    static void applyCognitiveSettings(CognitiveSettings cfg) {
+        if (cfg != null) {
+            int normalizedWindow = Math.clamp(cfg.deduplicationWindowMs, 500, 5000);
+            org.mcaccess.minecraftaccess.features.cognitive.CognitiveCoordinator.setCoordinatorEnabled(cfg.cognitiveCoordinatorEnabled);
+            org.mcaccess.minecraftaccess.features.cognitive.CognitiveCoordinator.setChainedNarrationEnabled(cfg.chainedNarrationEnabled);
+            org.mcaccess.minecraftaccess.features.cognitive.CognitiveCoordinator.setDeduplicationWindowMs(normalizedWindow);
+        }
     }
 
     @Override
     public void validatePostLoad() {
+        if (cognitiveCoordinator != null) {
+            cognitiveCoordinator.deduplicationWindowMs = Math.clamp(
+                    cognitiveCoordinator.deduplicationWindowMs, 500, 5000
+            );
+        }
         ConfigExtension.validate(this, new Config());
     }
 
@@ -687,6 +717,17 @@ public final class Config implements ConfigData {
             VOICE_ONLY,
             SOUND_AND_VOICE,
             SOUND_ONLY
+        }
+    }
+
+    public static final class CognitiveSettings {
+        public boolean cognitiveCoordinatorEnabled = true;
+        public boolean chainedNarrationEnabled = true;
+
+        @ConfigEntry.BoundedDiscrete(min = 500, max = 5000)
+        public int deduplicationWindowMs = 1500;
+
+        public CognitiveSettings() {
         }
     }
 
