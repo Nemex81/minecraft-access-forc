@@ -419,3 +419,39 @@ Questo registro documenta i problemi tecnici complessi risolti nel tempo, preser
 - **Soluzione Definitiva**:
   1. I componenti di produzione devono eseguire chiamate dirette senza mascherare le eccezioni, preservando la piena trasparenza degli errori.
   2. L'isolamento per i test headless deve avvenire esclusivamente tramite **seam package-private dedicati** (es. `scannerSuppressor = duration -> ...`), iniettati in `@BeforeEach` e ripristinati in `@AfterEach`.
+
+---
+
+### Record 33 — Soppressione Mirino in Movimento & Pattern "Silent Commit" (`CrosshairFeedbackManager`)
+- **Data**: 2026-09-04
+- **Moduli Coinvolti**: `CrosshairFeedbackManager.java`, `ObstacleDetector.java`, `CrosshairMovementSuppressionTest.java`
+- **Sintomi**: Durante il cammino verso un ostacolo, alla scadenza della finestra di soppressione vocale dell'ostacolo (100 ms), il mirino automatico vocalizzava in ritardo una mutazione di bersaglio o distanza superata, generando una doppia voce o un annuncio fuorviante a fermata avvenuta.
+- **Causa Radice**: La semplice soppressione temporale della chiamata a `MainClass.narrate` non aggiornava lo stato interno del mirino (`currentTarget`, `currentNarration`, `currentDistance`). Alla riattivazione del tick, il mirino rilevava la divergenza di stato accumulata durante la soppressione e la interpretava come una nuova mutazione valida da annunciare.
+- **Soluzione Definitiva**:
+  1. Introdotto il metodo `absorbAutomaticMovementFeedbackIfSuppressed(...)` in `CrosshairFeedbackManager`: se il giocatore è in movimento attivo ed è all'interno della finestra di soppressione, il mirino esegue il **Silent Commit** aggiornando atomicamente `currentTarget`, `currentNarration` e `currentDistance` prima di uscire con `return true`.
+  2. La finestra temporale `suppressAutomaticMovementFeedback(durationMillis)` è aggiornata in modo **monotono** con `Math.max(automaticMovementSuppressedUntil, clock.getAsLong() + durationMillis)` per evitare accorciamenti accidentali da chiamate concorrenti.
+  3. I comandi manuali dell'utente (`Alt+V`, tasto `B`) non passano dal blocco automatico e rispondono sempre a 0 ms.
+
+---
+
+### Record 34 — Disaccoppiamento tra Geometria Cognitiva (`SpatialDirection`) e Formulazione Linguistica (`ObstacleNarrationComposer`)
+- **Data**: 2026-09-04
+- **Moduli Coinvolti**: `ObstacleSafetyEventFactory.java`, `ObstacleNarrationComposer.java`, `ObstacleDetector.java`
+- **Sintomi**: In modalità di scansione non standard (`EIGHT_DIRECTIONS`, `OMIT_FORWARD`, `OFF`), l'evento cognitivo tentava di dedurre se l'ostacolo fosse frontale controllando `SpatialDirection == FORWARD`, alterando la stringa e divergendo dalla composizione legacy.
+- **Causa Radice**: Sovraccarico di responsabilità: `SpatialDirection` è un enum di dominio spaziale per l'arbitraggio prioritario e l'audio 3D posizionale, non un parser linguistico.
+- **Soluzione Definitiva**:
+  1. `SpatialDirection` resta un metadato cognitivo puro per il record immutabile `CognitiveEvent`.
+  2. La formattazione del testo per NVDA è interamente delegata alla utility pura `ObstacleNarrationComposer.composeFinalNarration(rawMsg, distance, crosshairContext)`, che opera direttamente sul messaggio `rawMsg` prodotto dalla modalità di scansione selezionata dall'utente.
+  3. Parità garantita al 100% per tutte le 4 modalità direzionali e piena testabilità headless deterministica senza dipendenza da client grafico.
+
+---
+
+### Record 35 — NullPointerException su `currentScreen` in `InventoryControls.moveToSlotItem` (Rev MC-26.9)
+- **Data**: 2026-09-04
+- **Moduli Coinvolti**: `InventoryControls.java`, Kuma API
+- **Sintomi**: Eccezione non gestita nei log a runtime durante la navigazione della griglia inventario: `java.lang.NullPointerException: Cannot invoke "org.mcaccess.minecraftaccess.mixin.AbstractContainerScreenAccessor.getLeftPos()" because "this.currentScreen" is null`.
+- **Causa Radice**: Race condition durante la rapida chiusura della GUI dell'inventario (o transizione verso il menu di pausa con `Esc`), dove la pressione di un tasto gestito da Kuma inoltra l'evento a `moveToSlotItem` quando `this.currentScreen` è già stato azzerato a `null`.
+- **Soluzione Definitiva**:
+  1. Inserire il guard difensivo `if (this.currentScreen == null) return;` all'inizio di `moveToSlotItem` e `focusSlotItem`.
+  2. Registrata l'anomalia autonoma nel Registro Revisioni (`Rev MC-26.9`) per correzione e collaudo in una sessione dedicata alle GUI.
+

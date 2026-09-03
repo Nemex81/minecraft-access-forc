@@ -117,3 +117,20 @@ In conformità al nostro standard architetturale:
 2. **Standard Operativo Vincolante**:
    - **Zero Opzioni Decorative**: Una nuova categoria o opzione Cloth Config può essere esposta all'utente **esclusivamente se** il motore logico sottostante è già in grado di interpretarla e produrre un effetto misurabile a runtime.
    - **Rinvio Trasparente**: Le opzioni pianificate per fasi future (es. `ambientSpeechDensity` o `criticalModAudioDucking`) rimangono confinate nel design document e vengono inserite in `Config.java` e nelle traduzioni I18N solo contestualmente all'attivazione del loro codice reale.
+
+---
+
+## 9. Arbitraggio di Narrazione Concorrente & Pattern "Silent Commit" in Movimento
+
+1. **Il Problema dell'Annuncio Posticipato Fuori Tempo (Lag Mutation Alert)**:
+   - Quando due sottosistemi di feedback automatico operano in contemporanea (es. `ObstacleDetector` ad alta priorità e `CrosshairFeedbackManager` a monitoraggio continuo del blocco puntato), la soppressione temporanea del canale secondario tramite semplice `return` o mute causa una deriva di stato.
+   - Durante il cammino verso un ostacolo, il mirino continua a campionare blocchi diversi; se la voce viene soppressa per $100\text{ ms}$ senza aggiornare i campi di memoria, al primo tick utile dopo la riattivazione il modulo rileva la discrepanza tra lo stato precedente (vecchio blocco) e l'attuale, interpretandola erroneamente come una nuova mutazione fresca e annunciando un blocco già superato a fermata avvenuta.
+2. **Il Pattern "Silent Commit" (`absorbAutomaticMovementFeedbackIfSuppressed`)**:
+   - Se il canale secondario si trova all'interno della finestra di soppressione e il giocatore è in movimento attivo, il modulo **non deve solo tacere**: deve aggiornare internamente lo stato corrente (`currentTarget`, `currentNarration`, `currentDistance`) prima di scartare l'annuncio vocale.
+   - In questo modo, alla scadenza della soppressione non esiste alcun differenziale di stato obsoleto: la voce resta pulita e interviene solo se si verifica una reale nuova variazione successiva.
+3. **Finestra di Soppressione Monotona**:
+   - L'estensione della soppressione temporale deve essere monotona crescente:
+     $$\text{suppressedUntil} = \max(\text{suppressedUntil}, \text{clock} + \text{duration})$$
+     impedendo che chiamate concorrenti ravvicinate possano inavvertitamente abbreviare o resettare una finestra di silenzio ancora attiva.
+4. **Bypass Assoluto per Comandi Espliciti**:
+   - I comandi espliciti da tastiera dell'utente (`Alt+V` per l'orientamento, tasto `B` per il mirino manuale) ignorano totalmente le finestre di soppressione automatica, garantendo latenza $0\text{ ms}$ e risposta reattiva immediata.
