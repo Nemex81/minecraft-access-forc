@@ -1,110 +1,64 @@
-# Rapporto di Stato Attuale del Sistema & Handoff Anomalie GUI
+# Rapporto di Stato del Sistema & Handoff Anomalie GUI
 
 - **Progetto**: Minecraft Access (Fork 26.2 / 1.21.x)
-- **Data e Ora**: 2026-09-04 — 02:10
-- **Autori**: Luca (Sviluppatore & Collaudatore), Antigravity (Senior AI Pair Programmer) & ChatGPT (Senior Architectural Reviewer)
+- **Data e Ora**: 2026-09-04 — 02:20
+- **Autori**: Luca (Sviluppatore & Collaudatore), Antigravity & ChatGPT (Pair AI Review)
 - **Branch Git Attivo**: `feat/cognitive-orchestrator`
 - **Versione Locale AVF**: `v26.2-1.19.0-dev`
-- **Livello Framework ASTRALIS**: `v2.6.1` (100% Sincronizzato)
-- **Stato Documentale Cartella `docs/report/`**:
-  - `docs/report/archivio/`: 15 report storici archiviati con successo.
-  - `docs/report/REGISTRO_REVISIONI.md`: Registro snello attivo con 3 voci aperte (`Rev MC-26.7`, `Rev MC-26.9`, `Rev MC-26.10`).
-  - `docs/report/ARCHIVIO_REVISIONI.md`: 8 macro-revisioni collaudate e chiuse.
+- **Framework ASTRALIS**: `v2.6.1` (100% Sincronizzato)
+- **Stato Cartella `docs/report/`**:
+  - `archivio/`: 15 report storici archiviati con successo.
+  - `REGISTRO_REVISIONI.md`: Registro attivo snello con 3 voci aperte (`Rev MC-26.7`, `Rev MC-26.9`, `Rev MC-26.10`).
+  - `ARCHIVIO_REVISIONI.md`: Memoria storica con le 8 macro-revisioni collaudate e chiuse.
 
 ---
 
-## 🧭 1. STATO ATTUALE DELL'IMPLEMENTAZIONE DEL SISTEMA COGNITIVO CENTRALE
+## 🧭 1. STATO DEL SISTEMA COGNITIVO CENTRALE
 
-L'epica del **Cognitive Orchestrator** ha completato con successo le prime tre macro-fasi, con stabilità dimostrata sia nella suite di test headless deterministici (185/185 test verdi) sia nel collaudo in-game prolungato (> 1h 12m multiplayer e singleplayer):
-
-1. **Fase 1 (Architettura di Base & Cognitive Coordinator — Completata)**:
-   - Modello ad eventi immutabili `CognitiveEvent`, 4 priorità gerarchiche scalari (`CRITICAL(4)`, `OPERATIONAL(3)`, `CONTEXTUAL(2)`, `PASSIVE(1)`), canali `OutputType` e bus atomico `CognitiveCoordinator`.
-   - Disaccoppiamento test seams per esecuzione headless a 0 ms senza client grafico.
-2. **Fase 2 (Migrazione Dominio 1 — Mirino & Orientamento — Completata)**:
-   - Migrazione di `CrosshairFeedbackManager` con eliminazione dei troncamenti vocali tramite il pattern *Token Composition & Ordering Enum*.
-3. **Fase 3 (Migrazione Dominio 2 — Sicurezza Voxel & Movimento — Completata)**:
-   - Sotto-Fase 3A: `FallDetector` con `SafetyMovementGuard`, modello anticaduta a 2 zone, discesa assistita su scale e botole, e neutralizzazione salto su ciglio (`cancelJumpWhenAutoSneakActive`).
-   - Sotto-Fase 3B: `ObstacleDetector` con `ObstacleNarrationComposer`, parità legacy per le 4 modalità direzionali e pattern *"Silent Commit"* per prevenire i lag mutation alerts post-soppressione.
-4. **Fase 4 Macro-Piano (Migrazione Dominio 3 — Prossimi Canali Percettivi — In Attesa)**:
-   - Sospesa temporaneamente in modo concordato per consentire la bonifica prioritaria e chirurgica delle due anomalie GUI aperte.
+L'epica del **Cognitive Orchestrator** ha completato con successo le prime tre macro-fasi, con stabilità certificata su 185 test headless e oltre 1h di collaudo in-game continuo:
+- **Fase 1 (Architettura Base & Cognitive Coordinator)**: Eventi immutabili, 4 priorità gerarchiche (`CRITICAL`, `OPERATIONAL`, `CONTEXTUAL`, `PASSIVE`) e bus atomico con seam disaccoppiate.
+- **Fase 2 (Dominio 1 — Mirino & Orientamento)**: Migrazione `CrosshairFeedbackManager` e pattern *Token Composition*.
+- **Fase 3 (Dominio 2 — Sicurezza Voxel & Movimento)**:
+  - 3A `FallDetector` con `SafetyMovementGuard`, 2 zone anticaduta e blocco salto su ciglio;
+  - 3B `ObstacleDetector` con `ObstacleNarrationComposer`, parità legacy e pattern *"Silent Commit"*.
+- **Fase 4 Macro-Piano (Prossimi Canali Percettivi)**: Sospesa temporaneamente per consentire la bonifica prioritaria e chirurgica delle due anomalie GUI aperte.
 
 ---
 
-## 🔍 2. SPECIFICA TECNICA DEFINITIVA DELLE ANOMALIE GUI APERTE
+## 🔍 2. DIAGNOSI E STRATEGIA CONSOLIDATA DELLE ANOMALIE GUI
 
 ---
 
-### A. Rev MC-26.9 — NullPointer Guard & Anti-Ghost Narration su `currentScreen` in `InventoryControls`
-- **Sintomo**: Durante la navigazione dell'inventario o la chiusura rapida con `Esc`, compare nei log un'eccezione non bloccante:
-  `NullPointerException: Cannot invoke "AbstractContainerScreenAccessor.getLeftPos()" because "this.currentScreen" is null`.
-- **Causa Radice**: In `InventoryControls.java` (righe 1022 e 1039), i metodi `moveToSlotItem(SlotItem slotItem)` e `moveToSlotItem(SlotItem slotItem, int delay)` calcolano la posizione reale del cursore del mouse tramite `currentScreen.getLeftPos()` e `currentScreen.getTopPos()`. Se l'evento differito o la pressione di un tasto arriva quando la schermata si sta chiudendo (`currentScreen` già impostato a `null`), l'invocazione fallisce.
-- **Strategia Risolutiva Rafforzata (Dual Guard)**:
-  1. *Guard all'ingresso dei gestori di navigazione*: All'inizio di `changeGroup`, `selectGroup`, `focusSlotItem` e negli handler Kuma di `InventoryControls`:
-     ```java
-     if (currentScreen == null) return; // o return false per handler Kuma
-     ```
-     impedendo l'elaborazione di comandi zombie e azzerando narrazioni vocali di dati ormai obsoleti.
-  2. *Guard difensivo nei metodi del mouse*:
-     ```java
-     if (slotItem == null || currentScreen == null) return;
-     ```
-     in `moveToSlotItem(SlotItem)` e `moveToSlotItem(SlotItem, int)`.
+### A. Rev MC-26.9 — NullPointer & Anti-Ghost Narration su `currentScreen`
+- **Problema Logico**: Se una schermata viene chiusa (es. con `Esc`) mentre un evento di navigazione slot o un delay del mouse è in transito, `currentScreen` diventa `null`, generando eccezioni nei metodi del mouse e possibili narrazioni vocali di elementi ormai distrutti.
+- **Strategia Logica Consolidata (Dual Guard)**:
+  1. *Guard a Monte*: Gli handler Kuma e i metodi di navigazione della griglia (`changeGroup`, `selectGroup`, `focusSlotItem`, `focusSlotItemAt`) verificano preventivamente `currentScreen != null`; se lo schermo è chiuso, scartano l'evento senza mutare lo slot né avviare narrazioni obsolete.
+  2. *Guard a Valle*: I metodi `moveToSlotItem` mantengono il controllo difensivo su `currentScreen == null` per azzerare calcoli mouse su accessor inesistente.
 
 ---
 
-### B. Rev MC-26.10 — Soppressione Accovacciamento Non Intenzionale (`Shift Sneak Hijack`) in GUI
-- **Sintomo Segnalato da Luca**: Quando ci si trova all'interno di una schermata GUI (inventario, tavolo da lavoro, fornace, cassa, alambicco), premendo il tasto `Shift` per eseguire una combinazione di navigazione (es. `Shift+C`, `Shift+K`, `Shift+V`) o per il trasferimento rapido, si attiva contemporaneamente l'accovacciamento nel mondo di gioco (il personaggio si china ed emette il segnale sonoro `SHOVEL_FLATTEN` pitch 0.5f, e al rilascio di Shift si rialza con pitch 0.9f). Prima di Fase 3A questo non accadeva.
-- **Causa Radice Accertata**:
-  1. Ad ogni tick del client di gioco, `FallDetector.tick` verifica se è presente uno schermo aperto (`client.gui.screen() != null`);
-  2. Rilevando lo schermo, invoca `resetSafetyState()`, che chiama `movementGuard.clearSystemOverride()`;
-  3. `SafetyMovementGuard.clearSystemOverride()` invoca internamente `reconcileCrouchState()`, il quale legge lo stato grezzo dei tasti da GLFW tramite `RawCrouchIntentProvider.readIntent()`;
-  4. Poiché Luca tiene premuto `Shift` per azionare la scorciatoia dell'inventario, GLFW riporta `GLFW_KEY_LEFT_SHIFT = true`;
-  5. `SafetyMovementGuard` valuta `systemOverrideActive || intent.pressed()` ($0 \lor 1 = 1$) e invoca forzatamente `MinecraftSneakOverridePort.applyEffectiveCrouch(true)`;
-  6. L'adapter impone `client.player.setShiftKeyDown(true)`, modificando la postura fisica dell'entità nel mondo;
-  7. Il detector `PlayerStatus` rileva la transizione di `player.isCrouching()` ed emette i suoni di accovacciamento/alzata nelle orecchie del giocatore mentre naviga nei menu.
-- **Strategia Risolutiva Sistemica (Separazione Rigorosa di Responsabilità — Review ChatGPT)**:
-  1. *`RawCrouchIntentProvider` (Invariato — Pure Hardware Truth)*:
-     - Rimane un probe hardware puro verso GLFW. Non deve essere inquinato da logiche di interfaccia, preservando il Single Responsibility Principle (SRP).
-  2. *`SafetyMovementGuard` (Nuovo Metodo di Dominio `suspendForGui()`)*:
-     - Introduce il metodo esplicito:
-       ```java
-       public void suspendForGui() {
-           currentAllowedDescentId = null;
-           systemOverrideActive = false;
-           if (Boolean.TRUE.equals(lastAppliedCrouch)) {
-               sneakPort.applyEffectiveCrouch(false);
-               lastAppliedCrouch = false;
-           }
-       }
-       ```
-     - Questo metodo revoca i token di sistema e rilascia l'accovacciamento sintetico se attivo, ma **NON invoca `reconcileCrouchState()` e NON tocca la postura del giocatore**.
-  3. *`FallDetector.tick` (Routing Esplicito GUI)*:
-     - Se `client.gui.screen() != null`, invoca `getMovementGuard().suspendForGui()`, azzera gli allarmi e termina il tick senza invocare `reconcileCrouchState()`.
-  4. *Ripresa Naturale Post-GUI*:
-     - Alla chiusura della GUI (`client.gui.screen() == null`), il tick successivo riprende il normale ciclo: se il giocatore tiene premuto `Shift` nel mondo, `reconcileCrouchState()` rileva l'intento manuale e accovaccia regolarmente il personaggio.
+### B. Rev MC-26.10 — Soppressione Accovacciamento Non Intenzionale (`Shift Hijack`) in GUI
+- **Problema Logico**: Dentro le schermate GUI, `FallDetector` invocava il reset ad ogni tick; `SafetyMovementGuard` rileggeva il tasto Shift fisico da GLFW e lo imponeva all'entità giocatore, facendo accovacciare il personaggio nel mondo quando l'utente premeva `Shift` per scorciatoie GUI (`Shift+C`, `Shift+K`, `Shift+V`) o quick-move.
+- **Strategia Logica Consolidata (Separazione Rigorosa di Responsabilità)**:
+  1. *`RawCrouchIntentProvider` (Invariato)*: Rimane un probe hardware puro verso GLFW (Single Responsibility Principle). Non deve contenere logiche di interfaccia.
+  2. *`SafetyMovementGuard.suspendForGui()`*: Nuovo metodo esplicito che revoca i token di sicurezza e rilascia l'accovacciamento sintetico **solo se immediatamente prima era attivo il token di sistema (`systemOverrideActive`)**. Non tocca la postura se era manuale e non legge GLFW durante la GUI.
+  3. *`FallDetector`*: Su `client.gui.screen() != null`, delega a `suspendForGui()` e termina il tick senza riconciliazioni.
+  4. *Ripresa Naturale*: Alla chiusura della GUI, il tick successivo riprende il normale ciclo leggendo Shift solo se ancora tenuto premuto nel mondo.
 
 ---
 
-## 🧪 3. MATRICE DEI TEST DI VERIFICA (AUTOMATED & MANUAL)
+## 🧪 3. MATRICE DEI TEST LOGICI DI CERTIFICAZIONE
 
-La nuova sessione implementerà e certificherà 5 test dedicati:
-
-1. **Chiusura GUI Concorrente (`InventoryControlsTest`)**:
-   - Chiusura schermo tra evento e callback differita $\rightarrow$ zero eccezioni NPE, zero scritture mouse a coordinate invalide, zero narrazioni fantasma.
-2. **Shift in GUI (`SafetyMovementGuardTest`)**:
-   - `intentProbe` con Shift fisico premuto durante `suspendForGui()` $\rightarrow$ zero invocazioni a `sneakPort.applyEffectiveCrouch(true)`.
-3. **Apertura GUI su Ciglio (`SafetyMovementGuardTest`)**:
-   - Transizione in GUI mentre `systemOverrideActive == true` $\rightarrow$ rilascio pulito del solo token di sistema (`applyEffectiveCrouch(false)`).
-4. **Uscita da GUI con Shift Premuto (`SafetyMovementGuardTest`)**:
-   - Transizione da `suspendForGui()` a `reconcileCrouchState()` mantenendo Shift premuto $\rightarrow$ ripristino istantaneo dell'accovacciamento manuale nel mondo.
-5. **Non-Regressione Voxel Totale**:
-   - Suite completa dei 185 test headless (`.\gradlew.bat --no-daemon test`) per garantire che discesa assistita su scale e botole restino perfette.
+La correzione sarà validata tramite 5 test mirati in `SafetyMovementGuardTest` e `InventoryControlsTest`:
+1. **GUI con Shift manuale attivo**: nessuna scrittura a port (la postura manuale non viene toccata).
+2. **GUI con token anticaduta attivo**: esattamente una scrittura `false` (rilascio pulito del solo token di sistema).
+3. **Shift premuto dentro la GUI**: nessuna scrittura `true` al port.
+4. **Uscita da GUI con Shift premuto**: esattamente un `true` al primo tick nel mondo (ripresa naturale).
+5. **Chiusura GUI concorrente**: zero eccezioni, zero coordinate mouse invalide, zero narrazioni fantasma.
+6. **Non-regressione Voxel**: suite completa dei 185 test headless verdi.
 
 ---
 
-## 🚀 4. ISTRUZIONI DI AVVIO PER LA NUOVA CHAT
+## 🚀 4. PROSSIMO PASSO OPERATIVO
 
-All'apertura della nuova conversazione con Antigravity, l'assistente leggerà questo rapporto e sarà immediatamente pronto a:
-1. Redigere il piano tecnico formale (Protocollo 1A) per `Rev MC-26.9` e `Rev MC-26.10`;
-2. Applicare le modifiche su `InventoryControls.java`, `SafetyMovementGuard.java` e `FallDetector.java`;
-3. Compilare, eseguire i test automatici e distribuire l'artefatto nelle istanze di collaudo.
+Questo rapporto costituisce la base logica per redigere il **Piano Tecnico Correttivo Formale (Sotto-Fase 1A)** in `docs/piani/attivi/` ed eseguire l'implementazione chirurgica (Sotto-Fase 1B) nella nuova chat.
