@@ -196,12 +196,12 @@ Sui sistemi Windows dove i repository risiedono all'interno di cartelle sincroni
 
 ## 11. Gestione a Buffer delle Revisioni Intermedie (Buffer Pre-Release)
 
-Nelle roadmap strutturate a fasi sequenziali (es. Fasi 1..6 per epiche architetturali):
+Nelle roadmap strutturate a fasi sequenziali (per epiche architetturali e grandi refactor):
 1. **Rischio di Frammentazione Inter-Fase**:
-   - Se durante il completamento o il collaudo di una fase intermedia emergono revisioni di supporto, richieste di interruttori diagnostici o micro-affinamenti non bloccanti, forzarne l'implementazione immediata come "casello obbligatorio" prima della fase successiva spezza il ritmo operativo e ritarda la migrazione dei moduli core.
+   - Se durante il completamento o il collaudo di una fase intermedia emergono revisioni di supporto, richieste di interruttori diagnostici o micro-affinamenti non bloccanti, forzarne l'implementazione immediata come "casello obbligatorio" prima del modulo successivo spezza il ritmo operativo e ritarda la migrazione delle feature core.
 2. **Standard di Resequencing a Buffer**:
-   - Tutte le voci aperte nel Registro Revisioni che non costituiscono bug bloccanti per la fase immediatamente successiva vengono accodate e differite formalmente a valle delle feature strutturali (es. post-Fase 5), aggregandole in un **buffer di rifinitura preparatorio pre-collaudo globale (pre-Fase 6)**.
-   - Questo garantisce continuità concettuale tra le fasi di migrazione e concentra le rifiniture e gli strumenti diagnostici in una sessione organica e mirata prima della chiusura definitiva dell'epica.
+   - Tutte le voci aperte nel Registro Revisioni che non costituiscono bug bloccanti per i moduli immediatamente successivi vengono accodate e differite formalmente **a valle del completamento delle feature strutturali core**, aggregandosi in un **buffer di rifinitura preparatorio posizionato tra la conclusione dell'implementazione e l'avvio del collaudo globale finale**.
+   - Questo garantisce continuità concettuale tra le fasi di sviluppo dei moduli principali e concentra le rifiniture ergonomiche e gli strumenti diagnostici in una sessione organica e mirata prima della chiusura definitiva dell'epica e del merge.
 
 ---
 

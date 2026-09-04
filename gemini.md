@@ -1,4 +1,4 @@
-# Minecraft Access — Hub di Contesto Master (GEMINI.md — ASTRALIS v2.6.2)
+# Minecraft Access — Hub di Contesto Master (GEMINI.md — ASTRALIS v2.6.3)
 # Autore: Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA)
 # Target AI: Antigravity (Senior AI Pair Programmer & Software Engineer)
 # Eredita da:
