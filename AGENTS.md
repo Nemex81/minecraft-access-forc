@@ -20,7 +20,16 @@ Prima di proporre modifiche o analizzare il codice, consulta sempre i seguenti f
 
 ---
 
-## 🛡️ 2. VINCOLI TECNICI INVIOLABILI
+## ⚡ 2. REGOLA DI CARICAMENTO PROGRESSIVO (ON-DEMAND)
+
+Per garantire la massima velocità e preservare la finestra di contesto di Codex:
+- **Richieste brevi, chiarimenti o domande veloci**: usa unicamente questo file `AGENTS.md` senza caricare la documentazione del progetto.
+- **Pianificazione, implementazione, diagnosi o test**: consulta prima `GEMINI.md` e carica **esclusivamente le 1–3 schede in `knowledge/` pertinenti** al modulo da toccare (usando l'Indice Ragionato in `GEMINI.md`).
+- **Divieto di sovraccarico**: non caricare mai in massa l'intera cartella `knowledge/`, i piani archiviati in `docs/piani/completati/` o le revisioni chiuse in `docs/report/ARCHIVIO_REVISIONI.md`.
+
+---
+
+## 🛡️ 3. VINCOLI TECNICI INVIOLABILI
 
 1. **Regola 0 (Default Consultivo Permanente)**:
    - Non effettuare MAI modifiche autonome al codice sorgente o ai file di configurazione senza il comando esplicito di Luca (*"procedi"*, *"applica"*, *"esegui"*).
@@ -36,4 +45,4 @@ Prima di proporre modifiche o analizzare il codice, consulta sempre i seguenti f
    - Target: Minecraft 26.2 (1.21.x), Fabric + NeoForge (Architectury Loom), SpongePowered Mixin, Java 25.
    - Build comando: `.\gradlew.bat --no-daemon shadowJar`
    - Test comando: `.\gradlew.bat --no-daemon test`
-   - Non avviare mai demoni Gradle persistenti (usare sempre `--no-daemon` per evitare file lock su cloud/OneDrive).
+   - Non avviare mai demoni Gradle persistenti (usare sempre `--no-daemon` per evitare file lock su cloud/OneDrive).
