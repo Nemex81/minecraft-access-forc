@@ -33,6 +33,42 @@ public final class DirectInteractionShield {
     }
 
     /**
+     * Calculates duration based on word count: min(2500ms, words * 280ms + 600ms).
+     */
+    public static long calculateSpeechDurationMillis(String text) {
+        if (text == null || text.isBlank()) {
+            return 600L;
+        }
+        String[] words = text.trim().split("\\s+");
+        long calculated = words.length * 280L + 600L;
+        return Math.min(2500L, calculated);
+    }
+
+    /**
+     * Protect an explicit voice response by calculating speech duration and activating shield.
+     */
+    public static void protectVoiceResponse(String text) {
+        long duration = calculateSpeechDurationMillis(text);
+        activate(duration);
+    }
+
+    /**
+     * Protect an explicit voice response with a deterministic clock (for testing).
+     */
+    public static void protectVoiceResponse(String text, long now) {
+        long duration = calculateSpeechDurationMillis(text);
+        long target = now + duration;
+        shieldUntil.updateAndGet(current -> Math.max(current, target));
+    }
+
+    /**
+     * Check if the direct interaction shield is currently active at a specific timestamp.
+     */
+    public static boolean isActive(long now) {
+        return now < shieldUntil.get();
+    }
+
+    /**
      * Reset the shield immediately.
      */
     public static void reset() {

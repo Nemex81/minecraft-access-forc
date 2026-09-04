@@ -188,7 +188,7 @@ public class ObjectTracker implements BalmClientModule {
 
         if (!isObjectValid(currentObject)) {
             clearCurrentObject();
-            MainClass.narrate(I18n.get("minecraft_access.point_of_interest.not_selected"), true);
+            narrateDirect(I18n.get("minecraft_access.point_of_interest.not_selected"), true);
             return;
         }
 
@@ -218,7 +218,7 @@ public class ObjectTracker implements BalmClientModule {
                 narration.append(' ')
                         .append(NarrationUtils.narrateRelativePositionOfPlayerAnd(entity.blockPosition()));
             }
-            MainClass.narrate(narration.toString(), interrupt);
+            narrateDirect(narration.toString(), interrupt);
             assert Minecraft.getInstance().level != null;
             Minecraft.getInstance().level.playLocalSound(
                     entity.getX(),
@@ -251,7 +251,7 @@ public class ObjectTracker implements BalmClientModule {
                 narration.append(' ')
                         .append(NarrationUtils.narrateRelativePositionOfPlayerAnd(blockPos));
             }
-            MainClass.narrate(narration.toString(), interrupt);
+            narrateDirect(narration.toString(), interrupt);
             assert Minecraft.getInstance().level != null;
             Minecraft.getInstance().level.playLocalSound(
                     blockPos,
@@ -295,7 +295,7 @@ public class ObjectTracker implements BalmClientModule {
                 }
             }
 
-            MainClass.narrate(narration.toString(), interrupt);
+            narrateDirect(narration.toString(), interrupt);
 
             Vec3 targetVec = WaypointUtils.getTargetVectorForPlayer(waypoint, player, Config.getInstance().poi.waypoints.crossDimensionConversion);
             if (targetVec != null && Minecraft.getInstance().level != null) {
@@ -328,7 +328,7 @@ public class ObjectTracker implements BalmClientModule {
 
     public void lookAtCurrentObject() {
         if (!isObjectValid(currentObject)) {
-            MainClass.narrate(I18n.get("minecraft_access.point_of_interest.not_selected"), true);
+            narrateDirect(I18n.get("minecraft_access.point_of_interest.not_selected"), true);
             return;
         }
 
@@ -342,22 +342,22 @@ public class ObjectTracker implements BalmClientModule {
                 player.lookAt(EntityAnchorArgument.Anchor.EYES, entity.getEyePosition());
                 String name = MainClass.registry(WorldNarrator.class).get(Config.getInstance().narrateCrosshair.narrator).narrate(entity);
                 String facing = org.mcaccess.minecraftaccess.utils.position.PlayerPositionUtils.getFullFacingInWords(true);
-                MainClass.narrate(I18n.get("minecraft_access.point_of_interest.look_at", name, facing), true);
+                narrateDirect(I18n.get("minecraft_access.point_of_interest.look_at", name, facing), true);
             }
             case BlockPos blockPos -> {
                 player.lookAt(EntityAnchorArgument.Anchor.EYES, Vec3.atCenterOf(blockPos));
                 String name = MainClass.registry(WorldNarrator.class).get(Config.getInstance().narrateCrosshair.narrator).narrate(blockPos);
                 String facing = org.mcaccess.minecraftaccess.utils.position.PlayerPositionUtils.getFullFacingInWords(true);
-                MainClass.narrate(I18n.get("minecraft_access.point_of_interest.look_at", name, facing), true);
+                narrateDirect(I18n.get("minecraft_access.point_of_interest.look_at", name, facing), true);
             }
             case Waypoint waypoint -> {
                 Vec3 targetVec = WaypointUtils.getTargetVectorForPlayer(waypoint, player, Config.getInstance().poi.waypoints.crossDimensionConversion);
                 if (targetVec != null) {
                     player.lookAt(EntityAnchorArgument.Anchor.EYES, targetVec);
                     String facing = org.mcaccess.minecraftaccess.utils.position.PlayerPositionUtils.getFullFacingInWords(true);
-                    MainClass.narrate(I18n.get("minecraft_access.point_of_interest.look_at", waypoint.name(), facing), true);
+                    narrateDirect(I18n.get("minecraft_access.point_of_interest.look_at", waypoint.name(), facing), true);
                 } else {
-                    MainClass.narrate(I18n.get("minecraft_access.point_of_interest.other_dimension", WaypointUtils.getDimensionName(waypoint.dimension())), true);
+                    narrateDirect(I18n.get("minecraft_access.point_of_interest.other_dimension", WaypointUtils.getDimensionName(waypoint.dimension())), true);
                 }
             }
             default -> {}
@@ -366,7 +366,7 @@ public class ObjectTracker implements BalmClientModule {
 
     public void narrateCoordinatesOfCurrentObject() {
         if (!isObjectValid(currentObject)) {
-            MainClass.narrate(I18n.get("minecraft_access.point_of_interest.not_selected"), true);
+            narrateDirect(I18n.get("minecraft_access.point_of_interest.not_selected"), true);
             return;
         }
 
@@ -374,17 +374,17 @@ public class ObjectTracker implements BalmClientModule {
             case Entity entity -> {
                 String name = MainClass.registry(WorldNarrator.class).get(Config.getInstance().narrateCrosshair.narrator).narrate(entity);
                 String coords = NarrationUtils.narrateCoordinatesOf(entity.blockPosition());
-                MainClass.narrate(I18n.get("minecraft_access.point_of_interest.coordinates", name, coords), true);
+                narrateDirect(I18n.get("minecraft_access.point_of_interest.coordinates", name, coords), true);
             }
             case BlockPos blockPos -> {
                 String name = MainClass.registry(WorldNarrator.class).get(Config.getInstance().narrateCrosshair.narrator).narrate(blockPos);
                 String coords = NarrationUtils.narrateCoordinatesOf(blockPos);
-                MainClass.narrate(I18n.get("minecraft_access.point_of_interest.coordinates", name, coords), true);
+                narrateDirect(I18n.get("minecraft_access.point_of_interest.coordinates", name, coords), true);
             }
             case Waypoint waypoint -> {
                 String coords = NarrationUtils.narrateCoordinatesOf(waypoint.pos());
                 String dim = WaypointUtils.getDimensionName(waypoint.dimension());
-                MainClass.narrate(I18n.get("minecraft_access.point_of_interest.coordinates_with_dimension", waypoint.name(), dim, coords), true);
+                narrateDirect(I18n.get("minecraft_access.point_of_interest.coordinates_with_dimension", waypoint.name(), dim, coords), true);
             }
             default -> {}
         }
@@ -400,11 +400,11 @@ public class ObjectTracker implements BalmClientModule {
         if (newIndex < 0) {
             newIndex = 0;
             atBoundary = true;
-            MainClass.narrate(I18n.get(START_OF_LIST), true);
+            narrateDirect(I18n.get(START_OF_LIST), true);
         } else if (newIndex >= groups.size()) {
             newIndex = groups.size() - 1;
             atBoundary = true;
-            MainClass.narrate(I18n.get(END_OF_LIST), true);
+            narrateDirect(I18n.get(END_OF_LIST), true);
         }
 
         POIGroup<?> nextGroup = groups.get(newIndex);
@@ -419,7 +419,7 @@ public class ObjectTracker implements BalmClientModule {
 
         if (nextGroup.isEmpty()
                 || nextGroup.sortByDistance().stream().noneMatch(this::isObjectValid)) {
-            MainClass.narrate(I18n.get(step > 0 ? END_OF_LIST : START_OF_LIST), true);
+            narrateDirect(I18n.get(step > 0 ? END_OF_LIST : START_OF_LIST), true);
             return;
         }
 
@@ -431,12 +431,12 @@ public class ObjectTracker implements BalmClientModule {
 
         if (validObjects.isEmpty()) {
             clearCurrentObject();
-            MainClass.narrate(I18n.get("minecraft_access.point_of_interest.not_selected"), true);
+            narrateDirect(I18n.get("minecraft_access.point_of_interest.not_selected"), true);
             return;
         }
 
         currentObject = validObjects.getFirst();
-        MainClass.narrate(currentGroup.getTranslatedName(), !atBoundary);
+        narrateDirect(currentGroup.getTranslatedName(), !atBoundary);
         narrateCurrentObject(false);
     }
 
@@ -463,15 +463,15 @@ public class ObjectTracker implements BalmClientModule {
         int currentObjectIndex = objects.indexOf(currentObject);
 
         if (currentObjectIndex == -1) {
-            MainClass.narrate(I18n.get(START_OF_LIST), true);
+            narrateDirect(I18n.get(START_OF_LIST), true);
             currentObject = objects.getFirst();
         } else {
             int newIndex = currentObjectIndex + step;
             if (newIndex < 0) {
-                MainClass.narrate(I18n.get(START_OF_LIST), true);
+                narrateDirect(I18n.get(START_OF_LIST), true);
                 currentObject = objects.getFirst();
             } else if (newIndex >= objects.size()) {
-                MainClass.narrate(I18n.get(END_OF_LIST), true);
+                narrateDirect(I18n.get(END_OF_LIST), true);
                 currentObject = objects.getLast();
             } else {
                 currentObject = objects.get(newIndex);
@@ -481,7 +481,7 @@ public class ObjectTracker implements BalmClientModule {
         while (!isObjectValid(currentObject)) {
             int nextIndex = objects.indexOf(currentObject) + step;
             if (nextIndex < 0 || nextIndex >= objects.size()) {
-                MainClass.narrate(I18n.get(step > 0 ? END_OF_LIST : START_OF_LIST), true);
+                narrateDirect(I18n.get(step > 0 ? END_OF_LIST : START_OF_LIST), true);
                 clearCurrentObject();
                 return;
             }
@@ -494,7 +494,7 @@ public class ObjectTracker implements BalmClientModule {
     private boolean checkAndNarrateIfAllGroupsEmpty() {
         if (groups.isEmpty()) {
             clearCurrentObject();
-            MainClass.narrate(I18n.get("minecraft_access.point_of_interest.not_found"), true);
+            narrateDirect(I18n.get("minecraft_access.point_of_interest.not_found"), true);
             return true;
         } else {
             return false;
@@ -516,7 +516,7 @@ public class ObjectTracker implements BalmClientModule {
                 .toList();
 
         if (entities.isEmpty() && blocks.isEmpty()) {
-            MainClass.narrate(I18n.get("minecraft_access.point_of_interest.not_found"), true);
+            narrateDirect(I18n.get("minecraft_access.point_of_interest.not_found"), true);
             return;
         }
 
@@ -531,7 +531,7 @@ public class ObjectTracker implements BalmClientModule {
             currentObject = entities.getFirst();
         }
 
-        MainClass.narrate(I18n.get("minecraft_access.point_of_interest.targeting_nearest"), true);
+        narrateDirect(I18n.get("minecraft_access.point_of_interest.targeting_nearest"), true);
         narrateCurrentObject(false);
     }
 
@@ -545,12 +545,12 @@ public class ObjectTracker implements BalmClientModule {
                 .toList();
 
         if (blocks.isEmpty()) {
-            MainClass.narrate(I18n.get("minecraft_access.point_of_interest.not_found.block"), true);
+            narrateDirect(I18n.get("minecraft_access.point_of_interest.not_found.block"), true);
             return;
         }
 
         currentObject = blocks.getFirst();
-        MainClass.narrate(I18n.get("minecraft_access.point_of_interest.targeting_nearest.block"), true);
+        narrateDirect(I18n.get("minecraft_access.point_of_interest.targeting_nearest.block"), true);
         narrateCurrentObject(false);
     }
 
@@ -564,17 +564,23 @@ public class ObjectTracker implements BalmClientModule {
                 .toList();
 
         if (entities.isEmpty()) {
-            MainClass.narrate(I18n.get("minecraft_access.point_of_interest.not_found.entity"), true);
+            narrateDirect(I18n.get("minecraft_access.point_of_interest.not_found.entity"), true);
             return;
         }
 
         currentObject = entities.getFirst();
-        MainClass.narrate(I18n.get("minecraft_access.point_of_interest.targeting_nearest.entity"), true);
+        narrateDirect(I18n.get("minecraft_access.point_of_interest.targeting_nearest.entity"), true);
         narrateCurrentObject(false);
     }
 
     public void clearCurrentObject() {
         currentObject = null;
         updateGroups();
+    }
+
+    private static void narrateDirect(String text, boolean interrupt) {
+        if (text == null || text.isBlank()) return;
+        org.mcaccess.minecraftaccess.features.cognitive.DirectInteractionShield.protectVoiceResponse(text);
+        MainClass.narrate(text, interrupt);
     }
 }

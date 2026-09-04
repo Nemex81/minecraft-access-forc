@@ -383,6 +383,7 @@ public final class CrosshairFeedbackManager {
         if (!Strings.isEmpty(message)) {
             lastNarrationTime = System.currentTimeMillis();
             lastDistanceNarrationTime = lastNarrationTime;
+            org.mcaccess.minecraftaccess.features.cognitive.DirectInteractionShield.protectVoiceResponse(message);
             narrationConsumer.accept(message, true);
         }
     }
@@ -447,6 +448,7 @@ public final class CrosshairFeedbackManager {
         if (!Strings.isEmpty(message)) {
             lastNarrationTime = System.currentTimeMillis();
             lastDistanceNarrationTime = lastNarrationTime;
+            org.mcaccess.minecraftaccess.features.cognitive.DirectInteractionShield.protectVoiceResponse(message);
             narrationConsumer.accept(message, true);
         }
     }
@@ -509,6 +511,7 @@ public final class CrosshairFeedbackManager {
         if (!msg.isEmpty()) {
             lastNarrationTime = System.currentTimeMillis();
             lastDistanceNarrationTime = lastNarrationTime;
+            org.mcaccess.minecraftaccess.features.cognitive.DirectInteractionShield.protectVoiceResponse(msg);
             narrationConsumer.accept(msg, true);
         }
     }
