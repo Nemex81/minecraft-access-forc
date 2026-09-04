@@ -36,7 +36,38 @@ public final class CrosshairFeedbackManager {
     private static long lastDistanceNarrationTime = 0;
     private static final long DEBOUNCE_GRACE_PERIOD_MS = 80;
 
+    private static java.util.function.BiConsumer<String, Boolean> narrationConsumer = MainClass::narrate;
+    private static java.util.function.Consumer<org.mcaccess.minecraftaccess.features.cognitive.CognitiveEvent> cognitiveEventConsumer = org.mcaccess.minecraftaccess.features.cognitive.CognitiveCoordinator::submitEvent;
+
     private CrosshairFeedbackManager() {
+    }
+
+    private static void emitAutomaticFeedback(
+            String semanticKey,
+            @Nullable String canonicalId,
+            @Nullable HitResult rayCast,
+            double distance,
+            int distanceBucket,
+            String message,
+            long now
+    ) {
+        if (org.mcaccess.minecraftaccess.features.cognitive.CognitiveCoordinator.isExplorationRoutingActive()) {
+            net.minecraft.core.BlockPos targetPos = CrosshairExplorationEventFactory.extractTargetPos(rayCast);
+            org.mcaccess.minecraftaccess.features.cognitive.CognitiveEvent event = CrosshairExplorationEventFactory.createEvent(
+                    semanticKey,
+                    canonicalId,
+                    targetPos,
+                    distance,
+                    distanceBucket,
+                    message,
+                    now
+            );
+            if (event != null) {
+                cognitiveEventConsumer.accept(event);
+            }
+        } else {
+            narrationConsumer.accept(message, true);
+        }
     }
 
     public static void onCrosshairMiss() {
@@ -89,7 +120,7 @@ public final class CrosshairFeedbackManager {
         if (!Strings.isEmpty(message)) {
             lastNarrationTime = System.currentTimeMillis();
             lastDistanceNarrationTime = lastNarrationTime;
-            MainClass.narrate(message, true);
+            narrationConsumer.accept(message, true);
         }
     }
 
@@ -99,6 +130,19 @@ public final class CrosshairFeedbackManager {
             @Nullable String targetName,
             double distance,
             boolean inActiveMovement
+    ) {
+        Minecraft client = Minecraft.getInstance();
+        String canonicalId = CrosshairExplorationEventFactory.extractCanonicalId(rayCast, client != null ? client.level : null);
+        processCrosshairTick(rayCast, target, targetName, distance, inActiveMovement, canonicalId);
+    }
+
+    public static void processCrosshairTick(
+            @NotNull HitResult rayCast,
+            @Nullable Object target,
+            @Nullable String targetName,
+            double distance,
+            boolean inActiveMovement,
+            @Nullable String canonicalId
     ) {
         Config.NarrateCrosshair config = Config.getInstance().narrateCrosshair;
         if (!config.enabled) return;
@@ -201,13 +245,21 @@ public final class CrosshairFeedbackManager {
             }
 
             if (!Strings.isEmpty(message)) {
-                // ATOMIC STATE COMMITMENT: Only commit when actually spoken!
+                // ATOMIC STATE COMMITMENT
                 currentTarget = target;
                 currentNarration = targetName;
                 currentDistance = roundedDistance;
                 lastNarrationTime = now;
                 lastDistanceNarrationTime = now;
-                MainClass.narrate(message, true);
+                emitAutomaticFeedback(
+                        CrosshairExplorationEventFactory.SEMANTIC_KEY_TARGET,
+                        canonicalId,
+                        rayCast,
+                        distance,
+                        roundedDistance,
+                        message,
+                        now
+                );
             }
             return;
         }
@@ -265,7 +317,15 @@ public final class CrosshairFeedbackManager {
                 currentDistance = roundedDistance;
                 lastDistanceNarrationTime = now;
                 lastNarrationTime = now;
-                MainClass.narrate(message, true);
+                emitAutomaticFeedback(
+                        CrosshairExplorationEventFactory.SEMANTIC_KEY_DISTANCE,
+                        canonicalId,
+                        rayCast,
+                        distance,
+                        roundedDistance,
+                        message,
+                        now
+                );
             }
         }
     }
@@ -323,7 +383,7 @@ public final class CrosshairFeedbackManager {
         if (!Strings.isEmpty(message)) {
             lastNarrationTime = System.currentTimeMillis();
             lastDistanceNarrationTime = lastNarrationTime;
-            MainClass.narrate(message, true);
+            narrationConsumer.accept(message, true);
         }
     }
 
@@ -387,7 +447,7 @@ public final class CrosshairFeedbackManager {
         if (!Strings.isEmpty(message)) {
             lastNarrationTime = System.currentTimeMillis();
             lastDistanceNarrationTime = lastNarrationTime;
-            MainClass.narrate(message, true);
+            narrationConsumer.accept(message, true);
         }
     }
 
@@ -449,7 +509,7 @@ public final class CrosshairFeedbackManager {
         if (!msg.isEmpty()) {
             lastNarrationTime = System.currentTimeMillis();
             lastDistanceNarrationTime = lastNarrationTime;
-            MainClass.narrate(msg, true);
+            narrationConsumer.accept(msg, true);
         }
     }
 
@@ -727,6 +787,16 @@ public final class CrosshairFeedbackManager {
         lastNarrationTime = 0;
         lastDistanceNarrationTime = 0;
         clock = System::currentTimeMillis;
+        narrationConsumer = MainClass::narrate;
+        cognitiveEventConsumer = org.mcaccess.minecraftaccess.features.cognitive.CognitiveCoordinator::submitEvent;
+    }
+
+    public static void setNarrationConsumer(java.util.function.BiConsumer<String, Boolean> consumer) {
+        narrationConsumer = consumer;
+    }
+
+    public static void setCognitiveEventConsumer(java.util.function.Consumer<org.mcaccess.minecraftaccess.features.cognitive.CognitiveEvent> consumer) {
+        cognitiveEventConsumer = consumer;
     }
 
     public static void setClock(java.util.function.LongSupplier customClock) {
