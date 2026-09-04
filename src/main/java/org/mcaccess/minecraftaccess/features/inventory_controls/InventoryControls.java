@@ -103,7 +103,7 @@ import org.mcaccess.minecraftaccess.utils.system.MouseUtils;
 @Slf4j
 public class InventoryControls implements BalmClientModule {
     private Config.InventoryControls config;
-    private final Interval interval = Interval.defaultDelay();
+    private final Interval interval = Interval.ms(150);
 
     private AbstractContainerScreenAccessor previousScreen = null;
     private AbstractContainerScreenAccessor currentScreen = null;
@@ -144,6 +144,7 @@ public class InventoryControls implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_C, KeyModifiers.of(KeyModifier.SHIFT)))
                 .overrideCategory(KeyMappingCategories.INVENTORY_CONTROLS)
                 .handleScreenInput(_ -> {
+                    if (!isActiveContainerScreen()) return false;
                     log.debug("Group key pressed");
                     changeGroup(false);
                     return true;
@@ -154,6 +155,7 @@ public class InventoryControls implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_C))
                 .overrideCategory(KeyMappingCategories.INVENTORY_CONTROLS)
                 .handleScreenInput(_ -> {
+                    if (!isActiveContainerScreen()) return false;
                     log.debug("Group key pressed");
                     changeGroup(true);
                     return true;
@@ -164,6 +166,7 @@ public class InventoryControls implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_V, KeyModifiers.of(KeyModifier.SHIFT)))
                 .overrideCategory(KeyMappingCategories.INVENTORY_CONTROLS)
                 .handleScreenInput(_ -> {
+                    if (!isActiveContainerScreen()) return false;
                     log.debug("Switch Tab key pressed");
                     if (currentScreen instanceof AbstractRecipeBookScreen<?>) {
                         changeRecipeTab(false);
@@ -180,6 +183,7 @@ public class InventoryControls implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_V))
                 .overrideCategory(KeyMappingCategories.INVENTORY_CONTROLS)
                 .handleScreenInput(_ -> {
+                    if (!isActiveContainerScreen()) return false;
                     log.debug("Switch Tab key pressed");
                     if (currentScreen instanceof AbstractRecipeBookScreen<?>) {
                         changeRecipeTab(true);
@@ -196,6 +200,7 @@ public class InventoryControls implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_J))
                 .overrideCategory(KeyMappingCategories.INVENTORY_CONTROLS)
                 .handleScreenInput(_ -> {
+                    if (!isActiveContainerScreen()) return false;
                     if (isSearchBoxFocused()) return false;
                     log.debug("Left key pressed");
                     focusSlotItemAt(FocusDirection.LEFT);
@@ -207,6 +212,7 @@ public class InventoryControls implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_LEFT))
                 .overrideCategory(KeyMappingCategories.INVENTORY_CONTROLS)
                 .handleScreenInput(_ -> {
+                    if (!isActiveContainerScreen()) return false;
                     if (isSearchBoxFocused()) return false;
                     log.debug("Left arrow key pressed");
                     focusSlotItemAt(FocusDirection.LEFT);
@@ -218,6 +224,7 @@ public class InventoryControls implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_L))
                 .overrideCategory(KeyMappingCategories.INVENTORY_CONTROLS)
                 .handleScreenInput(_ -> {
+                    if (!isActiveContainerScreen()) return false;
                     if (isSearchBoxFocused()) return false;
                     log.debug("Right key pressed");
                     focusSlotItemAt(FocusDirection.RIGHT);
@@ -229,6 +236,7 @@ public class InventoryControls implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_RIGHT))
                 .overrideCategory(KeyMappingCategories.INVENTORY_CONTROLS)
                 .handleScreenInput(_ -> {
+                    if (!isActiveContainerScreen()) return false;
                     if (isSearchBoxFocused()) return false;
                     log.debug("Right arrow key pressed");
                     focusSlotItemAt(FocusDirection.RIGHT);
@@ -240,6 +248,7 @@ public class InventoryControls implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_I))
                 .overrideCategory(KeyMappingCategories.INVENTORY_CONTROLS)
                 .handleScreenInput(_ -> {
+                    if (!isActiveContainerScreen()) return false;
                     if (isSearchBoxFocused()) return false;
                     log.debug("Up key pressed");
                     focusSlotItemAt(FocusDirection.UP);
@@ -251,6 +260,7 @@ public class InventoryControls implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_UP))
                 .overrideCategory(KeyMappingCategories.INVENTORY_CONTROLS)
                 .handleScreenInput(_ -> {
+                    if (!isActiveContainerScreen()) return false;
                     if (isSearchBoxFocused()) return false;
                     log.debug("Up arrow key pressed");
                     focusSlotItemAt(FocusDirection.UP);
@@ -262,6 +272,7 @@ public class InventoryControls implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_I, KeyModifiers.of(KeyModifier.SHIFT)))
                 .overrideCategory(KeyMappingCategories.INVENTORY_CONTROLS)
                 .handleScreenInput(_ -> {
+                    if (!isActiveContainerScreen()) return false;
                     if (isSearchBoxFocused()) return false;
                     if (currentGroup != null && currentGroup.isScrollable) {
                         log.debug("Previous Recipe Book page key pressed");
@@ -280,6 +291,7 @@ public class InventoryControls implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_K))
                 .overrideCategory(KeyMappingCategories.INVENTORY_CONTROLS)
                 .handleScreenInput(_ -> {
+                    if (!isActiveContainerScreen()) return false;
                     if (isSearchBoxFocused()) return false;
                     log.debug("Down key pressed");
                     focusSlotItemAt(FocusDirection.DOWN);
@@ -291,6 +303,7 @@ public class InventoryControls implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_DOWN))
                 .overrideCategory(KeyMappingCategories.INVENTORY_CONTROLS)
                 .handleScreenInput(_ -> {
+                    if (!isActiveContainerScreen()) return false;
                     if (isSearchBoxFocused()) return false;
                     log.debug("Down arrow key pressed");
                     focusSlotItemAt(FocusDirection.DOWN);
@@ -302,6 +315,7 @@ public class InventoryControls implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_K, KeyModifiers.of(KeyModifier.SHIFT)))
                 .overrideCategory(KeyMappingCategories.INVENTORY_CONTROLS)
                 .handleScreenInput(_ -> {
+                    if (!isActiveContainerScreen()) return false;
                     if (isSearchBoxFocused()) return false;
                     if (currentGroup != null && currentGroup.isScrollable) {
                         log.debug("Next Recipe Book page key pressed");
@@ -320,6 +334,7 @@ public class InventoryControls implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_T))
                 .overrideCategory(KeyMappingCategories.INVENTORY_CONTROLS)
                 .handleScreenInput(_ -> {
+                    if (!isActiveContainerScreen()) return false;
                     if (CreativeModeInventoryScreenAccessor.getSelectedTab().getType() == CreativeModeTab.Type.SEARCH
                             && currentScreen instanceof CreativeModeInventoryScreen creativeInventoryScreen) {
                         setSearchBoxFocus(((CreativeModeInventoryScreenAccessor) creativeInventoryScreen).getSearchBox(), true);
@@ -341,6 +356,7 @@ public class InventoryControls implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_R))
                 .overrideCategory(KeyMappingCategories.INVENTORY_CONTROLS)
                 .handleScreenInput(_ -> {
+                    if (!isActiveContainerScreen()) return false;
                     if (currentRecipeBookWidget == null) return false;
                     if (!currentRecipeBookWidget.isVisible()) return false;
 
@@ -398,6 +414,7 @@ public class InventoryControls implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_U))
                 .overrideCategory(KeyMappingCategories.INVENTORY_CONTROLS)
                 .handleScreenInput(_ -> {
+                    if (!isActiveContainerScreen()) return false;
                     if (currentScreen.getMenu() instanceof AbstractFurnaceMenu furnace) {
                         MainClass.narrate(I18n.get("minecraft_access.inventory_controls.fuel_status",
                                 Math.round(furnace.getLitProgress() * 100),
@@ -419,6 +436,7 @@ public class InventoryControls implements BalmClientModule {
                 .overrideCategory(KeyMappingCategories.INVENTORY_CONTROLS)
                 .ignoreScreenFocus()
                 .handleScreenInput(_ -> {
+                    if (!isActiveContainerScreen()) return false;
                     log.debug("Recipe info key pressed");
                     return narrateRecipeInfo();
                 })
@@ -426,30 +444,19 @@ public class InventoryControls implements BalmClientModule {
     }
 
     private void tick(Minecraft client) {
-        if (!interval.isReady()) return;
-
         if (client.player == null) return;
-        if (client.gui.screen() == null) {
-            previousScreen = null;
-            currentScreen = null;
-            currentGroupIndex = 0;
-            currentGroup = null;
-            currentRecipeBookWidget = null;
-            previousQueuedCrafts = 0;
-            previousCarriedCount = 0;
-            previousStonecutterOptionsCount = 0;
-            previousLoomPatternsCount = 0;
-            wasFurnaceSmelting = false;
-            wasBrewing = false;
-            previousResultStack = ItemStack.EMPTY;
-            return;
-        }
-        if (!(client.gui.screen() instanceof AbstractContainerScreen)) return;
-        if (!config.enabled) {
+
+        if (client.gui.screen() == null || !(client.gui.screen() instanceof AbstractContainerScreen)) {
+            clearNavigationState();
             return;
         }
 
         loadConfig();
+        if (config != null && !config.enabled) {
+            return;
+        }
+
+        if (!interval.isReady()) return;
         currentScreen = (AbstractContainerScreenAccessor) client.gui.screen();
         currentRecipeBookWidget = getRecipeBookWidget(client.gui.screen());
         currentSlotsGroupList = GroupGenerator.generateGroupsFromSlots(currentScreen);
@@ -481,7 +488,7 @@ public class InventoryControls implements BalmClientModule {
             }
 
             //<editor-fold desc="Always open recipe book on screen open">
-            if (config.autoOpenRecipeBook && currentRecipeBookWidget != null) {
+            if (config != null && config.autoOpenRecipeBook && currentRecipeBookWidget != null) {
                 if (!currentRecipeBookWidget.isVisible()) currentRecipeBookWidget.toggleVisibility();
                 setSearchBoxFocus(((RecipeBookComponentAccessor) currentRecipeBookWidget).getSearchBox(), false);
             }
@@ -589,7 +596,7 @@ public class InventoryControls implements BalmClientModule {
             previousResultStack = ItemStack.EMPTY;
         }
 
-        if (!customNarrationHandled && config.narrateFocusedSlotChanges) {
+        if (!customNarrationHandled && (config == null || config.narrateFocusedSlotChanges)) {
             String slotNarrationText = getCurrentSlotNarrationText();
             if (!previousSlotText.equals(slotNarrationText)) {
                 previousSlotText = slotNarrationText;
@@ -637,8 +644,10 @@ public class InventoryControls implements BalmClientModule {
      * Load configs from config.json.
      */
     private void loadConfig() {
-        config = Config.getInstance().inventoryControls;
-        interval.setDelay(config.delayMilliseconds, Interval.Unit.MILLISECOND);
+        if (Config.getInstance() != null && Config.getInstance().inventoryControls != null) {
+            config = Config.getInstance().inventoryControls;
+            interval.setDelay(config.delayMilliseconds, Interval.Unit.MILLISECOND);
+        }
     }
 
     /**
@@ -714,8 +723,60 @@ public class InventoryControls implements BalmClientModule {
         return false;
     }
 
+    /**
+     * Checks if the currently active client screen is a valid container screen
+     * and matches the tracked screen instance.
+     *
+     * @return true if the active screen is a valid matching container screen.
+     */
+    boolean isActiveContainerScreen() {
+        Minecraft client = Minecraft.getInstance();
+        if (client == null || client.gui == null) return false;
+        return isActiveContainerScreen(client.gui.screen());
+    }
+
+    boolean isActiveContainerScreen(Screen activeScreen) {
+        return currentScreen != null
+                && activeScreen instanceof AbstractContainerScreen
+                && (Object) activeScreen == currentScreen;
+    }
+
+    void clearNavigationState() {
+        previousScreen = null;
+        currentScreen = null;
+        currentSlotsGroupList = null;
+        currentGroup = null;
+        currentGroupIndex = 0;
+        currentSlotItem = null;
+        currentRecipeBookWidget = null;
+        previousSlotText = "";
+        previousQueuedCrafts = 0;
+        previousCarriedCount = 0;
+        previousStonecutterOptionsCount = 0;
+        previousLoomPatternsCount = 0;
+        wasFurnaceSmelting = false;
+        wasBrewing = false;
+        previousResultStack = ItemStack.EMPTY;
+    }
+
+    void setCurrentScreenForTesting(AbstractContainerScreenAccessor screen) {
+        this.currentScreen = screen;
+    }
+
+    AbstractContainerScreenAccessor getCurrentScreenForTesting() {
+        return this.currentScreen;
+    }
+
+    void setCurrentSlotItemForTesting(SlotItem slotItem) {
+        this.currentSlotItem = slotItem;
+    }
+
+    SlotItem getCurrentSlotItemForTesting() {
+        return this.currentSlotItem;
+    }
+
     private void clickPreviousRecipeBookPage() {
-        if (currentRecipeBookWidget == null || !currentRecipeBookWidget.isVisible()) return;
+        if (!isActiveContainerScreen() || currentRecipeBookWidget == null || !currentRecipeBookWidget.isVisible()) return;
         RecipeBookComponentAccessor compAccessor = (RecipeBookComponentAccessor) currentRecipeBookWidget;
         RecipeBookPageAccessor pageAccessor = (RecipeBookPageAccessor) compAccessor.getRecipeBookPage();
         int currentPage = pageAccessor.getCurrentPage();
@@ -813,7 +874,7 @@ public class InventoryControls implements BalmClientModule {
     }
 
     private void clickNextRecipeBookPage() {
-        if (currentRecipeBookWidget == null || !currentRecipeBookWidget.isVisible()) return;
+        if (!isActiveContainerScreen() || currentRecipeBookWidget == null || !currentRecipeBookWidget.isVisible()) return;
         RecipeBookComponentAccessor compAccessor = (RecipeBookComponentAccessor) currentRecipeBookWidget;
         RecipeBookPageAccessor pageAccessor = (RecipeBookPageAccessor) compAccessor.getRecipeBookPage();
         int currentPage = pageAccessor.getCurrentPage();
@@ -916,6 +977,7 @@ public class InventoryControls implements BalmClientModule {
      * @param focusDirection The direction of the slot item to focus.
      */
     private void focusSlotItemAt(FocusDirection focusDirection) {
+        if (!isActiveContainerScreen()) return;
         if (currentGroup == null) {
             changeGroup(true);
             return;
@@ -998,6 +1060,7 @@ public class InventoryControls implements BalmClientModule {
      * @param interrupt Whether to stop the narrator from narrating the previous message or not.
      */
     private void focusSlotItem(@NotNull SlotItem slotItem, boolean interrupt) {
+        if (!isActiveContainerScreen()) return;
         currentSlotItem = slotItem;
         moveToSlotItem(currentSlotItem);
 
@@ -1014,7 +1077,7 @@ public class InventoryControls implements BalmClientModule {
      * @param slotItem The object of the slot item to move the mouse cursor over to.
      */
     private void moveToSlotItem(SlotItem slotItem) {
-        if (slotItem == null) return;
+        if (slotItem == null || !isActiveContainerScreen()) return;
 
         int x = slotItem.x;
         int y = slotItem.y;
@@ -1031,7 +1094,7 @@ public class InventoryControls implements BalmClientModule {
      */
     @SuppressWarnings("SameParameterValue")
     private void moveToSlotItem(SlotItem slotItem, int delay) {
-        if (slotItem == null) return;
+        if (slotItem == null || !isActiveContainerScreen()) return;
 
         int x = slotItem.x;
         int y = slotItem.y;
@@ -1082,6 +1145,7 @@ public class InventoryControls implements BalmClientModule {
      * @param goForward Whether to switch to next group or previous group.
      */
     private void changeGroup(boolean goForward) {
+        if (!isActiveContainerScreen()) return;
         if (currentSlotsGroupList == null || currentSlotsGroupList.isEmpty()) {
             return;
         }
@@ -1099,6 +1163,7 @@ public class InventoryControls implements BalmClientModule {
      * @param interrupt Whether to stop the narrator from narrating the previous message or not.
      */
     private void refreshGroupListAndSelectFirstGroup(boolean interrupt) {
+        if (!isActiveContainerScreen()) return;
         currentSlotsGroupList = GroupGenerator.generateGroupsFromSlots(currentScreen);
         if (currentSlotsGroupList == null || currentSlotsGroupList.isEmpty()) return;
         currentGroupIndex = 0;
@@ -1106,6 +1171,7 @@ public class InventoryControls implements BalmClientModule {
     }
 
     private void selectGroupByKey(String groupKey, boolean interrupt) {
+        if (!isActiveContainerScreen()) return;
         currentSlotsGroupList = GroupGenerator.generateGroupsFromSlots(currentScreen);
         if (currentSlotsGroupList == null || currentSlotsGroupList.isEmpty()) return;
         for (int i = 0; i < currentSlotsGroupList.size(); i++) {
@@ -1120,6 +1186,7 @@ public class InventoryControls implements BalmClientModule {
     }
 
     private void selectGroup(boolean interrupt) {
+        if (!isActiveContainerScreen()) return;
         if (currentSlotsGroupList == null || currentSlotsGroupList.isEmpty()) {
             return;
         }
@@ -1140,6 +1207,7 @@ public class InventoryControls implements BalmClientModule {
      * @param goForward Whether to switch to next tab or previous tab.
      */
     private void changeCreativeInventoryTab(boolean goForward) {
+        if (!isActiveContainerScreen()) return;
         if (!(currentScreen instanceof CreativeModeInventoryScreen creativeInventoryScreen)) return;
 
         int tab = CreativeModeTabs.tabs().indexOf(CreativeModeInventoryScreenAccessor.getSelectedTab());
@@ -1161,7 +1229,7 @@ public class InventoryControls implements BalmClientModule {
      * @param goForward Whether to switch to next tab or previous tab.
      */
     private void changeRecipeTab(boolean goForward) {
-        if (currentRecipeBookWidget == null || !currentRecipeBookWidget.isVisible()) return;
+        if (!isActiveContainerScreen() || currentRecipeBookWidget == null || !currentRecipeBookWidget.isVisible()) return;
 
         RecipeBookComponentAccessor recipeBookComponentAccessor = (RecipeBookComponentAccessor) currentRecipeBookWidget;
         var tabButtons = recipeBookComponentAccessor.getTabButtons();
@@ -1301,7 +1369,7 @@ public class InventoryControls implements BalmClientModule {
     }
 
     private boolean narrateRecipeInfo() {
-        if (currentRecipeBookWidget == null || !currentRecipeBookWidget.isVisible()) {
+        if (!isActiveContainerScreen() || currentRecipeBookWidget == null || !currentRecipeBookWidget.isVisible()) {
             return false;
         }
         if (currentGroup == null || !"recipes".equals(currentGroup.getGroupKey())) {

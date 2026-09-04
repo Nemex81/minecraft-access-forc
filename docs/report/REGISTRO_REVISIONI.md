@@ -27,41 +27,42 @@ Questo documento costituisce il **Registro Attivo Snello** del progetto Minecraf
 
 ---
 
-### 🔵 Rev MC-26.9 — NullPointer Guard su currentScreen in InventoryControls.moveToSlotItem
-- **Stato**: `[APERTA]`
+### 🔵 Rev MC-26.9 — NullPointer Guard su currentScreen e Anti-Ghost in InventoryControls
+- **Stato**: `[IN TELEMETRIA / PRONTO PER COLLAUDO IN-GAME]`
 - **Data Rilevamento**: 2026-09-04 ore 00:59:03
-- **Ambito**: Accessibilità GUI & Navigazione Griglia Inventario (Autonoma, indipendente dal Cognitive Coordinator)
-- **Problema Riscontrato (Esperienza Luca)**: Durante la transizione o chiusura rapida dell'inventario verso il menu di gioco, la pressione di un tasto di navigazione slot genera un'eccezione non gestita. Il gioco non è andato in crash e non sono stati creati crash report, ma il difetto va corretto con un guard difensivo.
+- **Ambito**: Accessibilità GUI & Navigazione Griglia Inventario
+- **Problema Riscontrato (Esperienza Luca)**: Durante la transizione o chiusura rapida dell'inventario verso il menu di gioco, la pressione di un tasto di navigazione slot poteva generare NPE su `currentScreen`, muovere il mouse senza contesto o produrre narrazioni residue dello slot.
 - **Evidenza Telemetrica / Log**:
   ```text
   Caused by: java.lang.NullPointerException: Cannot invoke "org.mcaccess.minecraftaccess.mixin.AbstractContainerScreenAccessor.getLeftPos()" because "this.currentScreen" is null
       at knot//org.mcaccess.minecraftaccess.features.inventory_controls.InventoryControls.moveToSlotItem(InventoryControls.java:1022)
-      at knot//org.mcaccess.minecraftaccess.features.inventory_controls.InventoryControls.focusSlotItem(InventoryControls.java:1002)
-      at knot//org.mcaccess.minecraftaccess.features.inventory_controls.InventoryControls.selectGroup(InventoryControls.java:1134)
   ```
-- **Causa Radice**: In `InventoryControls.moveToSlotItem` manca il controllo preventivo `if (this.currentScreen == null) return;` prima di accedere ai metodi dell'accessor durante eventi di input concorrenti alla chiusura dello schermo.
-- **Soluzione di Affinamento (PRAPI)**: Inserimento del null check difensivo `if (this.currentScreen == null) return;` in `moveToSlotItem` e `focusSlotItem`.
-- **Piano Tecnico di Riferimento**: In fase di pianificazione (sessione futura dedicata a GUI/Inventari).
-- **Esito Collaudo**: Aperta per lavorazione successiva.
+- **Soluzione Implementata (PRAPI)**:
+  1. Predicato centrale `isActiveContainerScreen()` con verifica rigorosa dell'identità d'istanza (`activeScreen instanceof AbstractContainerScreen && activeScreen == currentScreen`);
+  2. Sincronizzazione ciclo lifecycle in `tick()` prima del debounce dell'intervallo con `clearNavigationState()`;
+  3. Guard a monte su tutti i 18 handler Kuma e su tutti i metodi di navigazione/focus (`changeGroup`, `selectGroup`, `focusSlotItemAt`, `focusSlotItem`, `changeRecipeTab`, `changeCreativeInventoryTab`, `narrateRecipeInfo`);
+  4. Guard a valle in entrambi gli overload di `moveToSlotItem` (`if (slotItem == null || !isActiveContainerScreen()) return;`);
+  5. Inizializzazione difensiva di `interval` con `Interval.ms(150)` e null-check su `Config.getInstance()`.
+- **Piano Tecnico di Riferimento**: [`docs/piani/attivi/PIANO_TECNICO_CORRETTIVO_REV_MC-26.9_MC-26.10_GUI.md`](file:///C:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/attivi/PIANO_TECNICO_CORRETTIVO_REV_MC-26.9_MC-26.10_GUI.md)
+- **Verifica Automatica**: Test unitario [`InventoryControlsLifecycleTest`](file:///C:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/src/test/java/org/mcaccess/minecraftaccess/features/inventory_controls/InventoryControlsLifecycleTest.java) (6 test su 6 superati al 100%).
+- **Artefatto Compilato & Distribuito**: JAR SHA-256 `B3DE0E2A85F6C0E256615774ABDD1DC31861CC136C80638CE31E84EF0D20989A`.
+- **Esito Collaudo**: Implementato e distribuito; in attesa del riscontro soggettivo e dei log del collaudo in-game di Luca.
 
 ---
 
 ### 🔵 Rev MC-26.10 — Soppressione Accovacciamento Non Intenzionale (Shift Sneak Hijack) all'Interno delle Schermate GUI
-- **Stato**: `[APERTA]`
+- **Stato**: `[IN TELEMETRIA / PRONTO PER COLLAUDO IN-GAME]`
 - **Data Rilevamento**: 2026-09-04 ore 01:58
 - **Ambito**: Coesistenza tra Sicurezza Movimento (`SafetyMovementGuard` / `FallDetector`) e Accessibilità Interfacce (`InventoryControls` / Kuma Hotkeys `Shift+C`, `Shift+K`, `Shift+V`, `Shift+È`)
-- **Problema Riscontrato (Esperienza Luca)**: Quando ci si trova all'interno di una schermata di gioco (inventario, banco di lavoro, fornace, baule, alambicco), premendo il tasto `Shift` per eseguire una combinazione di navigazione (es. `Shift+C`, `Shift+K`, `Shift+V`) o per il trasferimento rapido, si attiva contemporaneamente l'accovacciamento nel mondo di gioco (il personaggio si china ed emette il segnale sonoro `SHOVEL_FLATTEN`, rialzandosi al rilascio). Prima di Fase 3A questo effetto collaterale non era presente.
-- **Evidenza Telemetrica & Diagnosi**:
-  - `FallDetector.tick` invoca `resetSafetyState()` ad ogni tick quando `client.gui.screen() != null`;
-  - `resetSafetyState()` chiama `movementGuard.clearSystemOverride()`, che invoca `reconcileCrouchState()`;
-  - `SafetyMovementGuard` interroga GLFW tramite `RawCrouchIntentProvider.readIntent()`, che rileva la pressione fisica di `GLFW_KEY_LEFT_SHIFT`;
-  - Poiché `intent.pressed()` è vero, il guard invoca `MinecraftSneakOverridePort.applyEffectiveCrouch(true)`, che chiama forzatamente `client.player.setShiftKeyDown(true)`;
-  - Il cambio di postura attiva il listener `PlayerStatus`, che emette i rintocchi acustici di accovacciamento nel mondo mentre l'utente è dentro il menu.
-- **Causa Radice**: `RawCrouchIntentProvider` e `SafetyMovementGuard` campionano il tasto `Shift` fisico da GLFW senza verificare se è attiva una GUI (`client.screen != null`), interpretando un tasto modificatore di navigazione dell'inventario come un comando fisico di movimento del giocatore.
-- **Soluzione di Affinamento (PRAPI)**:
-  1. *Guard Contestuale Schermo*: Se `client.screen != null`, `RawCrouchIntentProvider` restituisce `new CrouchIntent(false, true)` (nessun intento di accovacciamento quando si opera su una GUI);
-  2. *Disimpegno Pulito in `resetSafetyState`*: Quando una GUI è aperta, `SafetyMovementGuard` rilascia qualsiasi override di sistema attivo (`sneakPort.applyEffectiveCrouch(false)`) senza imporre lo stato GLFW raw all'entità giocatore.
-- **Piano Tecnico di Riferimento**: In fase di pianificazione (sessione correttiva anomalie GUI & Sicurezza).
-- **Esito Collaudo**: Aperta per lavorazione.
+- **Problema Riscontrato (Esperienza Luca)**: All'interno di qualsiasi interfaccia GUI (inventario, banco di lavoro, fornace, cassa), la pressione del tasto `Shift` per combinazioni di tasti o quick-move attivava contemporaneamente l'accovacciamento nel mondo con rintocchi audio `SHOVEL_FLATTEN`.
+- **Soluzione Implementata (PRAPI)**:
+  1. `RawCrouchIntentProvider` preservato puro al 100% come fedele lettore hardware GLFW (Single Responsibility);
+  2. Metodo `suspendForGui()` in `SafetyMovementGuard` con ownership token rigoroso: rilascia il crouch con `applyIfChanged(false)` solo se `systemOverrideActive` era vero, senza toccare la postura manuale né interrogare il probe hardware;
+  3. Routing esplicito in `FallDetector.tick`: se `client.gui.screen() != null`, esecuzione prioritaria di `resetSafetyStateForGui()` (che chiama `suspendForGui()`), separata dal reset ordinario nel mondo (`resetSafetyState()`);
+  4. Revoca immediata di `currentAllowedDescentId` e ripresa trasparente dello Shift manuale una volta chiusa la schermata.
+- **Piano Tecnico di Riferimento**: [`docs/piani/attivi/PIANO_TECNICO_CORRETTIVO_REV_MC-26.9_MC-26.10_GUI.md`](file:///C:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/attivi/PIANO_TECNICO_CORRETTIVO_REV_MC-26.9_MC-26.10_GUI.md)
+- **Verifica Automatica**: 6 nuovi test di ownership e idempotenza in [`SafetyMovementGuardTest`](file:///C:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/src/test/java/org/mcaccess/minecraftaccess/features/safety/traversal/SafetyMovementGuardTest.java) (tutti superati al 100%).
+- **Artefatto Compilato & Distribuito**: JAR SHA-256 `B3DE0E2A85F6C0E256615774ABDD1DC31861CC136C80638CE31E84EF0D20989A`.
+- **Esito Collaudo**: Implementato e distribuito; in attesa del riscontro in-game di Luca.
 
 

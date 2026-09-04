@@ -260,7 +260,12 @@ public class FallDetector implements BalmClientModule {
             return;
         }
 
-        if (client.gui.screen() != null || player.isUnderWater() || player.isInWater() || player.isInWaterOrRain() || player.isSwimming() || player.isVisuallySwimming() || player.isEyeInFluid(FluidTags.WATER)) {
+        if (client.gui.screen() != null) {
+            resetSafetyStateForGui();
+            return;
+        }
+
+        if (player.isUnderWater() || player.isInWater() || player.isInWaterOrRain() || player.isSwimming() || player.isVisuallySwimming() || player.isEyeInFluid(FluidTags.WATER)) {
             resetSafetyState();
             return;
         }
@@ -704,13 +709,22 @@ public class FallDetector implements BalmClientModule {
         }
     }
 
-    private void resetSafetyState() {
-        getMovementGuard().clearSystemOverride();
+    private void resetLocalSafetyState() {
         safetyInterventionActive = false;
         wasSprintingBeforeIntervention = false;
         autoSneakActive = false;
         lastWarnedDangerPos = null;
         lastNotifiedDescentId = null;
+    }
+
+    private void resetSafetyState() {
+        getMovementGuard().clearSystemOverride();
+        resetLocalSafetyState();
+    }
+
+    private void resetSafetyStateForGui() {
+        getMovementGuard().suspendForGui();
+        resetLocalSafetyState();
     }
 
     private void inspectNearbyFalls() {

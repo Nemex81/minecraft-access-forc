@@ -64,6 +64,21 @@ public final class SafetyMovementGuard {
         reconcileCrouchState();
     }
 
+    /**
+     * Suspends traversal safety while a GUI owns keyboard input.
+     * It never reads raw input and releases only a crouch previously owned by
+     * the system safety token.
+     */
+    public void suspendForGui() {
+        boolean releaseSystemCrouch = systemOverrideActive;
+        currentAllowedDescentId = null;
+        systemOverrideActive = false;
+
+        if (releaseSystemCrouch) {
+            applyIfChanged(false);
+        }
+    }
+
     /** Reconciles the only permitted writer with the current token and raw input. */
     public void reconcileCrouchState() {
         reconcileCrouchState(intentProbe.readIntent());
