@@ -3,7 +3,7 @@
 Autori: Luca (Sviluppatore Senior Non Vedente) & Antigravity (Senior AI Pair Programmer)  
 Revisione Strategica Congiunta: Antigravity & ChatGPT  
 Repository: `minecraft-access` (Minecraft 26.2, Fabric / NeoForge, Balm, Java 25)  
-Stato Documento: **Bozza strategica aggiornata — contro-validazione finale in corso**  
+Stato Documento: **In Corso — Fasi 1, 2, 3 Completate e Collaudate (Prossimo Passo: Fase 4 — Esplorazione & Mirino)**  
 
 ---
 
@@ -277,24 +277,29 @@ Il coordinatore conserva una struttura dati leggera (massimo 8 voci, azzerata a 
 Tutto il lavoro sarà isolato nel branch `feat/cognitive-orchestrator` creato da `mymaster`. 
 **Vincolo di Sicurezza ASTRALIS (Regola 0)**: Nessun codice raggiungerà `mymaster` senza collaudo completo in-game con NVDA, esito positivo e via libera esplicito di Luca.
 
-- **Fase 1 — Modello Dati e Coordinatore Silenzioso**:
-  - Creazione di `CognitiveEvent.java`, `CognitivePriority.java`, `SourceDomain.java` e `StateSignature.java`.
-  - Creazione di `CognitiveCoordinator.java` con buffer a fine tick (`ClientPlayingTick.AFTER`), Fast-Path e memoria attentiva breve.
-  - Test automatici unitari (JUnit) su priorità, scadenze TTL e deduplicazione (senza collegare i sensori di gioco).
-- **Fase 2 — Integrazione Scheda Cloth Config & Facciata `NarrationPriority`**:
-  - Aggiunta di `CognitiveSettings` in `Config.java` e nei file di lingua (`it_it.json`, `en_us.json` ordinati alfabeticamente).
-  - Trasformazione di `NarrationPriority` in facciata retrocompatibile verso il coordinatore.
-  - Verifica trasparenza: il gioco continua a funzionare identicamente allo stato attuale.
-- **Fase 3 — Migrazione Pilota Sicurezza**:
-  - Collegamento di `FallDetector` e `ObstacleDetector` a `CognitiveCoordinator`.
-  - Collaudo in-game con NVDA su burroni, dislivelli e scale.
-- **Fase 4 — Migrazione Esplorazione & Mirino**:
-  - Collegamento di `CrosshairFeedbackManager`, mirino continuo e radar POI.
-  - Test della concatenazione semantica Ostacolo + Mirino.
-- **Fase 5 — Migrazione Movimento e Didattica**:
-  - Collegamento di `AutoWalkManager`, `ContextualMentor` e `AcademyManager`.
-  - Verifica dello scudo didattico e dell'interruzione per emergenze.
-- **Fase 6 — Collaudo Globale, Rifinitura PRAPI & Validazione Luca per Merge**:
-  - Stress-test finale in-game di tutte le casistiche concorrenti con screen reader NVDA;
-  - Aggiornamento della documentazione di rilascio e del rapporto di collaudo. Le schede `knowledge/` restano riservate alla successiva Fase 4 di Auto-Apprendimento, avviabile solo con consenso esplicito di Luca;
-  - Presentazione del resoconto a Luca e merge su `mymaster` **esclusivamente su suo esplicito consenso**.
+- [x] **Fase 1 — Modello Dati e Coordinatore Silenzioso (Completata — Commit `e41c3f9d`)**:
+  - [x] Creazione di `CognitiveEvent.java`, `CognitivePriority.java`, `SourceDomain.java` e `StateSignature.java`.
+  - [x] Creazione di `CognitiveCoordinator.java` con buffer a fine tick (`ClientPlayingTick.AFTER`), Fast-Path e memoria attentiva breve.
+  - [x] Test automatici unitari (JUnit) su priorità, scadenze TTL e deduplicazione (14 test superati a 0 ms).
+- [x] **Fase 2 — Integrazione Scheda Cloth Config & Facciata `NarrationPriority` (Completata — Commit `88c3ddb7`, `580c060a`)**:
+  - [x] Aggiunta di `CognitiveSettings` in `Config.java` e nei file di lingua (`it_it.json`, `en_us.json` ordinati alfabeticamente).
+  - [x] Trasformazione di `NarrationPriority` in facciata retrocompatibile verso il coordinatore (con seam package-private per test headless).
+  - [x] Verifica trasparenza: il gioco continua a funzionare identicamente allo stato attuale (8 nuovi test unitari).
+- [x] **Fase 3 — Migrazione Pilota Sicurezza & Bonifica Anomalie GUI (Completata e Collaudata in-game — Commit `6413d721`)**:
+  - [x] Sotto-Fase 3A: Collegamento di `FallDetector` a `CognitiveCoordinator` (avvisi burrone e ciglio CRITICAL/OPERATIONAL, bypass climbable scale a pioli `Rev MC-26.8`).
+  - [x] Sotto-Fase 3B: Collegamento di `ObstacleDetector` a `CognitiveCoordinator` (`ObstacleSafetyEventFactory`, `ObstacleNarrationComposer`, `CrosshairFeedbackManager` soppressione monotona e silent commit).
+  - [x] Bonifica Post-Collaudo GUI: Risoluzione `Rev MC-26.9` (doppio guard `InventoryControls` e `isActiveContainerScreen()`) e `Rev MC-26.10` (`suspendForGui()` con ownership token e soppressione Shift sneak hijack).
+  - [x] Collaudo in-game con NVDA su burroni, dislivelli, scale a pioli e navigazione inventari (0 eccezioni, telemetria pulita al 100%).
+- [ ] **Fase 4 — Migrazione Esplorazione & Mirino (Prossimo Passo Operativo)**:
+  - [ ] Collegamento di `CrosshairFeedbackManager`, mirino continuo e radar POI.
+  - [ ] Test della concatenazione semantica Ostacolo + Mirino.
+  - [ ] Deduplicazione e gestione differenziale di distanza/orientamento.
+- [ ] **Fase 5 — Migrazione Movimento e Didattica**:
+  - [ ] Collegamento di `AutoWalkManager`, `ContextualMentor` e `AcademyManager`.
+  - [ ] Verifica dello scudo didattico e dell'interruzione per emergenze.
+  - [ ] Prioritizzazione dei messaggi di movimento rispetto alla narrazione passiva.
+- [ ] **Fase 6 — Collaudo Globale, Rifinitura PRAPI & Validazione Luca per Merge**:
+  - [ ] Stress-test finale in-game di tutte le casistiche concorrenti con screen reader NVDA;
+  - [ ] Aggiornamento della documentazione di rilascio e del rapporto di collaudo;
+  - [ ] Presentazione del resoconto a Luca e merge su `mymaster` **esclusivamente su suo esplicito consenso**.
+
