@@ -134,3 +134,27 @@ In conformità al nostro standard architetturale:
      impedendo che chiamate concorrenti ravvicinate possano inavvertitamente abbreviare o resettare una finestra di silenzio ancora attiva.
 4. **Bypass Assoluto per Comandi Espliciti**:
    - I comandi espliciti da tastiera dell'utente (`Alt+V` per l'orientamento, tasto `B` per il mirino manuale) ignorano totalmente le finestre di soppressione automatica, garantendo latenza $0\text{ ms}$ e risposta reattiva immediata.
+
+---
+
+## 10. Architettura a Doppio Guard e Protezione Ciclo di Vita nelle GUI
+
+Durante la navigazione delle interfacce grafiche (inventari, forzieri, tavoli di lavoro) e nelle transizioni rapide di apertura/chiusura:
+
+1. **Il Pericolo delle Ghost Narrations e Dereferenziazioni Asincrone**:
+   - Se l'utente chiude rapidamente una schermata con `Esc` o se si verifica una transizione mentre viene premuta una scorciatoia da tastiera (es. tasti Kuma per navigazione griglia o `Shift`), l'evento di input può raggiungere i gestori di navigazione quando l'interfaccia non è più attiva o `currentScreen` è già stato posto a `null`.
+   - Ciò scatena crash per `NullPointerException` (es. accessor di posizione slot) e/o narrazioni residue di oggetti non più a schermo (*ghost narrations*).
+2. **Lo Standard del Doppio Guard**:
+   - *Guard a Monte (Routing & Handlers)*: Ogni metodo di navigazione, cambio gruppo, focus o handler tasti deve verificare preventivamente:
+     ```java
+     if (!isActiveContainerScreen()) return;
+     ```
+     dove `isActiveContainerScreen()` controlla sia il tipo di schermata (`AbstractContainerScreen`), sia l'identità dell'istanza attiva rispetto a quella referenziata dal controller (`activeScreen == currentScreen`).
+   - *Guard a Valle (Esecuzione Fisica)*: I metodi che comandano fisicamente il puntatore o la selezione (`moveToSlotItem`) devono contenere una guardia difensiva indipendente:
+     ```java
+     if (slotItem == null || !isActiveContainerScreen()) return;
+     ```
+3. **Sincronizzazione Atomica nel `tick()` di Lifecycle**:
+   - Il metodo `tick()` del gestore interfacce deve monitorare lo stato dello schermo ad ogni ciclo. Se lo schermo non è valido o è cambiato, deve invocare immediatamente `clearNavigationState()` **prima ancora** di verificare o aggiornare i timer o i debouncer dell'intervallo.
+4. **Inviolabilità dell'Input Manuale nei Menu**:
+   - L'uso di tasti modificatori (`Shift`, `Ctrl`, `Alt`) all'interno delle schermate non deve mai propagarsi come comando di movimento o postura nel mondo di gioco (es. divieto assoluto di sneak sintetico o suoni di pala).

@@ -446,12 +446,34 @@ Questo registro documenta i problemi tecnici complessi risolti nel tempo, preser
 
 ---
 
-### Record 35 — NullPointerException su `currentScreen` in `InventoryControls.moveToSlotItem` (Rev MC-26.9)
+### Record 35 — NullPointerException su `currentScreen`, Ghost Narration e Lifecycle Guard in `InventoryControls` (Rev MC-26.9)
 - **Data**: 2026-09-04
-- **Moduli Coinvolti**: `InventoryControls.java`, Kuma API
-- **Sintomi**: Eccezione non gestita nei log a runtime durante la navigazione della griglia inventario: `java.lang.NullPointerException: Cannot invoke "org.mcaccess.minecraftaccess.mixin.AbstractContainerScreenAccessor.getLeftPos()" because "this.currentScreen" is null`.
-- **Causa Radice**: Race condition durante la rapida chiusura della GUI dell'inventario (o transizione verso il menu di pausa con `Esc`), dove la pressione di un tasto gestito da Kuma inoltra l'evento a `moveToSlotItem` quando `this.currentScreen` è già stato azzerato a `null`.
+- **Moduli Coinvolti**: `InventoryControls.java`, `InventoryControlsLifecycleTest.java`, Kuma API
+- **Sintomi**: Eccezione non gestita nei log a runtime durante la navigazione della griglia inventario: `java.lang.NullPointerException: Cannot invoke "org.mcaccess.minecraftaccess.mixin.AbstractContainerScreenAccessor.getLeftPos()" because "this.currentScreen" is null`, accompagnata da movimento cursoriale spurio o narrazioni di slot orfani durante transizioni rapide verso il menu di pausa (`Esc`).
+- **Causa Radice**: Race condition durante la rapida chiusura o transizione della GUI, dove la pressione di un tasto gestito da Kuma inoltrava l'evento a `moveToSlotItem` quando `this.currentScreen` era nullo o non più allineato con la schermata attiva del client. Inoltre, l'inizializzazione di `Interval.defaultDelay()` dereferenziava prematuramente `Config.getInstance()`, rischiando crash in test headless.
 - **Soluzione Definitiva**:
-  1. Inserire il guard difensivo `if (this.currentScreen == null) return;` all'inizio di `moveToSlotItem` e `focusSlotItem`.
-  2. Registrata l'anomalia autonoma nel Registro Revisioni (`Rev MC-26.9`) per correzione e collaudo in una sessione dedicata alle GUI.
+  1. *Predicato Centrale*: Creato `isActiveContainerScreen()` che verifica `screen instanceof AbstractContainerScreen && screen == this.currentScreen`.
+  2. *Guard a Monte*: Applicato `if (!isActiveContainerScreen()) return;` su tutti i 18 handler Kuma e su tutti i metodi di navigazione (`changeGroup`, `selectGroup`, `focusSlotItem`, `focusSlotItemAt`, `changeRecipeTab`, `changeCreativeInventoryTab`, `narrateRecipeInfo`).
+  3. *Guard a Valle*: In entrambi gli overload di `moveToSlotItem(slotItem)`, inserito `if (slotItem == null || !isActiveContainerScreen()) return;`.
+  4. *Sincronizzazione Ciclo di Vita*: In `tick()`, se `!isActiveContainerScreen()`, invocato immediatamente `clearNavigationState()` prima del debounce dell'intervallo.
+  5. *Decoupling Configurazione*: Inizializzazione del campo `interval` con `Interval.ms(150)` costante di fallback, con aggiornamento dinamico in `loadConfig()`.
+  6. *Suite di Test*: 6 test unitari dedicati in `InventoryControlsLifecycleTest.java` superati al 100%.
+
+---
+
+### Record 36 — Soppressione Shift Sneak Hijack nelle GUI, Ownership Token di Sicurezza e Flag Gradle `--no-watch-fs` (Rev MC-26.10)
+- **Data**: 2026-09-04
+- **Moduli Coinvolti**: `SafetyMovementGuard.java`, `FallDetector.java`, `RawCrouchIntentProvider.java`, `SafetyMovementGuardTest.java`
+- **Sintomi**: All'interno di qualsiasi interfaccia grafica (inventario, banco di lavoro, fornace), la pressione del tasto `Shift` per combinazioni di tasti (`Shift+C`, `Shift+K`, quick-move `Shift+È`) provocava l'attivazione dell'accovacciamento nel mondo di gioco con emissione ripetuta del rintocco audio della pala (`SHOVEL_FLATTEN`). Inoltre, in fase di compilazione e test, Gradle falliva su OneDrive con `IOException: Cannot snapshot ... not a regular file`.
+- **Causa Radice**:
+  1. Durante la presenza di una GUI a schermo, `FallDetector` eseguiva il reset ordinario revocando il controllo, ma `SafetyMovementGuard` continuava a campionare il probe hardware GLFW di Shift ad ogni tick, interpretando la pressione del tasto per l'interfaccia come intenzione di accovacciarsi nel mondo.
+  2. Un tentativo ingenuo di resettare `applyEffectiveCrouch(false)` basato su `lastAppliedCrouch == true` avrebbe soppresso anche lo Shift manuale legittimo del giocatore iniziato prima di aprire il menu.
+  3. Su Windows con OneDrive, la scansione del filesystem di Gradle si bloccava sui metadati dei reparse point cloud.
+- **Soluzione Definitiva**:
+  1. *Preservazione Single Responsibility del Probe*: `RawCrouchIntentProvider` resta un lettore hardware puro e non viene inquinato con controlli GUI.
+  2. *Ownership Token di Sicurezza*: In `SafetyMovementGuard`, introdotto `suspendForGui()` che verifica `systemOverrideActive`. Rilascia la postura del giocatore (`applyIfChanged(false)`) **esclusivamente** se l'accovacciamento era stato imposto dal sistema di sicurezza; se l'accovacciamento appartiene alla volontà manuale dell'utente, non viene toccato.
+  3. *Routing Esplicito GUI in FallDetector*: In testa a `FallDetector.tick()`, se `client.gui.screen() != null`, viene invocato `resetSafetyStateForGui()` (che chiama `suspendForGui()`) e si esce immediatamente con `return`, revocando anche `currentAllowedDescentId`.
+  4. *Resilienza Gradle Cloud*: Adozione del flag obbligatorio `.\gradlew.bat --no-daemon --no-watch-fs test`, eliminando qualsiasi crash con i file system cloud.
+  5. *Suite di Test*: 6 nuovi test unitari in `SafetyMovementGuardTest.java` per verificare ownership, trasparenza GLFW, idempotenza e ripresa manuale al 100%.
+
 

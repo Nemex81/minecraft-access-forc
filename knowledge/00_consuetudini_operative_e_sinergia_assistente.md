@@ -72,7 +72,7 @@ Il ciclo di vita di ogni modifica o nuova funzionalità segue tassativamente que
   - **Pre-Flight Environment Check**: Verifica preliminare dell'ambiente (JDK 25, `$env:JAVA_HOME` e flag `--no-daemon` per prevenire blocchi di OneDrive).
   - **Modifiche al Codice**: Editing chirurgico e conformità I18N con JSON ordinati.
   - **Verifica Compilazione**: Esecuzione di `.\gradlew.bat --no-daemon compileJava compileTestJava`.
-  - **Esecuzione Test Unitari**: Esecuzione della suite JUnit (`.\gradlew.bat --no-daemon test`).
+  - **Esecuzione Test Unitari**: Esecuzione della suite JUnit (`.\gradlew.bat --no-daemon --no-watch-fs test`).
   - **Confezionamento Pacchetto**: Creazione del JAR (`.\gradlew.bat --no-daemon shadowJar`).
 
 ### Fase 2: Deploy Provvisorio & Collaudo Manuale In-Game di Luca
@@ -150,3 +150,44 @@ Nelle epiche architetturali di grandi dimensioni o nei refactoring sistemici com
    - *Allora* Antigravity propone esplicitamente a Luca un **Checkpoint di Auto-Apprendimento Inter-Fase** prima di passare alla pianificazione della sotto-fase successiva.
 3. **Effetto Operativo**:
    - La conoscenza viene immediatamente formalizzata nelle schede `knowledge/` e nel Master Hub, rendendola attiva e vincolante per proteggere l'esecuzione delle fasi immediatamente successive della medesima epica.
+
+---
+
+## 8. Il Triangolo Virtuoso di Pair Programming Multi-AI (Luca - ChatGPT - Antigravity)
+
+Nelle sfide di refactoring complesse, diagnosi ostiche o revisioni post-collaudo, l'ambiente adotta il modello del **Triangolo Virtuoso Multi-AI**:
+
+1. **Ruolo Sovrano di Luca (Lead Architect & Product Owner)**:
+   - Definisce le priorità, descrive la percezione sensoriale e funzionale con screen reader NVDA, e mantiene l'autorità decisionale assoluta su ogni linea di codice.
+2. **Ruolo di ChatGPT (Senior Reviewer & Architectural Analyst)**:
+   - Fornisce analisi strategiche ad alto livello, identifica falle logiche sottili, redige o rifinisce bozze di piani tecnici, e sfida le assunzioni di Antigravity per prevenire regressioni.
+3. **Ruolo di Antigravity (Resident Pair Programmer & Esecutore Locale)**:
+   - Custode del contesto reale della macchina di Luca, del filesystem e della storia Git.
+   - Traduce i piani in codice chirurgico, implementa test unitari a 0 ms con mock headless, esegue compilazione/deploy, e monitora la telemetria dal vivo nei log di gioco (`latest.log`).
+4. **Sinergia Costruttiva**:
+   - Antigravity e ChatGPT non entrano mai in competizione: Antigravity accoglie e integra le osservazioni di ChatGPT con spirito critico ingegneristico, verificandone la compatibilità con le API reali di Minecraft 26.2 e Fabric.
+
+---
+
+## 9. Delimitazione Negativa Esplicita ("Cosa NON Toccare") & Invarianti nei Piani
+
+Per evitare scope creep e refactoring collaterali dannosi, ogni Piano Tecnico ASTRALIS (Sotto-Fase 1A) deve obbligatoriamente includere:
+
+1. **Sezione di Delimitazione Negativa**:
+   - Elenco esplicito e tassativo dei file, classi, contratti o package che **è fatto assoluto divieto di toccare** durante l'implementazione (es. driver di basso livello o moduli appena convalidati).
+2. **Matrice delle Invarianti Anti-Regressione**:
+   - Dichiarazione formale delle proprietà di sistema che devono rimanere rigorosamente invariate prima, durante e dopo la modifica (es. inviolabilità della postura manuale dell'utente).
+
+---
+
+## 10. Resilienza ai File System Virtuali Cloud (OneDrive Reparse Points)
+
+Sui sistemi Windows dove i repository risiedono all'interno di cartelle sincronizzate con OneDrive o servizi cloud affini:
+
+1. **Problematica**:
+   - I meccanismi di file-system watching continuo dei build tool (es. daemon o watcher di Gradle) possono generare eccezioni di tipo `IOException: Cannot snapshot ... not a regular file` causate dai metadati dei reparse point cloud.
+2. **Soluzione Obbligatoria**:
+   - Eseguire i comandi Gradle associando tassativamente il flag `--no-watch-fs` oltre a `--no-daemon`:
+   ```powershell
+   .\gradlew.bat --no-daemon --no-watch-fs test
+   ```
