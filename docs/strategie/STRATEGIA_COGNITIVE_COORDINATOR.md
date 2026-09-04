@@ -3,7 +3,7 @@
 Autori: Luca (Sviluppatore Senior Non Vedente) & Antigravity (Senior AI Pair Programmer)  
 Revisione Strategica Congiunta: Antigravity & ChatGPT  
 Repository: `minecraft-access` (Minecraft 26.2, Fabric / NeoForge, Balm, Java 25)  
-Stato Documento: **In Corso — Fasi 1, 2, 3 Completate e Collaudate (Prossimo Passo: Fase 4 — Esplorazione & Mirino)**  
+Stato Documento: **In Corso — Fasi 1, 2, 3, 4 Completate e Collaudate (Prossimo Passo: Fase 5 — Movimento e Didattica)**  
 
 ---
 
@@ -290,11 +290,12 @@ Tutto il lavoro sarà isolato nel branch `feat/cognitive-orchestrator` creato da
   - [x] Sotto-Fase 3B: Collegamento di `ObstacleDetector` a `CognitiveCoordinator` (`ObstacleSafetyEventFactory`, `ObstacleNarrationComposer`, `CrosshairFeedbackManager` soppressione monotona e silent commit).
   - [x] Bonifica Post-Collaudo GUI: Risoluzione `Rev MC-26.9` (doppio guard `InventoryControls` e `isActiveContainerScreen()`) e `Rev MC-26.10` (`suspendForGui()` con ownership token e soppressione Shift sneak hijack).
   - [x] Collaudo in-game con NVDA su burroni, dislivelli, scale a pioli e navigazione inventari (0 eccezioni, telemetria pulita al 100%).
-- [ ] **Fase 4 — Migrazione Esplorazione & Mirino (Prossimo Passo Operativo)**:
-  - [ ] Collegamento di `CrosshairFeedbackManager`, mirino continuo e radar POI.
-  - [ ] Test della concatenazione semantica Ostacolo + Mirino.
-  - [ ] Deduplicazione e gestione differenziale di distanza/orientamento.
-- [ ] **Fase 5 — Migrazione Movimento e Didattica**:
+- [x] **Fase 4 — Migrazione Esplorazione, Mirino & POI Cognitivi (Completata e Collaudata in-game — Commit `b05ea8f9`, `80c8d66d`, `4bc424c3`)**:
+  - [x] Sotto-Fase 4A: Gate di routing cognitivo per l'esplorazione (`explorationCognitiveRoutingEnabled`) e reset deterministico di sessione su cambio dimensione/morte/respawn.
+  - [x] Sotto-Fase 4B: Migrazione del feed automatico del mirino (`CrosshairExplorationEventFactory`, ID canonici `EXPLORATION` / `PASSIVE`, fallback diretto).
+  - [x] Sotto-Fase 4C: `DirectInteractionShield` per comandi espliciti (tasto `B`, rotazione visuale/sguardo livellato, radar POI e lock entità `X`).
+  - [x] Collaudo in-game positivo con NVDA (tracciamento mucca, XP/drop, centramento visuale, 208 test JUnit verdi, zero eccezioni).
+- [ ] **Fase 5 — Migrazione Movimento e Didattica (Prossimo Passo Operativo)**:
   - [ ] Collegamento di `AutoWalkManager`, `ContextualMentor` e `AcademyManager`.
   - [ ] Verifica dello scudo didattico e dell'interruzione per emergenze.
   - [ ] Prioritizzazione dei messaggi di movimento rispetto alla narrazione passiva.

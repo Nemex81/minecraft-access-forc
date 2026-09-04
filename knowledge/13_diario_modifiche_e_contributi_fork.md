@@ -8,7 +8,7 @@
 Questo documento costituisce il **Diario Ufficiale delle Modifiche del Fork Personale in lingua Italiana**.
 Poiché il `README.md` pubblico e la documentazione del repository upstream rimangono in lingua Inglese per la community internazionale con la sola sezione `## [Unreleased]`, tutte le novità, i refactoring e i miglioramenti sviluppati sui nostri rami (`mymaster`, `dev`) vengono tracciati qui secondo la disciplina AVF (`V.A.R[.M]`).
 
-## 🚀 [v26.2-1.19.0-dev] — 2026-09-03 (Refactor Architetturale Cognitive Coordinator — Fasi 1 e 2 — Branch feat/cognitive-orchestrator)
+## 🚀 [v26.2-1.19.0-dev] — 2026-09-04 (Refactor Architetturale Cognitive Coordinator — Fasi 1, 2, 3, 4 — Branch feat/cognitive-orchestrator)
 
 ### 🧠 Fase 1: Nucleo Cognitivo Centralizzato Certificato (Commit e41c3f9d)
 - **Fast-Path Emergenze a 0 ms**: Elaborazione immediata per eventi `CRITICAL` con micro-burst accodato per eventi critici concorrenti nel medesimo tick (prevenzione troncamento prime sillabe salvavita).
@@ -47,6 +47,22 @@ Poiché il `README.md` pubblico e la documentazione del repository upstream rima
   - Routing prioritario in `FallDetector.tick`: se `client.gui.screen() != null`, esecuzione immediata di `resetSafetyStateForGui()` (che invoca `suspendForGui()`), disaccoppiata dal reset ordinario nel mondo (`resetSafetyState()`).
   - Revoca immediata di `currentAllowedDescentId` e ripresa trasparente dello Shift manuale una volta chiusa la schermata GUI.
   - 6 nuovi test unitari in `SafetyMovementGuardTest` superati al 100%.
+
+### 🎯 Fase 4: Migrazione Esplorazione, Mirino Automatico & POI Cognitivi (Commit b05ea8f9, 80c8d66d, 4bc424c3)
+- **Sotto-Fase 4A — Gate di Rollout & Reset di Sessione (Commit `b05ea8f9`)**:
+  - Introduzione del gate condizionale `explorationCognitiveRoutingEnabled` (disattivato per default): l'instradamento cognitivo dell'esplorazione si attiva solo se sia l'impostazione globale `cognitiveCoordinatorEnabled` sia questo gate sono attivi.
+  - Reset deterministico di sessione: azzeramento atomico di buffer, scudi e memorie brevi del `CognitiveCoordinator` su cambio dimensione, morte e respawn del giocatore.
+- **Sotto-Fase 4B — Routing Cognitivo Mirino Automatico & ID Canonici (Commit `80c8d66d`)**:
+  - Creazione di `CrosshairExplorationEventFactory`: costruzione pura di record `CognitiveEvent` con dominio `EXPLORATION` e priorità `PASSIVE` per il feed automatico in movimento.
+  - Identità canonica immutabile basata su tipo blocco/entità e bucket di coordinate voxel; deduplicazione deterministica per prevenire il chatter vocale durante il cammino.
+  - Fallback trasparente: conservazione integrale del percorso legacy diretto con `interrupt=true` in caso di coordinatore disattivato.
+- **Sotto-Fase 4C — DirectInteractionShield per Comandi Espliciti & Radar POI (Commit `4bc424c3`)**:
+  - Implementazione di `DirectInteractionShield`: scudo temporale dedicato per le interazioni esplicite dell'utente.
+  - Protezione a latenza zero per comandi manuali: lettura mirino su tasto `B`, centramento/livellamento visuale orizzonte e comandi radar/lock POI (`X`).
+  - Gli annunci espliciti mantengono priorità assoluta e vocalizzazione immediata con `interrupt=true`, impedendo qualsiasi soppressione o ritardo da parte del feed passivo del mirino.
+- **Suite di Test & Collaudo In-Game**:
+  - 23 nuovi test unitari deterministici (suite totale portata a 208 test JUnit verdi, 0 failure, 0 error).
+  - Collaudo empirico sul campo con NVDA superato al 100%: navigazione fluida tra blocchi, tracciamento dinamico e abbattimento mucca con radar POI, raccolta drop (`Cuoio`, `Manzo crudo`), rotazioni di sguardo istantanee e zero eccezioni di runtime.
 
 ---
 
