@@ -795,6 +795,8 @@
     "text.autoconfig.minecraft-access.option.cognitiveCoordinator.cognitiveCoordinatorEnabled.@Tooltip": "Coordinates voice and sound priority, eliminating speech truncation and auditory clutter.",
     "text.autoconfig.minecraft-access.option.cognitiveCoordinator.deduplicationWindowMs": "Deduplication Window (ms)",
     "text.autoconfig.minecraft-access.option.cognitiveCoordinator.deduplicationWindowMs.@Tooltip": "Minimum time before repeating identical non-critical alerts (500 - 5000 ms).",
+    "text.autoconfig.minecraft-access.option.cognitiveCoordinator.explorationCognitiveRoutingEnabled": "Cognitive Crosshair Exploration Feed",
+    "text.autoconfig.minecraft-access.option.cognitiveCoordinator.explorationCognitiveRoutingEnabled.@Tooltip": "Routes automatic crosshair feed through Cognitive Coordinator to eliminate speech truncation.",
     "text.autoconfig.minecraft-access.option.commandSuggestionNarratorFormat": "Command suggestion narration format",
     "text.autoconfig.minecraft-access.option.debugMode": "Debug mode",
     "text.autoconfig.minecraft-access.option.directionalPathScanner.audioFeedback": "Audio Scan Feedback",

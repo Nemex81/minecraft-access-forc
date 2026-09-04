@@ -113,6 +113,7 @@ public final class Config implements ConfigData {
         if (cfg != null) {
             int normalizedWindow = Math.clamp(cfg.deduplicationWindowMs, 500, 5000);
             org.mcaccess.minecraftaccess.features.cognitive.CognitiveCoordinator.setCoordinatorEnabled(cfg.cognitiveCoordinatorEnabled);
+            org.mcaccess.minecraftaccess.features.cognitive.CognitiveCoordinator.setExplorationRoutingEnabled(cfg.explorationCognitiveRoutingEnabled);
             org.mcaccess.minecraftaccess.features.cognitive.CognitiveCoordinator.setChainedNarrationEnabled(cfg.chainedNarrationEnabled);
             org.mcaccess.minecraftaccess.features.cognitive.CognitiveCoordinator.setDeduplicationWindowMs(normalizedWindow);
         }
@@ -722,6 +723,7 @@ public final class Config implements ConfigData {
 
     public static final class CognitiveSettings {
         public boolean cognitiveCoordinatorEnabled = true;
+        public boolean explorationCognitiveRoutingEnabled = false;
         public boolean chainedNarrationEnabled = true;
 
         @ConfigEntry.BoundedDiscrete(min = 500, max = 5000)

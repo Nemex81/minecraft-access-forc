@@ -39,23 +39,29 @@ class ConfigCognitiveSettingsTest {
     void testBindingAppliesSupportedConfigParameters() {
         Config.CognitiveSettings cfg = new Config.CognitiveSettings();
         cfg.cognitiveCoordinatorEnabled = false;
+        cfg.explorationCognitiveRoutingEnabled = false;
         cfg.chainedNarrationEnabled = false;
         cfg.deduplicationWindowMs = 2500;
 
         Config.applyCognitiveSettings(cfg);
 
         assertFalse(CognitiveCoordinator.isCoordinatorEnabled(), "Coordinator enabled flag must be false");
+        assertFalse(CognitiveCoordinator.isExplorationRoutingEnabled(), "Exploration routing flag must be false");
+        assertFalse(CognitiveCoordinator.isExplorationRoutingActive(), "Exploration routing active helper must be false");
         assertFalse(CognitiveCoordinator.isChainedNarrationEnabled(), "Chained narration flag must be false");
         assertEquals(2500, CognitiveCoordinator.getDeduplicationWindowMs(), "Deduplication window must be 2500ms");
 
         // Re-enable
         cfg.cognitiveCoordinatorEnabled = true;
+        cfg.explorationCognitiveRoutingEnabled = true;
         cfg.chainedNarrationEnabled = true;
         cfg.deduplicationWindowMs = 1200;
 
         Config.applyCognitiveSettings(cfg);
 
         assertTrue(CognitiveCoordinator.isCoordinatorEnabled());
+        assertTrue(CognitiveCoordinator.isExplorationRoutingEnabled());
+        assertTrue(CognitiveCoordinator.isExplorationRoutingActive());
         assertTrue(CognitiveCoordinator.isChainedNarrationEnabled());
         assertEquals(1200, CognitiveCoordinator.getDeduplicationWindowMs());
     }
@@ -86,7 +92,9 @@ class ConfigCognitiveSettingsTest {
                 "text.autoconfig.minecraft-access.option.cognitiveCoordinator.cognitiveCoordinatorEnabled",
                 "text.autoconfig.minecraft-access.option.cognitiveCoordinator.cognitiveCoordinatorEnabled.@Tooltip",
                 "text.autoconfig.minecraft-access.option.cognitiveCoordinator.deduplicationWindowMs",
-                "text.autoconfig.minecraft-access.option.cognitiveCoordinator.deduplicationWindowMs.@Tooltip"
+                "text.autoconfig.minecraft-access.option.cognitiveCoordinator.deduplicationWindowMs.@Tooltip",
+                "text.autoconfig.minecraft-access.option.cognitiveCoordinator.explorationCognitiveRoutingEnabled",
+                "text.autoconfig.minecraft-access.option.cognitiveCoordinator.explorationCognitiveRoutingEnabled.@Tooltip"
         );
 
         Path itJsonPath = Path.of("src/main/resources/assets/minecraft_access/lang/it_it.json");
@@ -108,5 +116,35 @@ class ConfigCognitiveSettingsTest {
             assertTrue(index > lastIndex, "Key is out of alphabetical order in " + path.getFileName() + ": " + key);
             lastIndex = index;
         }
+    }
+
+    @Test
+    @DisplayName("4. Sequential rollout gate: exploration routing active only when both coordinator and exploration flag are true")
+    void testExplorationRoutingSequentialGate() {
+        // 1. Both true -> active
+        CognitiveCoordinator.setCoordinatorEnabled(true);
+        CognitiveCoordinator.setExplorationRoutingEnabled(true);
+        assertTrue(CognitiveCoordinator.isExplorationRoutingActive());
+
+        // 2. Exploration false -> inactive
+        CognitiveCoordinator.setExplorationRoutingEnabled(false);
+        assertFalse(CognitiveCoordinator.isExplorationRoutingActive());
+
+        // 3. Coordinator false, exploration true -> inactive
+        CognitiveCoordinator.setCoordinatorEnabled(false);
+        CognitiveCoordinator.setExplorationRoutingEnabled(true);
+        assertFalse(CognitiveCoordinator.isExplorationRoutingActive());
+
+        // 4. Both false -> inactive
+        CognitiveCoordinator.setCoordinatorEnabled(false);
+        CognitiveCoordinator.setExplorationRoutingEnabled(false);
+        assertFalse(CognitiveCoordinator.isExplorationRoutingActive());
+    }
+
+    @Test
+    @DisplayName("5. Lifecycle guard: null player or level skips flush safely")
+    void testLifecycleGuardSkipsNull() {
+        // When player or level is null, tick handling must gracefully return without throwing or flushing
+        assertDoesNotThrow(() -> CognitiveCoordinator.handleClientTick(null, null, 1000L));
     }
 }

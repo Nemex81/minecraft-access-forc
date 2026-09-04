@@ -795,6 +795,8 @@
     "text.autoconfig.minecraft-access.option.cognitiveCoordinator.cognitiveCoordinatorEnabled.@Tooltip": "Coordina la priorità degli avvisi vocali e sonori, eliminando troncamenti e sovrapposizioni.",
     "text.autoconfig.minecraft-access.option.cognitiveCoordinator.deduplicationWindowMs": "Finestra di Deduplicazione (ms)",
     "text.autoconfig.minecraft-access.option.cognitiveCoordinator.deduplicationWindowMs.@Tooltip": "Intervallo minimo prima di ripetere lo stesso avviso non critico (500 - 5000 ms).",
+    "text.autoconfig.minecraft-access.option.cognitiveCoordinator.explorationCognitiveRoutingEnabled": "Feed Esplorazione Mirino Cognitivo",
+    "text.autoconfig.minecraft-access.option.cognitiveCoordinator.explorationCognitiveRoutingEnabled.@Tooltip": "Instrada il feed automatico del mirino tramite il Coordinatore Cognitivo per eliminare i troncamenti vocali.",
     "text.autoconfig.minecraft-access.option.commandSuggestionNarratorFormat": "Formato lettura suggerimenti comandi",
     "text.autoconfig.minecraft-access.option.debugMode": "Modalità di debug",
     "text.autoconfig.minecraft-access.option.directionalPathScanner.audioFeedback": "Feedback Acustico di Scansione",

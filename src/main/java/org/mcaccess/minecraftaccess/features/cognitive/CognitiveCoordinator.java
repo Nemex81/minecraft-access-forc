@@ -13,6 +13,7 @@ import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import net.blay09.mods.balm.client.platform.event.callback.ClientLifecycleCallback;
 import net.blay09.mods.balm.client.platform.module.BalmClientModule;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -43,6 +44,10 @@ public class CognitiveCoordinator implements BalmClientModule {
 
     @Getter
     @Setter
+    private static boolean explorationRoutingEnabled = false;
+
+    @Getter
+    @Setter
     private static boolean chainedNarrationEnabled = true;
 
     @Getter
@@ -52,6 +57,13 @@ public class CognitiveCoordinator implements BalmClientModule {
     @Getter
     @Setter
     private static boolean criticalModAudioDucking = true;
+
+    private static @Nullable ClientLevel lastLevel = null;
+    private static int lastPlayerId = -1;
+
+    public static boolean isExplorationRoutingActive() {
+        return coordinatorEnabled && explorationRoutingEnabled;
+    }
 
     // Output delegates (customizable for JUnit testing without Minecraft environment)
     @Setter
@@ -151,6 +163,8 @@ public class CognitiveCoordinator implements BalmClientModule {
     @Override
     public void initialize() {
         instance = this;
+        ClientLifecycleCallback.ConnectedToServer.EVENT.register(_ -> clearAllBuffers());
+        ClientLifecycleCallback.DisconnectedFromServer.EVENT.register(_ -> clearAllBuffers());
         ClientPlayingTick.AFTER.register(this::onClientTick);
     }
 
@@ -231,7 +245,29 @@ public class CognitiveCoordinator implements BalmClientModule {
     }
 
     private void onClientTick(Minecraft client, LocalPlayer player, ClientLevel level) {
-        flushTick(System.currentTimeMillis());
+        handleClientTick(player, level, System.currentTimeMillis());
+    }
+
+    /**
+     * Public tick lifecycle handler for robust production guard and deterministic testing.
+     */
+    public static synchronized void handleClientTick(@Nullable LocalPlayer player, @Nullable ClientLevel level, long now) {
+        if (player == null || level == null) {
+            return;
+        }
+
+        if (player.isDeadOrDying() || player.getHealth() <= 0) {
+            clearAllBuffers();
+            return;
+        }
+
+        if (lastLevel != level || lastPlayerId != player.getId()) {
+            clearAllBuffers();
+            lastLevel = level;
+            lastPlayerId = player.getId();
+        }
+
+        flushTick(now);
     }
 
     /**
@@ -484,6 +520,8 @@ public class CognitiveCoordinator implements BalmClientModule {
         DirectInteractionShield.reset();
         criticalShieldUntil = 0;
         criticalCountInTick = 0;
+        lastLevel = null;
+        lastPlayerId = -1;
     }
 
     /**
