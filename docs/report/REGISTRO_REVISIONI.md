@@ -46,3 +46,22 @@ Questo documento costituisce il **Registro Attivo Snello** del progetto Minecraf
 
 ---
 
+### 🔵 Rev MC-26.10 — Soppressione Accovacciamento Non Intenzionale (Shift Sneak Hijack) all'Interno delle Schermate GUI
+- **Stato**: `[APERTA]`
+- **Data Rilevamento**: 2026-09-04 ore 01:58
+- **Ambito**: Coesistenza tra Sicurezza Movimento (`SafetyMovementGuard` / `FallDetector`) e Accessibilità Interfacce (`InventoryControls` / Kuma Hotkeys `Shift+C`, `Shift+K`, `Shift+V`, `Shift+È`)
+- **Problema Riscontrato (Esperienza Luca)**: Quando ci si trova all'interno di una schermata di gioco (inventario, banco di lavoro, fornace, baule, alambicco), premendo il tasto `Shift` per eseguire una combinazione di navigazione (es. `Shift+C`, `Shift+K`, `Shift+V`) o per il trasferimento rapido, si attiva contemporaneamente l'accovacciamento nel mondo di gioco (il personaggio si china ed emette il segnale sonoro `SHOVEL_FLATTEN`, rialzandosi al rilascio). Prima di Fase 3A questo effetto collaterale non era presente.
+- **Evidenza Telemetrica & Diagnosi**:
+  - `FallDetector.tick` invoca `resetSafetyState()` ad ogni tick quando `client.gui.screen() != null`;
+  - `resetSafetyState()` chiama `movementGuard.clearSystemOverride()`, che invoca `reconcileCrouchState()`;
+  - `SafetyMovementGuard` interroga GLFW tramite `RawCrouchIntentProvider.readIntent()`, che rileva la pressione fisica di `GLFW_KEY_LEFT_SHIFT`;
+  - Poiché `intent.pressed()` è vero, il guard invoca `MinecraftSneakOverridePort.applyEffectiveCrouch(true)`, che chiama forzatamente `client.player.setShiftKeyDown(true)`;
+  - Il cambio di postura attiva il listener `PlayerStatus`, che emette i rintocchi acustici di accovacciamento nel mondo mentre l'utente è dentro il menu.
+- **Causa Radice**: `RawCrouchIntentProvider` e `SafetyMovementGuard` campionano il tasto `Shift` fisico da GLFW senza verificare se è attiva una GUI (`client.screen != null`), interpretando un tasto modificatore di navigazione dell'inventario come un comando fisico di movimento del giocatore.
+- **Soluzione di Affinamento (PRAPI)**:
+  1. *Guard Contestuale Schermo*: Se `client.screen != null`, `RawCrouchIntentProvider` restituisce `new CrouchIntent(false, true)` (nessun intento di accovacciamento quando si opera su una GUI);
+  2. *Disimpegno Pulito in `resetSafetyState`*: Quando una GUI è aperta, `SafetyMovementGuard` rilascia qualsiasi override di sistema attivo (`sneakPort.applyEffectiveCrouch(false)`) senza imporre lo stato GLFW raw all'entità giocatore.
+- **Piano Tecnico di Riferimento**: In fase di pianificazione (sessione correttiva anomalie GUI & Sicurezza).
+- **Esito Collaudo**: Aperta per lavorazione.
+
+
