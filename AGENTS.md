@@ -10,22 +10,22 @@ Tutta l'interazione con Minecraft, i menu, il mondo di gioco e gli strumenti di 
 
 ---
 
-## 🏛️ 1. FONTI DI VERITÀ E REGOLE DI PROGETTO
+## ⚡ 1. REGOLA DI INGAGGIO E CARICAMENTO PROGRESSIVO (ON-DEMAND)
 
-Prima di proporre modifiche o analizzare il codice, consulta sempre i seguenti file di riferimento:
+Per garantire la massima velocità di risposta e preservare la finestra di contesto di Codex:
+- **Richieste brevi, chiarimenti o domande veloci**: usa unicamente questo file `AGENTS.md` senza caricare la documentazione del progetto.
+- **Pianificazione, implementazione, diagnosi o test**: attiva la consultazione approfondita delle Fonti di Verità (Sezione 2) caricando **esclusivamente le 1–3 schede in `knowledge/` pertinenti** al modulo da toccare (usando l'Indice Ragionato in `GEMINI.md`).
+- **Divieto di sovraccarico**: non caricare mai in massa l'intera cartella `knowledge/`, i piani archiviati in `docs/piani/completati/` o le revisioni chiuse in `docs/report/ARCHIVIO_REVISIONI.md`.
+
+---
+
+## 🏛️ 2. FONTI DI VERITÀ E REGOLE DI PROGETTO (ATTIVAZIONE CONDIZIONALE)
+
+Quando il compito richiede pianificazione, implementazione, diagnosi o test approfonditi (secondo la Regola di Ingaggio sopra), consulta i seguenti file di riferimento:
 - `GEMINI.md`: Hub centrale di contesto con le regole fondamentali del dominio voxel e i protocolli operativi.
 - `knowledge/`: Base di conoscenza modulare (architettura, audio 3D, voxel raycasting, controlli tastiera, diario modifiche).
 - `docs/piani/attivi/`: Piani tecnici formali delle attività correnti.
 - `docs/report/REGISTRO_REVISIONI.md`: Registro aperto delle anomalie e revisioni emerse dai collaudi.
-
----
-
-## ⚡ 2. REGOLA DI CARICAMENTO PROGRESSIVO (ON-DEMAND)
-
-Per garantire la massima velocità e preservare la finestra di contesto di Codex:
-- **Richieste brevi, chiarimenti o domande veloci**: usa unicamente questo file `AGENTS.md` senza caricare la documentazione del progetto.
-- **Pianificazione, implementazione, diagnosi o test**: consulta prima `GEMINI.md` e carica **esclusivamente le 1–3 schede in `knowledge/` pertinenti** al modulo da toccare (usando l'Indice Ragionato in `GEMINI.md`).
-- **Divieto di sovraccarico**: non caricare mai in massa l'intera cartella `knowledge/`, i piani archiviati in `docs/piani/completati/` o le revisioni chiuse in `docs/report/ARCHIVIO_REVISIONI.md`.
 
 ---
 
