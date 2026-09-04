@@ -137,3 +137,21 @@ Quando durante la Fase 2 (Collaudo manuale in-game di Luca) emergono micro-anoma
    - Richiesta formale di conferma a Luca prima di applicare modifiche ai sorgenti;
 4. **Implementazione Chirurgica, Build & Re-Deploy (Sotto-Fase 1B)**:
    - Applicazione modifiche, esecuzione test JUnit, compilazione con `--no-daemon` su JDK 25 e deploy automatico nelle istanze attive prima del nuovo collaudo.
+
+---
+
+## 9. Protocollo di Convalida Empirica a Tre Fonti (Triangolazione Test - Telemetria - Persistenza)
+
+Nelle verifiche e nei rapporti di chiusura di fase (Fase 2 / Fase 3), la convalida di un sistema percettivo e motorio complesso non può basarsi unicamente su test automatici o su resoconti orali generici. Si applica la **Triangolazione a Tre Fonti Indipendenti**:
+
+1. **Fonte 1: Test Automatici Headless Deterministiche (Verifica di Coerenza Logica)**:
+   - Suite completa JUnit a 0 ms con mock e clock simulato;
+   - Certificazione dei contratti API, scadenze TTL, code di priorità e assenza di eccezioni.
+2. **Fonte 2: Telemetria Live & Log di Runtime (`latest.log`) (Verifica di Percezione Sensoriale)**:
+   - Monitoraggio delle stringhe effettivamente inviate al driver Tolk/SAPI e narrate a schermo;
+   - Verifica di `interrupt: true` vs `interrupt: false`, assenza di soppressioni indebite, timing tra eventi e verifica di coesistenza armonica tra domini (Sicurezza vs Esplorazione vs Movimento).
+3. **Fonte 3: Persistenza su Disco del Mondo di Gioco (Verifica degli Effetti Reali)**:
+   - Ispezione dei file di salvataggio (`level.dat`, `region/*.mca`, `players/stats/<uuid>.json`);
+   - Riscontro incrociato tra ciò che è stato vocalizzato ed eseguito (es. mob agganciato e abbattuto, danni inflitti, drop raccolti nell'inventario e blocchi estratti) e i dati registrati deterministicamente dall'engine di Minecraft.
+
+Solo la convergenza simultanea e coerente di tutte e tre le fonti sancisce il **superamento definitivo della Fase 2** e autorizza il passaggio alla Fase 3 (Chiusura Tecnica).

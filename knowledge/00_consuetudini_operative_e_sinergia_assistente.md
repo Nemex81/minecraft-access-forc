@@ -190,4 +190,27 @@ Sui sistemi Windows dove i repository risiedono all'interno di cartelle sincroni
    - Eseguire i comandi Gradle associando tassativamente il flag `--no-watch-fs` oltre a `--no-daemon`:
    ```powershell
    .\gradlew.bat --no-daemon --no-watch-fs test
-   ```
+   ```
+
+---
+
+## 11. Gestione a Buffer delle Revisioni Intermedie (Buffer Pre-Release)
+
+Nelle roadmap strutturate a fasi sequenziali (es. Fasi 1..6 per epiche architetturali):
+1. **Rischio di Frammentazione Inter-Fase**:
+   - Se durante il completamento o il collaudo di una fase intermedia emergono revisioni di supporto, richieste di interruttori diagnostici o micro-affinamenti non bloccanti, forzarne l'implementazione immediata come "casello obbligatorio" prima della fase successiva spezza il ritmo operativo e ritarda la migrazione dei moduli core.
+2. **Standard di Resequencing a Buffer**:
+   - Tutte le voci aperte nel Registro Revisioni che non costituiscono bug bloccanti per la fase immediatamente successiva vengono accodate e differite formalmente a valle delle feature strutturali (es. post-Fase 5), aggregandole in un **buffer di rifinitura preparatorio pre-collaudo globale (pre-Fase 6)**.
+   - Questo garantisce continuità concettuale tra le fasi di migrazione e concentra le rifiniture e gli strumenti diagnostici in una sessione organica e mirata prima della chiusura definitiva dell'epica.
+
+---
+
+## 12. Principio del Rasoio Funzionale Anti-Sovraingegnerizzazione (Verifica Empirica Pre-Refactor)
+
+Prima di proporre refactoring architetturali, nuove factory o macchine a stati su moduli complessi:
+1. **La Supremazia del Comportamento Empirico Reale**:
+   - L'eleganza teorica del codice non deve mai prevaricare un comportamento in-game già collaudato e funzionante con screen reader NVDA.
+   - *Se* un'anomalia storica (es. lo sticky-sneak sulle scale a pioli) risulta già risolta nella pratica, con attraversamento fluido e avviso corretto (*"discesa sicura"*);
+   - *Allora* è fatto divieto assoluto di riaprire refactoring speculativi sul modulo coinvolto (`FallDetector`, `TraversalSafetyAnalyzer`, `SafetyMovementGuard`).
+2. **Isolamento dell'Ambito Minimo Efficace**:
+   - L'intervento tecnico deve circoscriversi rigorosamente al solo requisito minimo necessario (es. l'interruttore diagnostico volatile), congelando i componenti funzionanti ed evitando sovraingegnerizzazioni che introducono regressioni silenziose. Eventuali micro-imprecisioni di contorno (es. taratura soglie) vanno registrate come revisioni differite a bassa priorità.

@@ -183,6 +183,12 @@ L'evoluzione dal modello a scudi sincroni sparsi verso il **Cognitive Coordinato
    - La fusione vocale è subordinata all'esistenza di un template I18N semantico autorizzato (`minecraft_access.cognitive.join_*`).
    - Se il template non esiste o il resolver restituisce `null`, è fatto divieto assoluto di unire le stringhe con `". "` a mano. Il primario parla da solo; il secondario valido (anche se `PASSIVE`) viene preservato nella `shortQueue` con il suo TTL ed emesso al tick successivo se ancora valido.
 
-6. **Facciata `NarrationPriority` e `DirectInteractionShield`**:
+6. **Facciata `NarrationPriority`**:
    - La facciata preserva al 100% le 4 firme storiche per i chiamanti legacy, propagando direttamente gli errori senza catch-all e offrendo seam di test dedicati (`scannerSuppressor`).
-   - `DirectInteractionShield` è riservato esclusivamente all'input diretto (tastiera/GUI). I toast e i pacchetti non lo attivano, garantendo che gli eventi critici mantengano sempre latenza 0 ms.
+
+7. **Pattern `DirectInteractionShield` & Disaccoppiamento Comandi Espliciti (Fase 4)**:
+   - *Problema*: Il feed automatico continuo del mirino durante il cammino (`EXPLORATION` / `PASSIVE`) rischia di ritardare o sovrapporsi alle richieste esplicite dell'utente impartite da tastiera, degradando la reattività percepita da NVDA.
+   - *Token Temporale Vincolante*: All'attivazione di comandi espliciti da tastiera (lettura mirino tasto `B`, centramento orizzonte / sguardo livellato tasti visuale, lock bersaglio radar POI tasto `X`), viene attivato `DirectInteractionShield.recordExplicitAction()`.
+   - *Precedenza Assoluta a Latenza Zero*: L'annuncio del comando manuale viene emesso immediatamente con `interrupt: true` e canale diretto.
+   - *Assorbimento Passivo Deterministo*: Durante la finestra dello scudo, i tick del mirino automatico o gli aggiornamenti passivi di sottofondo vengono assorbiti silenziosamente (`absorbIfActive()`), impedendo qualsiasi accodamento ritardato o troncamento vocale.
+   - *Inviolabilità dei Critici*: Lo scudo differisce o assorbe unicamente eventi passivi e contestuali; gli eventi `CRITICAL` (burroni, cadute, lava) mantengono la facoltà di interrompere qualsiasi output in qualsiasi istante.
