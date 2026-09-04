@@ -13,6 +13,40 @@ Questo documento raccoglie la memoria storica di tutte le anomalie, correzioni e
 
 ---
 
+### 🟢 Rev MC-26.9 — NullPointer Guard su currentScreen e Anti-Ghost in InventoryControls
+- **Stato**: `[COLLAUDATA CON SUCCESSO]`
+- **Versione Chiusura**: 26.2-1.19.0-dev (Data 2026-09-04)
+- **Problema Riscontrato (Esperienza Luca)**: Durante la transizione o chiusura rapida dell'inventario verso il menu di gioco, la pressione di un tasto di navigazione slot poteva generare NPE su `currentScreen`, muovere il mouse senza contesto o produrre narrazioni residue dello slot.
+- **Evidenza Telemetrica / Log**:
+  ```text
+  Caused by: java.lang.NullPointerException: Cannot invoke "org.mcaccess.minecraftaccess.mixin.AbstractContainerScreenAccessor.getLeftPos()" because "this.currentScreen" is null
+      at knot//org.mcaccess.minecraftaccess.features.inventory_controls.InventoryControls.moveToSlotItem(InventoryControls.java:1022)
+  ```
+- **Soluzione Applicata (PRAPI)**:
+  1. Predicato centrale `isActiveContainerScreen()` con verifica rigorosa dell'identità d'istanza (`activeScreen instanceof AbstractContainerScreen && activeScreen == currentScreen`);
+  2. Sincronizzazione ciclo lifecycle in `tick()` prima del debounce dell'intervallo con `clearNavigationState()`;
+  3. Guard a monte su tutti i 18 handler Kuma e su tutti i metodi di navigazione/focus (`changeGroup`, `selectGroup`, `focusSlotItemAt`, `focusSlotItem`, `changeRecipeTab`, `changeCreativeInventoryTab`, `narrateRecipeInfo`);
+  4. Guard a valle in entrambi gli overload di `moveToSlotItem` (`if (slotItem == null || !isActiveContainerScreen()) return;`);
+  5. Inizializzazione difensiva di `interval` con `Interval.ms(150)` e null-check su `Config.getInstance()`.
+- **Piano Tecnico di Riferimento**: `docs/piani/completati/PIANO_TECNICO_CORRETTIVO_REV_MC-26.9_MC-26.10_GUI.md`
+- **Esito Collaudo**: Collaudata con successo sul campo in-game; zero eccezioni nei log (`latest.log`) e navigazione da tastiera solida e priva di ghost narration.
+
+---
+
+### 🟢 Rev MC-26.10 — Soppressione Accovacciamento Non Intenzionale (Shift Sneak Hijack) all'Interno delle Schermate GUI
+- **Stato**: `[COLLAUDATA CON SUCCESSO]`
+- **Versione Chiusura**: 26.2-1.19.0-dev (Data 2026-09-04)
+- **Problema Riscontrato (Esperienza Luca)**: All'interno di qualsiasi interfaccia GUI (inventario, banco di lavoro, fornace, cassa), la pressione del tasto `Shift` per combinazioni di tasti o quick-move attivava contemporaneamente l'accovacciamento nel mondo con rintocchi audio `SHOVEL_FLATTEN`.
+- **Soluzione Applicata (PRAPI)**:
+  1. `RawCrouchIntentProvider` preservato puro al 100% come fedele lettore hardware GLFW (Single Responsibility);
+  2. Metodo `suspendForGui()` in `SafetyMovementGuard` con ownership token rigoroso: rilascia il crouch con `applyIfChanged(false)` solo se `systemOverrideActive` era vero, senza toccare la postura manuale né interrogare il probe hardware;
+  3. Routing esplicito in `FallDetector.tick`: se `client.gui.screen() != null`, esecuzione prioritaria di `resetSafetyStateForGui()` (che chiama `suspendForGui()`), separata dal reset ordinario nel mondo (`resetSafetyState()`);
+  4. Revoca immediata di `currentAllowedDescentId` e ripresa trasparente dello Shift manuale una volta chiusa la schermata.
+- **Piano Tecnico di Riferimento**: `docs/piani/completati/PIANO_TECNICO_CORRETTIVO_REV_MC-26.9_MC-26.10_GUI.md`
+- **Esito Collaudo**: Collaudata con successo sul campo in-game; nessun accovacciamento o suono di pala durante l'uso di Shift nelle schermate GUI e ripresa immediata nel mondo.
+
+---
+
 ### 🟢 Rev MC-26.8 — Discesa Sicura su Scale a Pioli ed Elementi Arrampicabili (Climbable Bypass in FallDetector)
 - **Stato**: `[COLLAUDATA CON SUCCESSO]`
 - **Versione Chiusura**: 26.2-1.19.0-dev (Data 2026-09-03)

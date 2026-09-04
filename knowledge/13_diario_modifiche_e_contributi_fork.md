@@ -33,6 +33,21 @@ Poiché il `README.md` pubblico e la documentazione del repository upstream rima
   - **Doppio Percorso Deterministico**: Inoltro al `CognitiveCoordinator` se attivo, oppure bypass legacy con `legacyVoiceConsumer` e `legacyAudioConsumer` (con passaggio del `Level` locale e identico `SoundCue`).
   - **Suite di Test & Collaudo In-Game**: 29 test specifici aggiunti (totale 185 test del progetto al 100% verdi) e validazione sul campo completata con successo (oltre 1h 12m di gioco continuo senza warning o errori).
 
+### 🎛️ Bonifica Anomalie GUI Post-Collaudo (Rev MC-26.9 & Rev MC-26.10 — Commit 6413d721)
+- **Rev MC-26.9 (NullPointer Guard & Anti-Ghost in `InventoryControls`)**:
+  - Predicato centrale `isActiveContainerScreen()` con verifica rigorosa di identità d'istanza (`activeScreen instanceof AbstractContainerScreen && activeScreen == currentScreen`).
+  - Sincronizzazione ciclo di vita in `tick()` prima del debounce dell'intervallo con `clearNavigationState()`.
+  - Guard a monte sui 18 handler Kuma e su tutti i metodi di navigazione/focus (`changeGroup`, `selectGroup`, `focusSlotItemAt`, `focusSlotItem`, `changeRecipeTab`, `changeCreativeInventoryTab`, `narrateRecipeInfo`).
+  - Guard a valle in entrambi gli overload di `moveToSlotItem` (`if (slotItem == null || !isActiveContainerScreen()) return;`).
+  - Inizializzazione difensiva di `interval` con `Interval.ms(150)` per disaccoppiamento totale dal ciclo di vita di `Config`.
+  - 6 nuovi test unitari in `InventoryControlsLifecycleTest` superati al 100%.
+- **Rev MC-26.10 (Soppressione Shift Sneak Hijack in GUI)**:
+  - `RawCrouchIntentProvider` mantenuto puro al 100% come lettore hardware GLFW (Single Responsibility).
+  - Metodo `suspendForGui()` in `SafetyMovementGuard` con ownership token rigoroso: rilascia il crouch con `applyIfChanged(false)` solo se `systemOverrideActive` era vero, senza toccare la postura manuale né interrogare il probe hardware.
+  - Routing prioritario in `FallDetector.tick`: se `client.gui.screen() != null`, esecuzione immediata di `resetSafetyStateForGui()` (che invoca `suspendForGui()`), disaccoppiata dal reset ordinario nel mondo (`resetSafetyState()`).
+  - Revoca immediata di `currentAllowedDescentId` e ripresa trasparente dello Shift manuale una volta chiusa la schermata GUI.
+  - 6 nuovi test unitari in `SafetyMovementGuardTest` superati al 100%.
+
 ---
 
 ## 🚀 [v26.2-1.18.0] — 2026-09-02 (Feedback Dislivello Adattivo, Verbosità Faccia, Micro-Voxel Raymarch & Armonizzazione SSOT Mirino/Ostacoli)
