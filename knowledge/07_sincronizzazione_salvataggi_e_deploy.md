@@ -93,3 +93,24 @@ Per garantire la perfetta parità e massime prestazioni tra il PC fisso e il por
   1. La cartella del mondo: `minecraft/saves/<mondo>/`
   2. Il file dei waypoints: `minecraft/config/minecraft-access/waypoints/singleplayer_<mondo>.json`
 - **Prevenzione Reset POI**: Se il file JSON dei waypoints non viene copiato insieme al salvataggio, il modulo `WaypointManager` inizializza la lista vuota e il primo evento di morte (`autoSaveDeathPoint`) sovrascriverà la lista cancellando i POI storici.
+
+---
+
+## 4. Architettura Multi-Canale di Resilienza & Sincronizzazione (ASTRALIS v2.7.2)
+
+Per garantire la totale separazione tra codice, dati runtime pesanti e archivi storici, Minecraft Access adotta la matrice a **4 Canali Funzionali di ASTRALIS**:
+
+1. **Canale 1 — Versionamento del Codice Sorgente (VCS / GitHub)**:
+   - *Finalità*: Tracciamento atomico di file `.java`, `.json`, `.gradle`, documentazione di progetto e piani tecnici.
+   - *Target*: Repository GitHub su branch attivo (`feat/cognitive-orchestrator`).
+   - *Regola*: Vietato aggiungere file binari superiori a 10 MB, cartelle `saves/` o dump di log completi.
+2. **Canale 2 — Ponte Operativo Multi-Macchina (Hot Bridge Salotto <-> Portatile)**:
+   - *Finalità*: Scambio rapido in tempo reale di dati runtime pesanti tra PC fisso (`NEMEXMASTER`) e portatile (`MSI`).
+   - *Target*: Cartella cloud sincronizzata (OneDrive / Google Drive) dedicata a mondi di gioco (`saves/`), waypoints e configurazioni PrismLauncher.
+   - *Vantaggio*: Consente di interrompere il gameplay o il test su un PC e riprenderlo istantaneamente sull'altro senza inquinare Git.
+3. **Canale 3 — Archivio Storico & Disaster Recovery (Cold Archive)**:
+   - *Finalità*: Snapshot di sicurezza preventiva pre-fill, archivio build `.jar` ufficiali e memoria perenne dei rilasci.
+   - *Target*: `$env:OneDrive\progetti dei frati\accessible games\minecraft archivio backup\`.
+   - *Regola*: Aggiornato esclusivamente in Fase 3 (Chiusura Tecnica) post-convalida di Luca o prima di manipolazioni territoriali distruttive (vedi [12_integrita_mondi_e_disaster_recovery.md](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/knowledge/12_integrita_mondi_e_disaster_recovery.md)).
+4. **Canale 4 — Backup Primario Resiliente (Sostitutivo di Git per Progetti No-VCS)**:
+   - *Finalità*: Destinato a progetti non tecnici dell'utente che non usano Git, dove il cloud drive esegue snapshot zip timestampati ad ogni chiusura tecnica.

@@ -69,11 +69,12 @@ Questo file costituisce l'**Hub Centrale di Contesto e Governance** del progetto
    - Ci occupiamo unicamente delle localizzazioni in Italiano (`it_it.json`) e Inglese (`en_us.json`).
    - In tutti i file `.json` in `src/main/resources/assets/minecraft_access/lang/`, le chiavi devono essere **rigorosamente disposte in ordine alfabetico crescente** per superare i test di CI GitHub (`jq -e "keys != keys_unsorted"`).
 
-3. **Gerarchia Cartelle Dinamica & Backup**:
-   - **Cartella Operativa Primaria di Sviluppo**: `$env:OneDrive\Documenti\GitHub\minecraft-access\`
-   - **Cartella Master Archivio & Backup**: `$env:OneDrive\progetti dei frati\accessible games\minecraft archivio backup\`
-   - **Risoluzione Istanze**: Rilevamento dinamico in `$env:APPDATA\PrismLauncher\instances\` (`*26.2*Access*`).
-   - **Divieto di Copie Regole in Backup**: Le schede `knowledge/` risiedono unicamente nel repository Git versionato.
+3. **Profilo di Resilienza, Versionamento & Canali Cloud (ASTRALIS)**:
+   - **Canale 1 (VCS Codice)**: Git repository su remote GitHub (`feat/cognitive-orchestrator`);
+   - **Canale 2 (Ponte Hot Salotto <-> Portatile)**: Sync salvataggi e istanze in `$env:OneDrive\progetti dei frati\accessible games\minecraft ponte saves\`;
+   - **Canale 3 (Cold Archive & Disaster Recovery)**: Backup stabile in `$env:OneDrive\progetti dei frati\accessible games\minecraft archivio backup\`;
+   - **Risoluzione Istanze**: Rilevamento dinamico in `$env:APPDATA\PrismLauncher\instances\` (`*26.2*Access*`);
+   - *Specifiche e Routine*: vedi [`knowledge/07_sincronizzazione_salvataggi_e_deploy.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/knowledge/07_sincronizzazione_salvataggi_e_deploy.md) e [`knowledge/12_integrita_mondi_e_disaster_recovery.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/knowledge/12_integrita_mondi_e_disaster_recovery.md).
 
 4. **Regole Geometriche Voxel & Anti-Ridondanza Comandi**:
    - Non incassare mai torce nei muri distruggendo blocchi solidi; posizionare le torce a muro su blocchi d'aria adiacenti con il facing corretto e le torce ritte a quota $Y+1$.
