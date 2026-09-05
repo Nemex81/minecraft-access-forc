@@ -1,4 +1,4 @@
-# Minecraft Access — Hub di Contesto Master (GEMINI.md — ASTRALIS v2.7.1)
+# Minecraft Access — Hub di Contesto Master (GEMINI.md — ASTRALIS v2.7.2)
 # Autore: Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA)
 # Target AI: Antigravity (Primario) & Codex/ChatGPT (Copilota Ausiliario)
 # Eredita da:
@@ -16,9 +16,11 @@ Questo file costituisce l'**Hub Centrale di Contesto e Governance** del progetto
 
 ## 🏛️ 1. LA MATRICE DEI 12 PROTOCOLLI OPERATIVI (SPECIALIZZAZIONE MINECRAFT ACCESS)
 
-1. **Protocollo 1 — Progettazione** *(Strategy, Contracts & Architecture — Sotto-Fase 1A)*:
-   - Redazione del piano formale in `docs/piani/attivi/` con dichiarazione incremento AVF (`# Incremento Versione Target (AVF)`);
-   - Stop Obbligatorio (Gating Semantico): zero modifiche al codice prima del via libera esplicito di Luca.
+1. **Protocollo 1 — Progettazione** *(Strategy, Contracts & Architecture — Fase 0 & Sotto-Fase 1A)*:
+   - *Rete Documentale a 4 Nodi Comunicanti (Pointer Hub DRY)*: Strategia Cognitiva (`docs/strategie/`) <-> Piano Tecnico (`docs/piani/`) <-> Report di Sessione (`docs/report/archivio/`) <-> Registro Revisioni RRU (`REGISTRO_REVISIONI.md` / `ARCHIVIO_REVISIONI.md`);
+   - *Fase 0 (Strategia Cognitiva UPCS)*: Elaborazione del modello mentale, delle invarianti inviolabili e dialettica avversariale in `docs/strategie/attive/` per compiti complessi o architetturali;
+   - *Sotto-Fase 1A (Piano Tecnico Formale)*: Redazione del piano in `docs/piani/attivi/` ereditando le invarianti nei contratti D0..DN con dichiarazione incremento AVF (`# Incremento Versione Target (AVF)`);
+   - *Stop Obbligatorio (Gating Semantico)*: zero modifiche al codice prima del via libera esplicito di Luca.
 2. **Protocollo 2 — Validazione** *(7 Assi di Qualità + Matrice di Simulazione a 3 Livelli)*:
    - Validazione preventiva su geometria voxel, raycast, accessibilità tastiera, volumi sonori (0.7f-0.8f) e simulazione di scenari comuni ($T>1$), alternativi e limite ($T=1$, null, corner cases).
 3. **Protocollo 3 — Esecuzione** *(Build, Code & Deploy Proattivo — Sotto-Fase 1B / Fase 2)*:
@@ -34,7 +36,7 @@ Questo file costituisce l'**Hub Centrale di Contesto e Governance** del progetto
 6. **Protocollo 6 — Chiusura Tecnica & AVF (Fase 3)**:
    - Calcolo deterministico della versione (`V.A.R[.M]`) e proposta a Luca;
    - Aggiornamento di `knowledge/13_diario_modifiche_e_contributi_fork.md`;
-   - Archiviazione del piano in `docs/piani/completati/` e migrazione delle revisioni collaudate in `docs/report/ARCHIVIO_REVISIONI.md`;
+   - Archiviazione simultanea della strategia in `docs/strategie/archiviate/`, del piano in `docs/piani/completati/`, del report in `docs/report/archivio/` e migrazione delle revisioni collaudate in `docs/report/ARCHIVIO_REVISIONI.md` (zero residui e zero orfani);
    - Commit Git sul branch attivo e Domanda Ponte Obbligatoria per la Fase 4.
 7. **Protocollo 7 — Auto-Apprendimento Continuo (Fase 4)**:
    - Estrazione lezioni 3D e aggiornamento schede locali `knowledge/` (Binario A) e Master Hub (Binario B).

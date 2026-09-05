@@ -32,10 +32,12 @@ Poiché lo sviluppo e il collaudo avvengono con uno sviluppatore e giocatore tot
    - Un piano tecnico NON viene archiviato automaticamente dopo la compilazione o il deploy di prova.
    - Viene spostato nella sottocartella `docs\piani\completati\` **esclusivamente dopo che Luca ha effettuato il test manuale in-game di persona aprendo il gioco e confermato formalmente il superamento del collaudo**.
 4. **Organizzazione Documentale in `docs/`**:
-   - `docs\piani\attivi\`: Piani tecnici attivi (massimo 1-2 in lavorazione).
-   - `docs\piani\completati\`: Piani tecnici collaudati e integrati.
-   - `docs\strategie\`: Documenti di strategia, architettura e metodologie.
-   - `docs\report\`: Relazioni diagnostiche, audit e collaudi.
+   - `docs\strategie\attive\`: Strategie logico-cognitive in elaborazione o discussione (Fase 0).
+   - `docs\strategie\archiviate\`: Strategie convalidate, convertite in piani tecnici o assimilate.
+   - `docs\piani\attivi\`: Piani tecnici attivi in stesura o lavorazione (Fase 1).
+   - `docs\piani\completati\`: Piani tecnici collaudati con successo e integrati.
+   - `docs\report\`: Registro Revisioni attivo (`REGISTRO_REVISIONI.md`) e storico (`ARCHIVIO_REVISIONI.md`).
+   - `docs\report\archivio\`: Report di sessione e telemetria storici normalizzati URCP.
    - `docs\idee\`: Promemoria, spunti futuri e meccaniche da esplorare.
    - `docs\manuali\`: Manuali d'uso e guide comandi in-game.
 
@@ -236,4 +238,39 @@ Quando durante la Fase 2 (Deploy e Collaudo) o il Protocollo 5 (PRAPI) si apre o
      3. **Denoising & Puntatori Intelligenti (DRY Pattern)**: Condensazione dei dump di log estesi con puntamento a `latest.log`, mantenendo intatta la conoscenza geometrica, le coordinate e le disamine architetturali;
      4. **Bonifica Tecnica**: Rimozione del BOM UTF-8 (`\ufeff`), formattazione corretta dei link markdown `file:///` e normalizzazione dei marcatori.
 
+---
 
+## 12. Standard Ufficiale delle Strategie Logico-Cognitive (UPCS — ASTRALIS v2.7.2)
+
+Le **Strategie Logico-Cognitive** costituiscono il **quarto pilastro fondamentale** dell'ecosistema ASTRALIS. Si collocano nella **Fase 0 (Pre-Pianificazione)** e governano il *modello mentale*, la *dialettica ingegneristica* e il *congelamento delle invarianti logico-geometriche ed acustiche* prima della stesura del Piano Tecnico Formale.
+
+1. **Disaccoppiamento Epistemologico dei 4 Pilastri**:
+   - *Strategia Cognitiva (Fase 0)*: **Proattiva e Deliberativa** (*Il Perché e il Modello Mentale*). Esplora lo spazio delle soluzioni e congela le invarianti;
+   - *Piano Tecnico (Fase 1)*: **Esecutivo e Deterministico** (*Il Cosa e il Dove*). Dettaglia contratti D0..DN, classi, metodi, test seams e checklist a 3 stati;
+   - *Report di Sessione & Telemetria (Fase 2)*: **Retrospettivo ed Empirico** (*L'Evidenza sul Campo*). Registra i log in-game, i dialoghi operativi a cronologia inversa e il collaudo di Luca;
+   - *Registro Revisioni RRU (Fase 3)*: **Sintesi Forense e Memoria Perenne** (*La Tracciabilità nel Tempo*). Mantiene lo stato aperto/chiuso delle anomalie e punta bi-direzionalmente a Strategie, Piani e Report.
+
+2. **I 7 Archetipi Strategici Formali**:
+   - *Concettuale-Implementativa (Ideazione & Feature Design)*: traduce esigenze o idee in modelli concettuali stabili;
+   - *Diagnostico-Correttiva (Anomalie Ostiche & Root-Cause Discovery)*: analizza bug sistemici concorrenti smentendo ipotesi e isolando l'invariante infranta;
+   - *Refactoring Strutturale & Disaccoppiamento (Architectural Restructuring)*: separa layer accoppiati ed elimina God Objects preservando l'invarianza del comportamento;
+   - *Euristico-Cognitiva per Screen Reader & Audio 3D (UX Audio & NVDA)*: progetta la gerarchia vocale, anti-chatter, ducking sonoro e volumi di sicurezza (0.7f - 0.8f);
+   - *Dialettica Avversariale & Convergenza Multi-AI (Inner Codex Pattern)*: dirime divergenze tra copiloti AI sui 5 Cancelli Inviolabili;
+   - *Integrazione & Interoperabilità di Runtime*: isola librerie terze (Cloth Config, Loom, Fabric API) e gestisce fallback difensivi;
+   - *Bonifica, Migrazione & Deprecazione (Zero-Debt Clean-up)*: governa la rimozione sicura di codice morto o formati dati con strategia a 5 barriere.
+
+3. **Intestazione Istituzionale & Checklist di Convergenza di Fase 0**:
+   - Ogni strategia adotta il template `STRATEGIA_COGNITIVA_TEMPLATE.md` con intestazione formale e Registro di Convergenza con checklist a 3 stati:
+     * `- [ ] [DA DISCUTERE / APERTO]`: Tesi in esplorazione;
+     * `- [/] [CONVERGENZA PRELIMINARE — IN ATTESA DI CONVALIDA]`: Modello logico delineato, in attesa di decisione sovrana di Luca;
+     * `- [x] [CONVALIDATO — INVARIANTE CONGELATA]`: Principio approvato, pronto per la conversione in Piano Tecnico.
+
+4. **La Formula di Conversione (Da Strategia a Piano Tecnico)**:
+   - Quando Luca convalida la Strategia (*"approvo la strategia, convertiamola in piano"*):
+     * Le *Invarianti Inviolabili* della Strategia diventano i *Named Contracts D0..DN* del Piano Tecnico;
+     * Le *Classi e i Layer* individuati diventano i target di modifica della Sotto-Fase 1B;
+     * Gli *Scenari di Stress* discussi diventano la *Matrice di Simulazione a 3 Livelli* del Piano;
+     * Lo stato della strategia passa a `[CONVERTITA IN PIANO TECNICO]`.
+
+5. **Archiviazione Automatica a Zero Residui (Protocollo 6)**:
+   - A collaudo positivo di Luca, la strategia migra simultaneamente da `docs/strategie/attive/` a `docs/strategie/archiviate/` con stato `[ARCHIVIATA CON SUCCESSO]`, aggiornando tutti i puntatori incrociati nel Piano e nel Registro Revisioni.
