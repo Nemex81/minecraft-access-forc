@@ -89,8 +89,10 @@ Il ciclo di vita di ogni modifica o nuova funzionalità segue tassativamente que
      - Aggiornamento di `README.md`, `keybindings.md` e `features.md` se sono stati aggiunti tasti o comandi.
   3. **Promozione Backup JAR Stabile**:
      - Copia del JAR stabile in: `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft archivio backup\minecraft backup\Minecraft 26.2 Access 1.12.0 pc portatile\minecraft\mods\`
-  4. **Archiviazione Piano Tecnico**:
+  4. **Archiviazione Piano Tecnico & Report di Sessione**:
      - Spostamento del piano in `docs/piani/completati/` con marcatura `[COMPLETATO E COLLAUDATO]`.
+     - Spostamento del Report di Sessione da `docs/report/REPORT_SESSIONE_[TASK].md` a `docs/report/archivio/REPORT_SESSIONE_[TASK].md`.
+     - Migrazione delle revisioni collaudate in `docs/report/ARCHIVIO_REVISIONI.md` con aggiornamento deterministico del link di archivio.
   5. **Commit & Push su `origin/mymaster`**.
 
 ### Fase 4: Auto-Apprendimento Continuo a 3 Dimensioni & Protocollo della Domanda Ponte

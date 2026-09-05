@@ -115,7 +115,7 @@ La conclusione di ogni sessione implementativa segue tassativamente una sequenza
    - Aggiornamento di `README.md`, `keybindings.md` e `features.md` (se introdotti nuovi comandi/tasti).
 7. **Aggiornamento Backup PC Portatile**: Solo dopo il collaudo manuale positivo di Luca, promozione del JAR stabile nella cartella di backup:
    `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft archivio backup\minecraft backup\Minecraft 26.2 Access 1.12.0 pc portatile\minecraft\mods\`
-8. **Archiviazione del Piano Tecnico**: Spostamento del file del piano nella cartella `docs\piani\completati\` con marcatura `[COMPLETATO, COLLAUDATO E INTEGRATO]`.
+8. **Archiviazione del Piano Tecnico & Report di Sessione**: Spostamento del file del piano nella cartella `docs\piani\completati\` con marcatura `[COMPLETATO, COLLAUDATO E INTEGRATO]`, migrazione automatica del Report di Sessione in `docs/report/archivio/` e aggiornamento deterministico dei link in `docs/report/ARCHIVIO_REVISIONI.md`.
 9. **Commit & Push su `origin/mymaster`**.
 10. **Chiusura con Domanda Ponte Obbligatoria**:
     > *"Vuoi che avviamo ora la sessione formale di Auto-Apprendimento (Fase 4) per elaborare la bozza dettagliata delle regole e aggiornare le schede di conoscenza e governance?"*
@@ -173,3 +173,35 @@ In ogni Piano Tecnico Formale (Sotto-Fase 1A), prima di richiedere la convalida 
    - *Verifica*: L'intervento è suddiviso in contratti formali atomici e numerati ($D_0 \dots D_N$, $S_1 \dots S_N$) con precondizioni, postcondizioni, complessità e invarianti anti-regressione esplicite?
 5. **Cancello 5 — Determinismo Headless e Time-Seams a 0 ms**:
    - *Verifica*: Tutti i comportamenti dipendenti dal tempo (finestre di soppressione, debouncing vocale, cooldown, TTL) espongono package-private time seams per consentire test unitari JUnit istantanei a 0 ms senza `Thread.sleep`?
+
+---
+
+## 11. Standard Ufficiale del Report di Sessione & Telemetria (Pointer Hub & Cronologia Inversa)
+
+Quando durante la Fase 2 (Deploy e Collaudo) o il Protocollo 5 (PRAPI) si apre o si aggiorna la sessione di lavoro, Antigravity redige e mantiene il file `docs/report/REPORT_SESSIONE_[NOME_TASK].md` secondo le seguenti regole vincolanti:
+
+1. **Intestazione Rigida a 7 Campi**:
+   - Subito sotto il titolo del file, il report deve obbligatoriamente contenere:
+     * `- **Autore**: [Chi ha redatto il rapporto: Antigravity / Luca / GPT Codex]`
+     * `- **Revisori**: [Chi partecipa alla revisione/collaudo: Luca, GPT Codex, Antigravity]`
+     * `- **Data e Ora**: YYYY-MM-DD HH:mm`
+     * `- **Stato dell'Implementazione**: [IN PIANIFICAZIONE] | [IN TELEMETRIA / ATTIVO] | [IN REVISIONE PRAPI] | [COMPLETATO E COLLAUDATO]`
+     * `- **Obiettivo/i**: [Elenco sintetico obiettivi]`
+     * `- **Piani & Strategie Correlate**: [Link ai piani in docs/piani/ e strategie]`
+     * `- **Breve Descrizione**: [2-3 righe dense di contesto]`
+2. **Flusso Decisionale a Cronologia Inversa (Newest First per NVDA)**:
+   - Ogni nuovo aggiornamento, messaggio, osservazione di collaudo o proposta di ChatGPT/Codex deve essere inserito **tassativamente in cima alla sezione messaggi** (subito sotto l'intestazione `## 💬 Flusso Decisioni & Revisioni`).
+   - Questo garantisce che all'apertura del file con screen reader NVDA, premendo una sola volta il tasto rapido intestazione (`H`), il cursore atterri all'istante sull'ultimo stato e decisione presa, eliminando lo scrolling verso il fondo.
+3. **Standard Atomico del Messaggio ad Alto Segnale (4 Campi Obbligatori)**:
+   - Ciascuna voce di messaggio si struttura su 4 campi:
+     * `Contesto / Sintomo`: massimo 2 righe su cosa accade in-game o nel test;
+     * `Causa Radice Concettuale`: il perché geometrico o architetturale;
+     * `Approccio & Strategia Risolutiva`: la soluzione formulata ad elenchi compatti "Se... Allora", zero codice prolisso;
+     * `Puntatori & Riferimenti Estesi`: elenco link `file:///...` a classi, righe di `latest.log`, test seams e ID di revisione `Rev XX.Y`.
+   - **Divieto Assoluto di File Bloat**: vietato incollare dump grezzi di log o metodi di codice interi (> 3 righe).
+4. **Sinergia a Puntatore Diretto RRU -> Report (DRY Pattern)**:
+   - Le singole note nel `REGISTRO_REVISIONI.md` mantengono una sintesi estrema e puntano direttamente al Report di Sessione (`Report di Sessione & File Correlati`).
+   - Il Report è l'**unica fonte di verità (Single Source of Truth)** per l'elenco dei file, delle righe modificate e dei log coinvolti, evitando doppie registrazioni disallineate.
+5. **Archiviazione Automatica a Zero Residui (Fase 3 - Protocollo 6)**:
+   - A collaudo manuale positivo di Luca, durante la Chiusura Tecnica (Fase 3), il file `docs/report/REPORT_SESSIONE_[TASK].md` viene **spostato automaticamente** in `docs/report/archivio/REPORT_SESSIONE_[TASK].md`.
+   - Contestualmente, nella voce migrata in `ARCHIVIO_REVISIONI.md`, il link viene aggiornato automaticamente per puntare al percorso di archivio del report, garantendo zero link rotti e memoria storica perenne.

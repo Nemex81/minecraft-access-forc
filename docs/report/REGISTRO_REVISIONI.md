@@ -4,7 +4,7 @@
 # Percorso: docs/report/REGISTRO_REVISIONI.md
 # Archivio Storico: docs/report/ARCHIVIO_REVISIONI.md
 
-Questo documento costituisce il **Registro Attivo Snello** del progetto Minecraft Access. Ospita *esclusivamente* le revisioni aperte o in lavorazione. A collaudo positivo confermato da Luca, le voci vengono migrate nell'**Archivio Storico delle Revisioni** (`docs/report/ARCHIVIO_REVISIONI.md`), mantenendo questo file sempre leggero e rapido da consultare con NVDA.
+Questo documento costituisce il **Registro Attivo Snello** del progetto Minecraft Access. Ospita *esclusivamente* le revisioni aperte o in lavorazione. A collaudo positivo confermato da Luca, le voci vengono migrate nell'**Archivio Storico delle Revisioni** (`docs/report/ARCHIVIO_REVISIONI.md`), mantenendo questo file sempre leggero e rapido da consultare con NVDA. Ciascuna voce include il puntatore diretto al rispettivo **Report di Sessione** (`docs/report/REPORT_SESSIONE_[TASK].md`), che funge da Single Source of Truth per i file modificati, log e test correlati.
 
 ---
 
@@ -27,6 +27,7 @@ Questo documento costituisce il **Registro Attivo Snello** del progetto Minecraf
   2. Formattazione leggibile dall'identificatore del blocco (es. estrazione di *"dark oak barn door"* dalla chiave);
   3. Override di dizionario per le mod del modpack ufficiale in `minecraft_access/lang/it_it.json`.
 - **Piano Tecnico di Riferimento**: Da elaborare nella Fase 8 — Buffer RRU Post-Strategia.
+- **Report di Sessione & File Correlati**: Da associare all'avvio della sessione in Fase 8.
 - **Esito Collaudo**: In attesa del completamento della Fase 7 e della lavorazione nel Buffer RRU.
 
 ---
@@ -51,6 +52,7 @@ Questo documento costituisce il **Registro Attivo Snello** del progetto Minecraf
   5. Notifica vocale diretta tramite `MainClass.narrate(msg, true)`, indipendente dall'arbitraggio cognitivo;
   6. Suite di test dedicati per il toggle e il routing A/B cognitivo/legacy.
 - **Piano Tecnico di Riferimento**: `docs/piani/attivi/PIANO_TECNICO_REV_MC-26.8_TRAVERSAL_SAFETY_ANALYZER.md` (allineato e differito al Buffer RRU post-strategia).
+- **Report di Sessione & File Correlati**: Da associare all'avvio della sessione in Fase 8.
 - **Esito Collaudo**: In attesa di avvio lavorazione nella Fase 8.
 
 ---
@@ -68,6 +70,7 @@ Questo documento costituisce il **Registro Attivo Snello** del progetto Minecraf
 - **Differimento Formale & Vincolo Inderogabile**: Nessuna implementazione prima del completamento e della convalida formale della Fase 7; revisione differita alla Fase 8, dopo tutti i punti della roadmap cognitiva.
 - **Vincolo di Sessione**: Zero modifiche a `NumpadControls` o al relativo package nella sessione corrente.
 - **Piano Tecnico di Riferimento**: Da redigere nella sessione dedicata.
+- **Report di Sessione & File Correlati**: Da associare all'avvio della sessione in Fase 8.
 
 ---
 
@@ -80,3 +83,4 @@ Questo documento costituisce il **Registro Attivo Snello** del progetto Minecraf
   2. Implementare una condizione/soglia mirata con test dedicato per silenziare l'annuncio superfluo senza intaccare in alcun modo l'attuale comportamento protettivo e l'attraversamento delle scale;
   3. Non intervenire in MC-26.8 per evitare regressioni o sovraingegnerizzazione su un comportamento funzionale già collaudato positivamente.
 - **Piano Tecnico di Riferimento**: Da redigere nella Fase 8 — Buffer RRU Post-Strategia.
+- **Report di Sessione & File Correlati**: Da associare all'avvio della sessione in Fase 8.
