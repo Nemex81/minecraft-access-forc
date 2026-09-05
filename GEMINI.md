@@ -1,13 +1,14 @@
-# Minecraft Access — Hub di Contesto Master (GEMINI.md — ASTRALIS v2.7.0)
-# Autore: Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA)
-# Target AI: Antigravity (Primario) & Codex/ChatGPT (Copilota Ausiliario)
-# Eredita da:
-#   1. C:\Users\nemex\.gemini\config\GEMINI.md (Genoma Globale — Livello 0)
-#   2. C:\Users\nemex\OneDrive\progetti dei frati\accessible games\GEMINI.md (Ombrello Giochi — Livello 1.1)
-# Master Hub: $env:OneDrive\progetti dei frati\antigravity master governance e jolly universali
+# Minecraft Access — Hub di Contesto Master (GEMINI.md — ASTRALIS v2.7.1)
+# Autore: Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA)
+# Target AI: Antigravity (Primario) & Codex/ChatGPT (Copilota Ausiliario)
+# Eredita da:
+#   1. C:\Users\nemex\.gemini\config\GEMINI.md (Genoma Globale — Livello 0)
+#   2. C:\Users\nemex\OneDrive\progetti dei frati\accessible games\GEMINI.md (Ombrello Giochi — Livello 1.1)
+# Master Hub: $env:OneDrive\progetti dei frati\antigravity master governance e jolly universali
+
+Questo repository implementa la mod di accessibilità per non vedenti **Minecraft Access** ed è sviluppato in pair programming con **Luca**, sviluppatore e giocatore completamente non vedente su Windows 11 con screen reader **NVDA** (ZERO MOUSE).
+Tutta l'interazione con Minecraft, i menu, il mondo di gioco e gli strumenti di sviluppo avviene tramite sintesi vocale (NVDA / SAPI), feedback acustici 3D e comandi da tastiera completi.
 
-Questo repository implementa la mod di accessibilità per non vedenti **Minecraft Access** ed è sviluppato in pair programming con **Luca**, sviluppatore e giocatore completamente non vedente su Windows 11 con screen reader **NVDA** (ZERO MOUSE).
-Tutta l'interazione con Minecraft, i menu, il mondo di gioco e gli strumenti di sviluppo avviene tramite sintesi vocale (NVDA / SAPI), feedback acustici 3D e comandi da tastiera completi.
 
 Questo file costituisce l'**Hub Centrale di Contesto e Governance** del progetto `minecraft-access`, vincolante sia per l'assistente AI primario (**Antigravity**) che per i copiloti ausiliari di peer programming (come **Codex / ChatGPT**). Tutti i dettagli architetturali, i vincoli e gli standard operativi sono organizzati in modo modulare nella cartella [`knowledge/`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/knowledge/).
 

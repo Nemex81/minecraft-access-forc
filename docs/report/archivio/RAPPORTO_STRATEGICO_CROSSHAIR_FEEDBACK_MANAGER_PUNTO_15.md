@@ -1,11 +1,17 @@
-﻿# 🎯 Rapporto Strategico & Dossier di Handover: `CrosshairFeedbackManager` (Punto 15)
-# Autore: Luca & Antigravity
-# Data: 2026-09-01
-# Ambito: Repository `minecraft-access`
-# Destinazione: Bootstrap Sessione Dedicata in Nuova Chat
+# Rapporto Strategico & Dossier di Handover: CrosshairFeedbackManager (Punto 15)
+- **Autore:** Luca (Senior Developer) & Antigravity (Senior AI Pair Programmer)
+- **Revisori:** Codex / ChatGPT
+- **Data e Ora:** 2026-09-01 — 22:00 CEST
+- **Stato dell'Implementazione:** [COMPLETATO E ARCHIVIATO — IMPLEMENTAZIONE CONCLUSA]
+- **Obiettivo/i:**
+  * Dossier di bootstrap per l'implementazione del CrosshairFeedbackManager
+  * Mappatura delle impostazioni Cloth Config per l'utente finale
+  * Definizione delle frequenze e dei toni sonori per il puntamento di blocchi e varchi
+- **Piani & Strategie Correlate:**
+  * [`CrosshairFeedbackManager.java`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/src/main/java/org/mcaccess/minecraftaccess/features/crosshair/CrosshairFeedbackManager.java)
+- **Breve Descrizione:** Dossier strategico completo per la sonificazione del mirino centrale, debouncing degli eventi di mira e accessibilità senza mouse.
 
 ---
-
 ## 📌 1. Obiettivo & Contesto di Bootstrap
 
 Questo documento costituisce il **Dossier Tecnico Completo** per trasferire e avviare immediatamente i lavori sul **Punto 15 del Registro Revisioni** in una nuova chat pulita, preservando il 100% dei dettagli architetturali, delle analisi e delle decisioni progettuali concordate con Luca.

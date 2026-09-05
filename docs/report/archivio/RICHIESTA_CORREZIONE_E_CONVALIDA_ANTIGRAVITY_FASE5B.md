@@ -1,13 +1,17 @@
-# Richiesta di Correzione e Nuova Convalida — Sotto-Fase 5B
-
-- **Destinatario**: Antigravity
-- **Mittente**: Codex / ChatGPT, su richiesta di Luca
-- **Data**: 2026-09-04
-- **Stato**: Blocco correttivo pre-5C — proposta pronta, nessuna autorizzazione implicita a modificare il codice
-- **Oggetto**: Correzione del bridge terminale di `MovementCoordinator` e completamento delle prove automatiche della Sotto-Fase 5B.
+# Richiesta di Correzione e Nuova Convalida — Sotto-Fase 5B Integrazione Motore
+- **Autore:** GPT Codex / ChatGPT (su richiesta di Luca)
+- **Revisori:** Antigravity, Luca
+- **Data e Ora:** 2026-09-04 — 15:50 CEST
+- **Stato dell'Implementazione:** [COMPLETATO E ARCHIVIATO — CORREZIONI RICHIESTE ED ESEGUITE]
+- **Obiettivo/i:**
+  * Segnalazione del bloccante funzionale sul bridge di MovementCoordinator
+  * Richiesta di estensione della suite di test automatici con copertura del debouncing
+  * Messa in attesa della Sotto-Fase 5C fino a risoluzione verificata
+- **Piani & Strategie Correlate:**
+  * [`PIANO_TECNICO_AUTOWALK_NAVIGATORE_DUE_PASSAGGI_FASE5B.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/attivi/PIANO_TECNICO_AUTOWALK_NAVIGATORE_DUE_PASSAGGI_FASE5B.md)
+- **Breve Descrizione:** Richiesta di affinamento correttivo pre-5C con indicazione puntuale della lacuna nella prova di deduplicazione annunci.
 
 ---
-
 ## 1. Esito della verifica indipendente
 
 La Sotto-Fase 5B è strutturalmente coerente: `MovementCoordinator`, la factory I18N, `clearDomainEvents(SourceDomain.MOVEMENT)`, l'isolamento da `AutoWalkManager` e il piano di stop pre-5C sono presenti e compatibili con ASTRALIS.

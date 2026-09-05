@@ -1,13 +1,18 @@
-# Rapporto Tecnico: Diagnosi Voxel su Salvataggio Reale e Strategia Sistemica per la Discesa Sicura (Latching State Machine, Swept-Volume & Centratura Cognitiva)
-
-**Autori:** Luca & Antigravity  
-**Destinatario Primario:** ChatGPT (Senior Architectural Review)  
-**Ambito:** Perfezionamento Sistemico della Fase 3A — Dominio Sicurezza / `FallDetector` & `TraversalSafetyAnalyzer`  
-**Riferimento Revisione:** Rev MC-26.8  
-**Stato:** `[DOCUMENTO DI INDIRIZZO E PROPOSTA SISTEMICA — IN ATTESA DI REVISIONE DI CHATGPT]`  
+# Rapporto Tecnico: Diagnosi Voxel e Strategia Sistemica per la Discesa Sicura
+- **Autore:** Luca (Senior Developer) & Antigravity (Senior AI Pair Programmer)
+- **Revisori:** ChatGPT / Codex
+- **Data e Ora:** 2026-09-03 — 14:50 CEST
+- **Stato dell'Implementazione:** [COMPLETATO E ARCHIVIATO — CONVERGENZA STRATEGICA RAGGIUNTA]
+- **Obiettivo/i:**
+  * Diagnosi geometrica del comportamento del giocatore non vedente al bordo del dislivello
+  * Definizione della macchina a stati di aggancio (Latching State Machine)
+  * Formulazione dell'algoritmo di centratura cognitiva per prevenire scivolamenti diagonali
+- **Piani & Strategie Correlate:**
+  * [`STRATEGIA_SISTEMICA_TRAVERSAL_SAFETY_ANALYZER.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/strategie/STRATEGIA_SISTEMICA_TRAVERSAL_SAFETY_ANALYZER.md)
+  * [`FallDetector.java`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/src/main/java/org/mcaccess/minecraftaccess/features/safety/FallDetector.java)
+- **Breve Descrizione:** Proposta architetturale dettagliata per il controllo predittivo della camminata su sporgenze e rampe ripide.
 
 ---
-
 ## 0. Executive Summary & Obiettivo
 
 Durante il collaudo manuale in-game della prima iterazione del `TraversalSafetyAnalyzer` (commit `d60c234a`), Luca ha riscontrato un comportamento peculiare:

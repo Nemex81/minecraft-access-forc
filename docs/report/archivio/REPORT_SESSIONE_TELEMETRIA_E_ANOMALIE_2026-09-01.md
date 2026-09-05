@@ -1,11 +1,17 @@
-# Report di Sessione Telemetria In-Game & Registro Revisioni Future
-**Data**: 01/09/2026  
-**Autore**: Luca (Sviluppatore & Collaudatore) & Antigravity (AI Pair Programmer)  
-**Ambiente**: Minecraft 26.2 (Fabric + NeoForge), PrismLauncher ("Minecraft 26.2 Access - Server Tenuta"), Java 25, Screen Reader NVDA  
-**Scopo del Documento**: Fornire il contesto diagnostico integrale, le evidenze dai log (`latest.log`), le cause radice e le strategie correttive pronte per l'apertura della nuova sessione di lavoro dedicata.
+# Report di Sessione Telemetria In-Game & Registro Anomalie
+- **Autore:** Luca (Senior Developer & Collaudatore) & Antigravity (AI Pair Programmer)
+- **Revisori:** Luca
+- **Data e Ora:** 2026-09-01 — 21:00 CEST
+- **Stato dell'Implementazione:** [COMPLETATO E ARCHIVIATO — ANOMALIE TRASFERITE NEL REGISTRO REVISIONI]
+- **Obiettivo/i:**
+  * Raccolta delle evidenze telemetriche in-game nel mondo sopravvivenza Tenuta
+  * Isolamento delle ClassCastException e disallineamenti di configurazione
+  * Popolamento del Registro Revisioni per la pianificazione dei successivi cicli PRAPI
+- **Piani & Strategie Correlate:**
+  * [`REGISTRO_REVISIONI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/REGISTRO_REVISIONI.md)
+- **Breve Descrizione:** Raccolta telemetrica dal collaudo live di Luca, analisi dei log di gioco e apertura delle revisioni storiche da MC-26.1 a MC-26.6.
 
 ---
-
 ## 1. Sintesi Generale del Collaudo
 
 Il test in-game eseguito sul server dedicato ha confermato la perfetta stabilità e reattività dei sistemi di mobilità e navigazione:

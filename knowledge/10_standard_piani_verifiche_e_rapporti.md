@@ -205,3 +205,16 @@ Quando durante la Fase 2 (Deploy e Collaudo) o il Protocollo 5 (PRAPI) si apre o
 5. **Archiviazione Automatica a Zero Residui (Fase 3 - Protocollo 6)**:
    - A collaudo manuale positivo di Luca, durante la Chiusura Tecnica (Fase 3), il file `docs/report/REPORT_SESSIONE_[TASK].md` viene **spostato automaticamente** in `docs/report/archivio/REPORT_SESSIONE_[TASK].md`.
    - Contestualmente, nella voce migrata in `ARCHIVIO_REVISIONI.md`, il link viene aggiornato automaticamente per puntare al percorso di archivio del report, garantendo zero link rotti e memoria storica perenne.
+
+6. **Procedura di Ingestione In-Flight & Archiviazione Report (Standard URCP — ASTRALIS v2.7.1)**:
+   - *Finalità*: Garantire che ogni report (proveniente dall'esterno come ChatGPT/Codex, tester, o note di collaudo) sia uniformato allo standard ASTRALIS v2.7.1 sia durante la fase attiva (post-analisi) sia prima dell'archiviazione finale.
+   - *Ingestione In-Flight Post-Analisi (Protocollo 4)*:
+     * Non appena un documento o report esterno viene sottoposto ad analisi/valutazione, Antigravity formula le proprie osservazioni e contestualmente propone a Luca la conversione URCP;
+     * Con il via libera di Luca (*"procedi"*), il file viene subito convertito ed è pronto per essere fruito linearmente con NVDA e collegato al `REGISTRO_REVISIONI.md`.
+   - *Procedura a 4 Passi (URCP)*:
+     1. **Normalizzazione Intestazione a 7 Campi**: Estrazione e popolamento dei campi obbligatori (`Autore`, `Revisori`, `Data e Ora`, `Stato dell'Implementazione`, `Obiettivo/i`, `Piani & Strategie Correlate`, `Breve Descrizione`);
+     2. **Inversione Cronologica per NVDA**: Posizionamento dell'esito/stato conclusivo in alto e delle sezioni storiche in basso per fruizione vocale immediata;
+     3. **Denoising & Puntatori Intelligenti (DRY Pattern)**: Condensazione dei dump di log estesi con puntamento a `latest.log`, mantenendo intatta la conoscenza geometrica, le coordinate e le disamine architetturali;
+     4. **Bonifica Tecnica**: Rimozione del BOM UTF-8 (`\ufeff`), formattazione corretta dei link markdown `file:///` e normalizzazione dei marcatori.
+
+

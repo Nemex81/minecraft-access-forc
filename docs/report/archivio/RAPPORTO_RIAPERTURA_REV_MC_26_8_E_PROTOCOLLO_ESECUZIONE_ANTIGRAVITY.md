@@ -1,14 +1,18 @@
-# Rapporto operativo vincolante — Riapertura Rev. MC-26.8 e protocollo di esecuzione per Antigravity
-
-**Destinatario operativo:** Antigravity  
-**Ramo vincolato:** `feat/cognitive-orchestrator`  
-**Stato reale della revisione:** `[RIAPERTA — FASE A NON SUPERATA — STOP A FASI B/C/D]`  
-**Piano autorevole:** `docs/piani/attivi/PIANO_TECNICO_IMPLEMENTATIVO_TRAVERSAL_SAFETY_E_COGNITIVE.md`  
-**Strategia autorevole:** `docs/strategie/STRATEGIA_SISTEMICA_TRAVERSAL_SAFETY_E_CENTRALIZZAZIONE_COGNITIVA.md`  
-**Data:** 2026-09-03
+# Rapporto Operativo Vincolante — Riapertura Rev. MC-26.8 e Protocollo di Esecuzione
+- **Autore:** ChatGPT / Codex
+- **Revisori:** Luca (Senior Developer), Antigravity
+- **Data e Ora:** 2026-09-03 — 16:45 CEST
+- **Stato dell'Implementazione:** [COMPLETATO E ARCHIVIATO — RISOLTO INTEGRALMENTE CON PROTOCOLLO 12]
+- **Obiettivo/i:**
+  * Formalizzazione dell'ordine operativo vincolante di stop su tentativi di patching euristico
+  * Dichiarazione delle condizioni di rigore ingegneristico per superare la Fase A
+  * Imposizione dei 5 Cancelli Inviolabili (Inner Codex Pattern)
+- **Piani & Strategie Correlate:**
+  * [`PIANO_TECNICO_IMPLEMENTATIVO_TRAVERSAL_SAFETY_E_COGNITIVE.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/attivi/PIANO_TECNICO_IMPLEMENTATIVO_TRAVERSAL_SAFETY_E_COGNITIVE.md)
+  * [`STRATEGIA_SISTEMICA_TRAVERSAL_SAFETY_ANALYZER.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/strategie/STRATEGIA_SISTEMICA_TRAVERSAL_SAFETY_ANALYZER.md)
+- **Breve Descrizione:** Documento miliare di governance che ha sancito la nascita del Protocollo 12 e il rigore ingegneristico assoluto di Antigravity.
 
 ---
-
 ## 0. Ordine operativo immediato
 
 La Rev. MC-26.8 non è chiusa. Il commit `5e9ba7d` ha introdotto nomi e tipi preliminari, ma non ha realizzato il disaccoppiamento richiesto tra input fisico dell'utente e override sintetico dello sneak.

@@ -1,9 +1,17 @@
-# Richiesta di Analisi e Convalida — Anomalie Porte Chiuse e Soffitti Bassi, Fase 5D
-# Framework: ASTRALIS v2.6.3 — Protocollo 2 (Validazione Preventiva)
-# Destinatari: Antigravity, Luca, Codex
-# Stato: consultivo — nessuna modifica al codice autorizzata
-# Data: 4 settembre 2026
+# Richiesta di Analisi e Convalida Preventiva — Anomalie Porte Chiuse e Soffitti Bassi (Fase 5D)
+- **Autore:** GPT Codex / ChatGPT (su richiesta di Luca)
+- **Revisori:** Antigravity, Luca
+- **Data e Ora:** 2026-09-04 — 23:30 CEST
+- **Stato dell'Implementazione:** [COMPLETATO E ARCHIVIATO — ANALISI ESEGUITA E RECEPITA]
+- **Obiettivo/i:**
+  * Inquadramento formale delle anomalie di navigazione segnalate da Luca in collaudo
+  * Richiesta di validazione preventiva ad Antigravity secondo il Protocollo 2
+  * Definizione della strategia preliminare per il disaccoppiamento telecamera
+- **Piani & Strategie Correlate:**
+  * [`PIANO_TECNICO_AUTOWALK_NAVIGATORE_DUE_PASSAGGI_FASE5D.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/attivi/PIANO_TECNICO_AUTOWALK_NAVIGATORE_DUE_PASSAGGI_FASE5D.md)
+- **Breve Descrizione:** Quesito tecnico e richiesta di audit preventivo formulata da Codex ad Antigravity sui vincoli di rotazione della visuale e penalità porte.
 
+---
 ## 1. Scopo
 
 Questo rapporto richiede ad Antigravity di analizzare, verificare e convalidare una strategia correttiva per due anomalie emerse nel collaudo in-game della Fase 5D:
@@ -295,5 +303,3 @@ L'aggiornamento del piano tecnico è avvenuto a valle dell'autorizzazione esplic
 - La convergenza tecnica e documentale tra Antigravity, Codex e Luca è ora completa e chiusa al 100%.
 
 Si attende il comando finale di Luca per passare alla **Sotto-Fase 1B/5D attuativa** (scrittura codice, test unitari dedicati, compilazione `--no-daemon` e deploy del JAR in PrismLauncher).
-
-

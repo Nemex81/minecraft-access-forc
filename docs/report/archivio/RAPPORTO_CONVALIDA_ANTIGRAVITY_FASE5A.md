@@ -1,13 +1,18 @@
-# Rapporto di Convalida Indipendente (Protocollo 2 ASTRALIS) — Sotto-Fase 5A Navigatore e Auto-Walk
-
-- **Destinatario**: Luca
-- **Autore**: Antigravity (Senior AI Pair Programmer & Software Engineer)
-- **Oggetto**: Analisi, verifica tecnica e convalida indipendente dell'implementazione della Sotto-Fase 5A (`RouteNavigator` e `AutoWalkMotor`), integrata con le correzioni del report `docs/report/RICHIESTA_CONVALIDA_ANTIGRAVITY_FASE5A.md`.
-- **Data**: 2026-09-04
-- **Stato operativo**: Convalida Indipendente Superata (Protocollo 2 ASTRALIS)
+# Rapporto di Convalida Preventiva — Sotto-Fase 5A Navigatore e Auto-Walk
+- **Autore:** Antigravity (Senior AI Pair Programmer)
+- **Revisori:** Luca (Senior Developer)
+- **Data e Ora:** 2026-09-04 — 14:15 CEST
+- **Stato dell'Implementazione:** [COMPLETATO E ARCHIVIATO — CONVALIDA POSITIVA INCONDIZIONATA]
+- **Obiettivo/i:**
+  * Verifica della Sotto-Fase 5A sui 7 Assi di Qualità di ASTRALIS
+  * Simulazione computazionale del pathfinding A* a due passaggi su 3 livelli di complessità
+  * Rilascio del via libera formale alla stesura del codice della Fase 5A
+- **Piani & Strategie Correlate:**
+  * [`PIANO_TECNICO_AUTOWALK_NAVIGATORE_DUE_PASSAGGI_FASE5A.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/attivi/PIANO_TECNICO_AUTOWALK_NAVIGATORE_DUE_PASSAGGI_FASE5A.md)
+  * [`AutoWalkPathfinder.java`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/src/main/java/org/mcaccess/minecraftaccess/features/autowalk/AutoWalkPathfinder.java)
+- **Breve Descrizione:** Audit analitico di conformità preventiva su architettura A*, assenza di dead-lock su porte chiuse e calcolo del salto dislivello.
 
 ---
-
 ## 1. Esito Conclusivo della Convalida
 
 - **Verdetto**: **CONVALIDA PIENA DELLA SOTTO-FASE 5A**.

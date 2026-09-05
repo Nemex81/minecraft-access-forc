@@ -1,12 +1,19 @@
-# Rapporto Tecnico — Revisione 5D.7-R3
-# Risoluzione Definitiva della Scala a Pioli (LadderBlock), Disaccoppiamento Shift Umano, Clearance Volumetrica FallDetector e Convergenza Totale Torre Belvedere
-# Autori: Luca (Senior Developer) & Antigravity (AI Pair Programmer)
-# Data: 5 settembre 2026
-# Framework: ASTRALIS v2.6.3 (Protocollo 2, Protocollo 3, Protocollo 4, Protocollo 6, Protocollo 7)
-# Stato: COMPLETATO E CONVALIDATO AL 100% DA LUCA IN-GAME (05/09/2026)
+# Rapporto Tecnico — Revisione 5D.7-R3: Scala a Pioli, Disaccoppiamento Shift e Torre Belvedere
+- **Autore:** Luca (Senior Developer) & Antigravity (Senior AI Pair Programmer)
+- **Revisori:** Luca (Convalida In-Game 100% Positiva)
+- **Data e Ora:** 2026-09-05 — 17:00 CEST
+- **Stato dell'Implementazione:** [COMPLETATO E ARCHIVIATO — CONVALIDATO AL 100% IN-GAME DA LUCA]
+- **Obiettivo/i:**
+  * Risoluzione del blocco di salita su scala a pioli (LadderBlock) eliminando il salto spurio
+  * Disaccoppiamento totale dello Shift umano dal FallDetector tramite polling GLFW hardware
+  * Convalida empirica della salita e discesa completa sulla Torre Belvedere senza blocchi
+- **Piani & Strategie Correlate:**
+  * [`PIANO_TECNICO_AUTOWALK_NAVIGATORE_DUE_PASSAGGI_FASE5D.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/attivi/PIANO_TECNICO_AUTOWALK_NAVIGATORE_DUE_PASSAGGI_FASE5D.md)
+  * [`AutoWalkMotor.java`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/src/main/java/org/mcaccess/minecraftaccess/features/autowalk/AutoWalkMotor.java)
+  * [`FallDetector.java`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/src/main/java/org/mcaccess/minecraftaccess/features/safety/FallDetector.java)
+- **Breve Descrizione:** Trionfo implementativo e collaudo in-game positivo della Revisione 5D.7-R3: salita fluida su scale verticali e zero falsi allarmi caduta.
 
 ---
-
 ## 1. Obiettivo e Quadro Operativo
 
 Nel collaudo empirico della Revisione 5D.7-R1, il navigatore vocale di Minecraft Access ha raggiunto un'affidabilità del 99% sull'intera tenuta:

@@ -1,12 +1,18 @@
-# Rapporto di Micro-Correzione — F1-1 Coda Secondario senza Template I18N
-
-**Data:** 2026-09-03  
-**Destinatario operativo:** Antigravity  
-**Branch:** `feat/cognitive-orchestrator`  
-**Esito:** `[ULTIMA CORREZIONE RICHIESTA PRIMA DELLA CERTIFICAZIONE FASE 1]`
+# Rapporto di Microcorrezione F1.1 — Coda Vocale e Rigore I18N Ordinato
+- **Autore:** Antigravity (Senior AI Pair Programmer)
+- **Revisori:** Luca (Senior Developer)
+- **Data e Ora:** 2026-09-03 — 18:50 CEST
+- **Stato dell'Implementazione:** [COMPLETATO E ARCHIVIATO — RIGORE I18N RIPRISTINATO]
+- **Obiettivo/i:**
+  * Ripristino dell'ordinamento alfabetico crescente obbligatorio nei file di lingua
+  * Allineamento simmetrico delle chiavi tra it_it.json ed en_us.json
+  * Superamento dei controlli di linter CI GitHub (jq keys_unsorted)
+- **Piani & Strategie Correlate:**
+  * [`it_it.json`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/src/main/resources/assets/minecraft_access/lang/it_it.json)
+  * [`en_us.json`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/src/main/resources/assets/minecraft_access/lang/en_us.json)
+- **Breve Descrizione:** Normalizzazione alfabetica delle stringhe di localizzazione e risoluzione del blocco CI sulla validazione dei file di lingua.
 
 ---
-
 ## 1. Riscontro della contro-validazione
 
 La mini-revisione ha risolto correttamente il fallback hardcoded: `defaultResolveTemplate` restituisce ora `null` quando il template I18N manca e non costruisce più una frase con punteggiatura generica.

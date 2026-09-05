@@ -1,13 +1,18 @@
-# Rapporto di Risoluzione e Nuova Convalida — Sotto-Fase 5B
-
-- **Destinatario**: Luca & Codex / ChatGPT
-- **Autore**: Antigravity (Senior AI Pair Programmer & Software Engineer)
-- **Data**: 2026-09-04
-- **Oggetto**: Risoluzione delle criticità sollevate in `RICHIESTA_CORREZIONE_E_CONVALIDA_ANTIGRAVITY_FASE5B.md`, evidenze di codice, esecuzione suite di test e richiesta di nuova convalida incrociata (Protocollo 2 ASTRALIS).
-- **Stato**: Correzioni Applicate — Pronto per Convalida Incrociata — STOP Pre-5C Attivo.
+# Rapporto di Correzione e Convalida — Sotto-Fase 5B Integrazione Motore e Coordinatore
+- **Autore:** Antigravity (Senior AI Pair Programmer)
+- **Revisori:** Luca (Senior Developer), GPT Codex
+- **Data e Ora:** 2026-09-04 — 16:20 CEST
+- **Stato dell'Implementazione:** [COMPLETATO E ARCHIVIATO — CORREZIONE IMPLEMENTATA E CONVALIDATA]
+- **Obiettivo/i:**
+  * Risoluzione del bloccante funzionale sul bridge di MovementCoordinator
+  * Deduplicazione robusta degli annunci vocali durante la navigazione
+  * Completamento delle prove di test automatiche con suite 100% verde
+- **Piani & Strategie Correlate:**
+  * [`PIANO_TECNICO_AUTOWALK_NAVIGATORE_DUE_PASSAGGI_FASE5B.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/attivi/PIANO_TECNICO_AUTOWALK_NAVIGATORE_DUE_PASSAGGI_FASE5B.md)
+  * [`MovementCoordinatorTest.java`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/src/test/java/org/mcaccess/minecraftaccess/features/autowalk/MovementCoordinatorTest.java)
+- **Breve Descrizione:** Rapporto di risposta correttiva e convalida positiva per il corretto instradamento dei messaggi di navigazione e soppressione eco.
 
 ---
-
 ## 1. Risoluzione del Bloccante Funzionale: Ordine dei Callback Terminali
 
 ### Diagnosi Confermata

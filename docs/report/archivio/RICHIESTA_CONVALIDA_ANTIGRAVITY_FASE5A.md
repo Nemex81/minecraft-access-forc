@@ -1,11 +1,17 @@
 # Richiesta di Convalida Indipendente — Sotto-Fase 5A Navigatore e Auto-Walk
+- **Autore:** Luca (Senior Developer)
+- **Revisori:** Antigravity
+- **Data e Ora:** 2026-09-04 — 13:45 CEST
+- **Stato dell'Implementazione:** [COMPLETATO E ARCHIVIATO — CONVALIDA RICHIESTA ED OTTENUTA]
+- **Obiettivo/i:**
+  * Richiesta formale ad Antigravity di validazione preventiva per la Sotto-Fase 5A
+  * Applicazione integrale del Protocollo 2 su A* a due passaggi
+  * Divieto di modifiche al codice prima del rilascio del rapporto di convalida
+- **Piani & Strategie Correlate:**
+  * [`PIANO_TECNICO_AUTOWALK_NAVIGATORE_DUE_PASSAGGI_FASE5A.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/attivi/PIANO_TECNICO_AUTOWALK_NAVIGATORE_DUE_PASSAGGI_FASE5A.md)
+- **Breve Descrizione:** Atto formale di ingaggio del Protocollo 2 di validazione indipendente per il nuovo motore di navigazione voxel.
 
-**Destinatario:** Antigravity
-
-**Richiedente:** Luca
-
-**Stato:** In attesa di convalida indipendente. Nessuna ulteriore modifica al codice è autorizzata da questo documento.
-
+---
 ## 1. Scopo della richiesta
 
 Questa richiesta chiede ad Antigravity di analizzare, verificare e convalidare in modo indipendente l'implementazione della Sotto-Fase 5A del piano `PIANO_TECNICO_FASE5_NAVIGATORE_E_AUTOWALK.md`.

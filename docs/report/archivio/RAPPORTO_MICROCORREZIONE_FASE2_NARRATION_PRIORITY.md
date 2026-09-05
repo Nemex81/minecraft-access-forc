@@ -1,12 +1,18 @@
-# Rapporto correttivo — Fase 2 Cognitive Coordinator
-
-**Destinatario:** Antigravity  
-**Ramo:** `feat/cognitive-orchestrator`  
-**Stato:** una micro-correzione obbligatoria prima della convalida finale della Fase 2  
-**Data:** 3 settembre 2026
+# Rapporto di Microcorrezione — Fase 2: Narration Priority e Debouncing Vocale
+- **Autore:** Antigravity (Senior AI Pair Programmer)
+- **Revisori:** Luca (Senior Developer)
+- **Data e Ora:** 2026-09-03 — 22:30 CEST
+- **Stato dell'Implementazione:** [COMPLETATO E ARCHIVIATO — COLLAUDATO CON SUCCESSO]
+- **Obiettivo/i:**
+  * Calibrazione della finestra temporale di debouncing per notifiche ripetitive
+  * Garantire che i messaggi di pericolo critico (lava, caduta) interrompano sempre la voce
+  * Verifica dell'assenza di troncamento sui messaggi di orientamento bussola
+- **Piani & Strategie Correlate:**
+  * [`NarrationPriorityManager.java`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/src/main/java/org/mcaccess/minecraftaccess/features/narration/NarrationPriorityManager.java)
+  * [`PIANO_TECNICO_IMPLEMENTATIVO_COGNITIVE_COORDINATOR_FASE2_NARRATION_PRIORITY.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/attivi/PIANO_TECNICO_IMPLEMENTATIVO_COGNITIVE_COORDINATOR_FASE2_NARRATION_PRIORITY.md)
+- **Breve Descrizione:** Affinamento delle priorità di sintesi vocale e filtraggio intelligente dei messaggi ridondanti durante il movimento del giocatore.
 
 ---
-
 ## 1. Esito della contro-verifica
 
 La contro-verifica indipendente della Fase 2 è positiva per configurazione, binding, bootstrap, I18N, test deterministici e assenza di migrazioni nei produttori verificati.
@@ -104,4 +110,3 @@ La Fase 2 sarà convalidabile e dichiarabile chiusa quando:
 - non sono introdotte migrazioni di sensori né altre variazioni fuori perimetro.
 
 Al termine, il sistema sarà pronto per la sola pianificazione della Fase 3: migrazione pilota del dominio Sicurezza. Nessuna implementazione della Fase 3 è autorizzata automaticamente.
-

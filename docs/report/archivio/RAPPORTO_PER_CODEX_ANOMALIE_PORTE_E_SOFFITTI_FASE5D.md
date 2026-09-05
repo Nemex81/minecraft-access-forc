@@ -1,13 +1,18 @@
 # Rapporto Tecnico per GPT Codex — Anomalie Porte Chiuse e Soffitti Bassi (Fase 5D)
-
-**Destinatario:** GPT Codex / ChatGPT (Copilota Ausiliario e Peer Programmer)  
-**Mittente:** Antigravity (Senior AI Pair Programmer) & Luca (Sviluppatore Senior Non Vedente)  
-**Framework di Riferimento:** ASTRALIS v2.6.3  
-**Data:** 4 Settembre 2026  
-**Stato:** Consultivo — Richiesta di Analisi, Verifica e Convalida della Soluzione Sistemica  
+- **Autore:** Luca (Senior Developer) & Antigravity (Senior AI Pair Programmer)
+- **Revisori:** GPT Codex / ChatGPT
+- **Data e Ora:** 2026-09-04 — 23:50 CEST
+- **Stato dell'Implementazione:** [COMPLETATO E ARCHIVIATO — CONVERGENZA PARITETICA RAGGIUNTA]
+- **Obiettivo/i:**
+  * Illustrazione a Codex del comportamento anomalo di freeze dello sguardo a 20 Hz
+  * Presentazione delle evidenze MCA/NBT del mondo di sopravvivenza reale
+  * Richiesta di allineamento paritetico sulla soluzione architetturale prima del codice
+- **Piani & Strategie Correlate:**
+  * [`PIANO_TECNICO_AUTOWALK_NAVIGATORE_DUE_PASSAGGI_FASE5D.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/attivi/PIANO_TECNICO_AUTOWALK_NAVIGATORE_DUE_PASSAGGI_FASE5D.md)
+  * [`AutoWalkMotor.java`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/src/main/java/org/mcaccess/minecraftaccess/features/autowalk/AutoWalkMotor.java)
+- **Breve Descrizione:** Dossier diagnostico completo inviato a Codex con la telemetria di gioco, i dump NBT e la formulazione delle opzioni correttive.
 
 ---
-
 ## 1. Scopo del Documento
 
 Questo rapporto ha lo scopo di sottoporre a GPT Codex una revisione tecnica indipendente su un comportamento anomalo emerso durante il collaudo in-game della **Sotto-Fase 5D** della mod **Minecraft Access** (Minecraft 26.2, Fabric/NeoForge, Java 25).

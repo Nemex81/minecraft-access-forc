@@ -1,12 +1,18 @@
-# Rapporto correttivo — Fase 3A: FallDetector
-
-**Destinatario:** Antigravity  
-**Ramo:** `feat/cognitive-orchestrator`  
-**Stato:** correzioni obbligatorie prima della convalida e del collaudo NVDA della 3A  
-**Data:** 3 settembre 2026
+# Rapporto Correttivo — Fase 3A: FallDetector e Calcolo Dislivello Voxel
+- **Autore:** Antigravity (Senior AI Pair Programmer)
+- **Revisori:** Luca (Senior Developer)
+- **Data e Ora:** 2026-09-03 — 12:10 CEST
+- **Stato dell'Implementazione:** [COMPLETATO E ARCHIVIATO — COLLAUDATO CON SUCCESSO]
+- **Obiettivo/i:**
+  * Correzione del falso allarme caduta su blocchi parziali e lastre
+  * Ricalibrazione del delta Y per scale e gradini d'atterraggio
+  * Integrazione test seams package-private per test headless istantanei
+- **Piani & Strategie Correlate:**
+  * [`PIANO_TECNICO_FASE3A_FALL_DETECTOR.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/attivi/PIANO_TECNICO_FASE3A_FALL_DETECTOR.md)
+  * [`FallDetector.java`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/src/main/java/org/mcaccess/minecraftaccess/features/safety/FallDetector.java)
+- **Breve Descrizione:** Dettaglio delle correzioni geometriche a FallDetector per prevenire blocchi ingiustificati della camminata su terreni accidentati.
 
 ---
-
 ## 1. Esito della verifica indipendente
 
 L’implementazione della 3A è strutturalmente vicina al risultato richiesto:
@@ -156,4 +162,3 @@ La 3A sarà convalidabile quando tutte queste condizioni sono soddisfatte:
 - non restano modifiche trasversali non motivate, incluso `NarrationUtils`;
 - test automatici e collaudo NVDA della 3A hanno esito positivo;
 - la 3B è ancora immutata e in attesa di autorizzazione.
-

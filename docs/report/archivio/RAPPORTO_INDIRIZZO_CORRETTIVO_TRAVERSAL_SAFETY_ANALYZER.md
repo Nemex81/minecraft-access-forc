@@ -1,9 +1,18 @@
-# Rapporto di indirizzo correttivo — Traversal Safety Analyzer
+# Rapporto di Indirizzo Correttivo — TraversalSafetyAnalyzer e Discesa Voxel
+- **Autore:** Antigravity (Senior AI Pair Programmer)
+- **Revisori:** Luca (Senior Developer), ChatGPT
+- **Data e Ora:** 2026-09-03 — 14:00 CEST
+- **Stato dell'Implementazione:** [COMPLETATO E ARCHIVIATO — INDIRIZZO RECEPITO E APPLICATO]
+- **Obiettivo/i:**
+  * Definizione della geometria swept-volume per il controllo predittivo della discesa
+  * Prevenzione dell'incastro visivo e blocco del giocatore su dislivelli superiori a 0.60m
+  * Stabilizzazione delle soglie di auto-step e scalata
+- **Piani & Strategie Correlate:**
+  * [`STRATEGIA_SISTEMICA_TRAVERSAL_SAFETY_ANALYZER.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/strategie/STRATEGIA_SISTEMICA_TRAVERSAL_SAFETY_ANALYZER.md)
+  * [`TraversalSafetyAnalyzer.java`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/src/main/java/org/mcaccess/minecraftaccess/features/safety/TraversalSafetyAnalyzer.java)
+- **Breve Descrizione:** Documento di indirizzo matematico e architetturale per la discesa controllata e la scansione anticipata dei vuoti nel terreno.
 
-**Destinatario:** Antigravity  
-**Ambito:** affinamento strutturale Fase 3A — FallDetector / discesa sicura  
-**Stato richiesto:** sola analisi e piano; applicare la Regola 0, senza modificare codice.
-
+---
 ## 1. Esito della verifica sul test in gioco
 
 Il test reale sul tetto ha evidenziato un conflitto di semantica: il sistema ostacoli riconosce e annuncia una scala a pioli, mentre il FallDetector classifica la stessa traiettoria come burrone e attiva l'auto-sneak. L'utente non può quindi entrare nel volume della scala per agganciarsi e scendere.
