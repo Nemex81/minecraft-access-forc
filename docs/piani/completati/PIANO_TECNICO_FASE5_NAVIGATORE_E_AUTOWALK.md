@@ -436,8 +436,8 @@ Il completamento implementativo della Sotto-Fase 5D, incluse le revisioni 5D.1, 
 
 ---
 
-## 🎮 SESSIONE DI COLLAUDO ATTIVA (Sotto-Fase 5D — Sessione 3)
-In conformità al **Protocollo 3 (Deploy Proattivo)** e al **Protocollo 4 (Telemetria Live)**:
-1. Il JAR `minecraft-access-1.12.0-SNAPSHOT.jar` (7.42 MB, build ore 01:01) è stato compilato e distribuito con successo in tutte le istanze PrismLauncher attive;
-2. Suite completa convalidata al 100% verde (269/269 test unitari superati con successo);
-3. Antigravity è in modalità **Telemetria Live**, pronto a monitorare i log di runtime (`latest.log`) e ad assistere Luca durante il collaudo pratico con screen reader NVDA.
+## 🎮 STATO FINALE: COLLAUDATO E CONVALIDATO CON SUCCESSO AL 100% (Archiviato)
+In conformità al **Protocollo 3 (Deploy Proattivo)**, al **Protocollo 4 (Telemetria Live)** e al **Protocollo 6 (Chiusura Tecnica)**:
+1. La Fase 5 (5A, 5B, 5C, 5D con tutte le relative revisioni correttive 5D.1 - 5D.7-R3) è completata, convalidata con successo empirico al 100% da Luca in-game e archiviata;
+2. Suite completa convalidata al 100% verde (299/299 test unitari superati con successo);
+3. Il JAR `minecraft-access-1.12.0-SNAPSHOT.jar` (7.43 MB) è operativo in entrambe le istanze di gioco.

@@ -19,27 +19,32 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.FenceGateBlock;
+import net.minecraft.world.level.block.LadderBlock;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.TrapDoorBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
+import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.mcaccess.minecraftaccess.features.ObstacleDetectionUtils;
 import org.mcaccess.minecraftaccess.features.point_of_interest.BlockPos3d;
 import org.mcaccess.minecraftaccess.features.point_of_interest.waypoints.Waypoint;
 
 public final class AutoWalkPathfinder {
-    public static final int MAX_EXPLORED_NODES = 2500;
+    private static final Logger LOGGER = LoggerFactory.getLogger(AutoWalkPathfinder.class);
+    public static final int MAX_EXPLORED_NODES = 5000;
     private static final double TURN_PENALTY = 0.35;
     private static final double WATER_PENALTY = 1.50;
     private static final double STEP_UP_PENALTY = 0.50;
     private static final double DROP_DOWN_PENALTY = 0.25;
-    public static final double CLOSED_DOOR_PENALTY = 30.0;
+    public static final double CLOSED_DOOR_PENALTY = 5.0;
 
     private AutoWalkPathfinder() {
     }
@@ -56,26 +61,43 @@ public final class AutoWalkPathfinder {
             PathStatus status,
             List<BlockPos> path,
             double totalDistance,
-            @Nullable BlockPos targetGoalPos
+            @Nullable BlockPos targetGoalPos,
+            int exploredNodes
     ) {
+        public PathResult(PathStatus status, List<BlockPos> path, double totalDistance, @Nullable BlockPos targetGoalPos) {
+            this(status, path, totalDistance, targetGoalPos, 0);
+        }
+
         public static PathResult outOfRange(double dist) {
-            return new PathResult(PathStatus.OUT_OF_RANGE, List.of(), dist, null);
+            return new PathResult(PathStatus.OUT_OF_RANGE, List.of(), dist, null, 0);
         }
 
         public static PathResult noPath() {
-            return new PathResult(PathStatus.NO_PATH, List.of(), 0, null);
+            return new PathResult(PathStatus.NO_PATH, List.of(), 0, null, 0);
+        }
+
+        public static PathResult noPath(int exploredNodes) {
+            return new PathResult(PathStatus.NO_PATH, List.of(), 0, null, exploredNodes);
+        }
+
+        public static PathResult searchBudgetExhausted(int exploredNodes) {
+            return new PathResult(PathStatus.SEARCH_BUDGET_EXHAUSTED, List.of(), 0, null, exploredNodes);
         }
 
         public static PathResult searchBudgetExhausted() {
-            return new PathResult(PathStatus.SEARCH_BUDGET_EXHAUSTED, List.of(), 0, null);
+            return searchBudgetExhausted(MAX_EXPLORED_NODES);
         }
 
         public static PathResult alreadyAtTarget(BlockPos pos) {
-            return new PathResult(PathStatus.ALREADY_AT_TARGET, List.of(pos), 0, pos);
+            return new PathResult(PathStatus.ALREADY_AT_TARGET, List.of(pos), 0, pos, 0);
+        }
+
+        public static PathResult found(List<BlockPos> path, double distance, BlockPos goal, int exploredNodes) {
+            return new PathResult(PathStatus.FOUND, path, distance, goal, exploredNodes);
         }
 
         public static PathResult found(List<BlockPos> path, double distance, BlockPos goal) {
-            return new PathResult(PathStatus.FOUND, path, distance, goal);
+            return found(path, distance, goal, 0);
         }
     }
 
@@ -124,32 +146,65 @@ public final class AutoWalkPathfinder {
         // Passaggio 1: Strict Path (allowClosedDoors = false)
         Set<BlockPos> validGoalsStrict = resolveValidGoalPositions(level, rawTarget, rawTargetPos, false);
         if ((validGoalsStrict.contains(startFeet) || directDist < 1.25) && hasDirectClearPath(level, startVec, rawTargetPos)) {
-            return PathResult.alreadyAtTarget(rawTargetPos);
+            PathResult directResult = PathResult.alreadyAtTarget(rawTargetPos);
+            logPathfindingTelemetry(directResult, null, rawTargetPos, directDist, false, maxExploredNodes);
+            return directResult;
         }
 
+        PathResult strictResult = null;
         if (!validGoalsStrict.isEmpty()) {
-            PathResult strictResult = computeAStar(level, startVec, startFeet, validGoalsStrict, rawTargetPos, maxRange, false, maxExploredNodes);
+            strictResult = computeAStar(level, startVec, startFeet, validGoalsStrict, rawTargetPos, maxRange, false, maxExploredNodes);
             if (strictResult.status() == PathStatus.FOUND || strictResult.status() == PathStatus.ALREADY_AT_TARGET) {
+                logPathfindingTelemetry(strictResult, null, rawTargetPos, directDist, false, maxExploredNodes);
                 return strictResult;
             }
             if (strictResult.status() == PathStatus.SEARCH_BUDGET_EXHAUSTED) {
-                // Politica di protezione: non dichiarare la porta inevitabile su budget esaurito
-                return strictResult;
+                // Contratto B1: Se il budget è esaurito ma la meta o il contesto sono idonei al fallback
+                // (es. meta entro 64m o presenza di porte chiuse nelle adiacenze), autorizza il Passaggio 2
+                // anziché abortire prematuramente la navigazione indoor/residenziale.
+                if (!isCandidateForClosedDoorFallback(level, startFeet, rawTargetPos, directDist, maxRange)) {
+                    logPathfindingTelemetry(strictResult, null, rawTargetPos, directDist, false, maxExploredNodes);
+                    return strictResult;
+                }
             }
         }
 
-        // Passaggio 2: Fallback Path (allowClosedDoors = true con CLOSED_DOOR_PENALTY = 30.0)
-        // Eseguito ESCLUSIVAMENTE se il Passaggio 1 restituisce un reale NO_PATH
+        // Passaggio 2: Fallback Path (allowClosedDoors = true con CLOSED_DOOR_PENALTY = 5.0)
+        // Eseguito se il Passaggio 1 restituisce NO_PATH o se SEARCH_BUDGET_EXHAUSTED è idoneo al fallback
         Set<BlockPos> validGoalsFallback = resolveValidGoalPositions(level, rawTarget, rawTargetPos, true);
         if (validGoalsFallback.isEmpty()) {
-            return PathResult.noPath();
+            PathResult noPathResult = PathResult.noPath();
+            logPathfindingTelemetry(strictResult, noPathResult, rawTargetPos, directDist, true, maxExploredNodes);
+            return noPathResult;
         }
 
         if (validGoalsFallback.contains(startFeet) && hasDirectClearPath(level, startVec, rawTargetPos)) {
-            return PathResult.alreadyAtTarget(rawTargetPos);
+            PathResult directFallbackResult = PathResult.alreadyAtTarget(rawTargetPos);
+            logPathfindingTelemetry(strictResult, directFallbackResult, rawTargetPos, directDist, true, maxExploredNodes);
+            return directFallbackResult;
         }
 
-        return computeAStar(level, startVec, startFeet, validGoalsFallback, rawTargetPos, maxRange, true, maxExploredNodes);
+        PathResult fallbackResult = computeAStar(level, startVec, startFeet, validGoalsFallback, rawTargetPos, maxRange, true, maxExploredNodes);
+        logPathfindingTelemetry(strictResult, fallbackResult, rawTargetPos, directDist, true, maxExploredNodes);
+        return fallbackResult;
+    }
+
+    private static void logPathfindingTelemetry(
+            @Nullable PathResult pass1Result,
+            @Nullable PathResult pass2Result,
+            BlockPos targetPos,
+            double directDist,
+            boolean fallbackExecuted,
+            int budget
+    ) {
+        String p1Status = pass1Result != null ? pass1Result.status().name() : "SKIPPED";
+        int p1Nodes = pass1Result != null ? pass1Result.exploredNodes() : 0;
+        String p2Status = pass2Result != null ? pass2Result.status().name() : "NOT_RUN";
+        int p2Nodes = pass2Result != null ? pass2Result.exploredNodes() : 0;
+
+        LOGGER.info("[AutoWalk Telemetry] Target: {}, Dist: {}m, Budget: {}, Pass1: {} ({} nodes), Pass2: {} ({} nodes), Fallback: {}",
+                targetPos, String.format(java.util.Locale.ROOT, "%.1f", directDist), budget,
+                p1Status, p1Nodes, p2Status, p2Nodes, fallbackExecuted ? "ENABLED(5.0)" : "DISABLED");
     }
 
     private static BlockPos resolveRawTargetPosition(Object rawTarget) {
@@ -199,9 +254,6 @@ public final class AutoWalkPathfinder {
                 if (isStandable(level, belowAdj, allowClosedDoors)) {
                     goals.add(belowAdj);
                 }
-            }
-            if (isStandable(level, rawTargetPos.above(), allowClosedDoors)) {
-                goals.add(rawTargetPos.above());
             }
             return goals;
         }
@@ -266,7 +318,7 @@ public final class AutoWalkPathfinder {
 
             if (validGoals.contains(current.pos)) {
                 List<BlockPos> path = reconstructPath(current);
-                return PathResult.found(path, current.gCost, current.pos);
+                return PathResult.found(path, current.gCost, current.pos, exploredCount);
             }
 
             closedSet.add(current.pos);
@@ -298,10 +350,10 @@ public final class AutoWalkPathfinder {
         }
 
         if (!openSet.isEmpty() && exploredCount >= maxExploredNodes) {
-            return PathResult.searchBudgetExhausted();
+            return PathResult.searchBudgetExhausted(exploredCount);
         }
 
-        return PathResult.noPath();
+        return PathResult.noPath(exploredCount);
     }
 
     record NeighborMove(
@@ -348,7 +400,12 @@ public final class AutoWalkPathfinder {
             if (isWithinBounds(diagPos, origin, maxRange)) {
                 // Inviolabilità delle diagonali: entrambi i corridoi ortogonali intermedi devono essere
                 // rigorosamente passabili senza varchi chiusi a quota piedi e testa (allowClosedDoors = false)
-                if (hasStrictDiagonalIntermediateClearance(level, ortho1, ortho2, false)) {
+                // ECCEZIONE (Contratto D1): Curva protetta su scala a L con gradini perpendicolari
+                boolean isStrictClear = hasStrictDiagonalIntermediateClearance(level, ortho1, ortho2, false);
+                boolean isLStairCandidate = isLStairTurnTransition(level, pos, diagPos.above(), 1, ortho1, ortho2)
+                        || isLStairTurnTransition(level, pos, diagPos.below(), -1, ortho1, ortho2);
+
+                if (isStrictClear || isLStairCandidate) {
                     checkAndAddMoves(level, startVec, pos, diagPos, null, true, neighbors, allowClosedDoors, isRootNode, ortho1, ortho2);
                 }
             }
@@ -382,8 +439,10 @@ public final class AutoWalkPathfinder {
         // B. Step-Up Move (+1 Y)
         BlockPos upPos = to.above(1);
         if (isClimbableStep(level, from, to, upPos, allowClosedDoors)) {
-            // Per salita diagonale, verificare che i due corridoi intermedi ortogonali abbiano clearance al culmine del salto
-            if (!isDiag || (ortho1 != null && ortho2 != null && hasStrictDiagonalIntermediateClearance(level, ortho1, ortho2, true))) {
+            // Per salita diagonale, verificare che i due corridoi intermedi ortogonali abbiano clearance al culmine del salto,
+            // oppure che si tratti di una curva lecita su scala a L (Contratto D1)
+            boolean lStairStepUp = isDiag && isLStairTurnTransition(level, from, upPos, 1, ortho1, ortho2);
+            if (!isDiag || lStairStepUp || (ortho1 != null && ortho2 != null && hasStrictDiagonalIntermediateClearance(level, ortho1, ortho2, true))) {
                 NeighborMove move = new NeighborMove(upPos, dir, 1, isInWater(level, upPos), isDiag);
                 if (!isRootNode || allowClosedDoors || getRootMoveIntersectedClosedDoor(level, startVec, from, move) == null) {
                     moves.add(move);
@@ -395,7 +454,8 @@ public final class AutoWalkPathfinder {
         // C. Descent Moves (-1 Y, -2 Y, -3 Y)
         for (int drop = 1; drop <= 3; drop++) {
             BlockPos dropPos = to.below(drop);
-            if (!isLateralStairDrop(level, from, to, drop) && isSafeDescent(level, from, to, dropPos, drop, allowClosedDoors)) {
+            boolean lStairDescent = isDiag && drop == 1 && isLStairTurnTransition(level, from, dropPos, -1, ortho1, ortho2);
+            if ((!isLateralStairDrop(level, from, to, drop) || lStairDescent) && isSafeDescent(level, from, to, dropPos, drop, allowClosedDoors)) {
                 NeighborMove move = new NeighborMove(dropPos, dir, -drop, isInWater(level, dropPos), isDiag);
                 if (!isRootNode || allowClosedDoors || getRootMoveIntersectedClosedDoor(level, startVec, from, move) == null) {
                     moves.add(move);
@@ -428,6 +488,11 @@ public final class AutoWalkPathfinder {
         BlockState belowState = level.getBlockState(below);
         if (isHazard(level, below)) return false;
 
+        // Contratto D6.3: Vietato stazionare sopra una scala a pioli (non è calpestabile come pavimento orizzontale)
+        if (belowState.getBlock() instanceof LadderBlock) {
+            return false;
+        }
+
         VoxelShape collision = belowState.getCollisionShape(level, below);
         return !collision.isEmpty();
     }
@@ -441,9 +506,17 @@ public final class AutoWalkPathfinder {
         BlockState state = level.getBlockState(pos);
         if (isDoorOrGate(state)) {
             if (allowClosedDoors) {
+                // Una botola chiusa NON è attraversabile nel fallback porte (Contratto D2 Addendum R1)
+                if (state.getBlock() instanceof TrapDoorBlock && isDoorOrGateClosed(level, pos)) {
+                    return false;
+                }
                 return true;
             }
             return !isDoorOrGateClosed(level, pos);
+        }
+        // Contratto D6.1: Scala a pioli a parete (spessore 0.1875m) liberamente transitabile orizzontalmente dal giocatore (0.6m)
+        if (state.getBlock() instanceof LadderBlock) {
+            return true;
         }
         return state.getCollisionShape(level, pos).isEmpty();
     }
@@ -516,6 +589,92 @@ public final class AutoWalkPathfinder {
     }
 
     /**
+     * Contratto D1 (Curva sicura su scala a L):
+     * Valuta se la transizione diagonale tra due nodi costituisce una curva lecita a 90°
+     * tra due rampe di scale contigue con dislivello di esattamente 1 blocco (+1 in salita o -1 in discesa).
+     *
+     * Condizioni rigorose richieste:
+     * 1. Il dislivello verticale è esattamente +/- 1 blocco (|verticalDelta| == 1).
+     * 2. Lo spostamento orizzontale è diagonale (|dx| == 1 && |dz| == 1).
+     * 3. Sia la posizione di partenza che quella di destinazione poggiano su blocchi StairBlock
+     *    regolari (half = BOTTOM).
+     * 4. I due gradini sono orientati su assi perpendicolari (curva a 90°: facingA.getAxis() != facingB.getAxis()).
+     * 5. Almeno uno dei due corridoi ortogonali intermedi (l'angolo esterno della curva) è passabile
+     *    a quota piedi e testa (allowClosedDoors = false).
+     * 6. La posizione di arrivo (piedi e testa) è passabile e libera da pericoli.
+     */
+    public static boolean isLStairTurnTransition(
+            Level level,
+            BlockPos from,
+            BlockPos toTarget,
+            int verticalDelta,
+            @Nullable BlockPos ortho1,
+            @Nullable BlockPos ortho2
+    ) {
+        if (level == null || from == null || toTarget == null) return false;
+        if (Math.abs(verticalDelta) != 1) return false;
+
+        int dx = Math.abs(toTarget.getX() - from.getX());
+        int dz = Math.abs(toTarget.getZ() - from.getZ());
+        if (dx != 1 || dz != 1) return false;
+
+        // Gradini di appoggio sotto i piedi di partenza e arrivo
+        BlockState fromBelow = level.getBlockState(from.below());
+        BlockState toBelow = level.getBlockState(toTarget.below());
+
+        if (!(fromBelow.getBlock() instanceof StairBlock) || !(toBelow.getBlock() instanceof StairBlock)) {
+            return false;
+        }
+
+        // Entrambi devono essere gradini bottom-half (calpestabili)
+        if (fromBelow.hasProperty(StairBlock.HALF) && fromBelow.getValue(StairBlock.HALF) != Half.BOTTOM) {
+            return false;
+        }
+        if (toBelow.hasProperty(StairBlock.HALF) && toBelow.getValue(StairBlock.HALF) != Half.BOTTOM) {
+            return false;
+        }
+
+        // Curva a 90 gradi: i due gradini devono trovarsi su assi ortogonali differenti
+        Direction facingFrom = fromBelow.getValue(StairBlock.FACING);
+        Direction facingTo = toBelow.getValue(StairBlock.FACING);
+        if (facingFrom.getAxis() == facingTo.getAxis()) {
+            return false; // Stesso asse = rampa rettilinea: vietati tagli diagonali!
+        }
+
+        // Corridoi intermedi: calcola se non forniti
+        BlockPos o1 = ortho1 != null ? ortho1 : from.offset(toTarget.getX() - from.getX(), 0, 0);
+        BlockPos o2 = ortho2 != null ? ortho2 : from.offset(0, 0, toTarget.getZ() - from.getZ());
+
+        // Almeno uno dei due corridoi ortogonali (l'angolo esterno) deve essere passabile a piedi e testa
+        boolean o1Clear = isPassable(level, o1, false) && isPassable(level, o1.above(), false);
+        boolean o2Clear = isPassable(level, o2, false) && isPassable(level, o2.above(), false);
+        if (!o1Clear && !o2Clear) {
+            return false;
+        }
+
+        // Sicurezza arrivo
+        if (isHazard(level, toTarget) || isHazard(level, toTarget.above())) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public static boolean isLStairTurnTransition(
+            Level level,
+            BlockPos from,
+            BlockPos toTarget,
+            int verticalDelta
+    ) {
+        if (from == null || toTarget == null) return false;
+        int dx = toTarget.getX() - from.getX();
+        int dz = toTarget.getZ() - from.getZ();
+        BlockPos ortho1 = from.offset(dx, 0, 0);
+        BlockPos ortho2 = from.offset(0, 0, dz);
+        return isLStairTurnTransition(level, from, toTarget, verticalDelta, ortho1, ortho2);
+    }
+
+    /**
      * Verifica la traversabilità diretta in linea retta tra startVec e targetPos,
      * assicurando che non vi siano varchi chiusi o blocchi solidi che ostruiscano il passaggio.
      */
@@ -546,6 +705,49 @@ public final class AutoWalkPathfinder {
             }
         }
         return true;
+    }
+
+    /**
+     * Contratto B1 (Budget Fallback Authorization):
+     * Determina se l'esaurimento del budget nel Passaggio 1 (strict) autorizza l'esecuzione
+     * del Passaggio 2 (fallback con porte chiuse abilitate).
+     *
+     * L'esecuzione del Passaggio 2 è autorizzata quando:
+     * 1. La distanza diretta rientra nel raggio operativo dell'insediamento (directDist <= maxRange);
+     * 2. E ricorre almeno una delle seguenti condizioni:
+     *    a. La distanza diretta è compatibile con una struttura indoor / tenuta residenziale (directDist <= 64.0);
+     *    b. La meta o le sue immediate adiacenze (raggio 3) contengono una porta/varco chiuso;
+     *    c. La posizione di partenza o le sue immediate adiacenze (raggio 3) contengono una porta/varco chiuso.
+     */
+    public static boolean isCandidateForClosedDoorFallback(
+            Level level,
+            BlockPos startFeet,
+            BlockPos rawTargetPos,
+            double directDist,
+            int maxRange
+    ) {
+        if (directDist > maxRange) {
+            return false;
+        }
+        if (directDist <= 64.0) {
+            return true;
+        }
+        return hasClosedDoorNearby(level, rawTargetPos, 3) || hasClosedDoorNearby(level, startFeet, 3);
+    }
+
+    public static boolean hasClosedDoorNearby(Level level, BlockPos center, int radius) {
+        if (level == null || center == null) return false;
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dy = -2; dy <= 2; dy++) {
+                for (int dz = -radius; dz <= radius; dz++) {
+                    BlockPos check = center.offset(dx, dy, dz);
+                    if (isDoorOrGateClosed(level, check)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     public record ClearanceResult(
@@ -804,6 +1006,10 @@ public final class AutoWalkPathfinder {
     public static boolean isClearHeadroom(Level level, BlockPos pos) {
         if (level == null || isHazard(level, pos)) return false;
         BlockState state = level.getBlockState(pos);
+        // Contratto D6.2: La scala a pioli a parete non ostacola lo spazio per la testa del giocatore
+        if (state.getBlock() instanceof LadderBlock) {
+            return true;
+        }
         return state.getCollisionShape(level, pos).isEmpty();
     }
 
@@ -885,6 +1091,12 @@ public final class AutoWalkPathfinder {
     }
 
     public static boolean isSolid(Level level, BlockPos pos) {
+        if (level == null || pos == null) return false;
+        BlockState state = level.getBlockState(pos);
+        // Contratto D6: La scala a pioli a parete (LadderBlock) non costituisce un ostacolo solido impenetrabile
+        if (state.getBlock() instanceof LadderBlock) {
+            return false;
+        }
         return ObstacleDetectionUtils.isSolid(level, pos);
     }
 
@@ -944,10 +1156,18 @@ public final class AutoWalkPathfinder {
         return dist;
     }
 
-    private static double calculateHeuristic(BlockPos a, BlockPos b) {
+    static double calculateHeuristic(BlockPos a, BlockPos b) {
         double dx = a.getX() - b.getX();
-        double dy = (a.getY() - b.getY()) * 1.5; // Slight vertical bias
         double dz = a.getZ() - b.getZ();
+        double dyAbs = Math.abs(a.getY() - b.getY());
+
+        // Contratto B3: Bilanciamento euristico per convergenza multi-piano.
+        // Se il dislivello tra i nodi è multi-piano (|dy| >= 4), si applica un moltiplicatore
+        // aumentato a 2.5 per favorire la discesa/salita rapida verso le rampe ed evitare
+        // esplorazioni esaustive su solai, terrazze o coperture aperte.
+        double verticalMultiplier = dyAbs >= 4 ? 2.5 : 1.5;
+        double dy = (a.getY() - b.getY()) * verticalMultiplier;
+
         return Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
 

@@ -13,6 +13,34 @@ Questo documento raccoglie la memoria storica di tutte le anomalie, correzioni e
 
 ---
 
+### 🟢 Rev MC-26.11 — Revisione 5D.7 (R1, R2, R3): Geometria LadderBlock, Disaccoppiamento Shift Umano, Clearance Volumetrica FallDetector e Convergenza Totale Torre Belvedere
+- **Stato**: `[COLLAUDATA CON SUCCESSO AL 100% IN-GAME DA LUCA]`
+- **Versione Chiusura**: 26.2-1.19.0-dev (Data 2026-09-05)
+- **Problemi Riscontrati (Esperienza Luca)**:
+  1. *Falso Blocco Torre Belvedere*: Il navigatore vocale restituiva `Nessun percorso sicuro` (`NO_PATH`) nel tentativo di raggiungere o scendere dalla torre Belvedere, bloccandosi sulla curva stretta a L tra le due rampe a quota 79.
+  2. *Falso Annullamento AutoWalk da Sneak di Sicurezza*: Durante l'avanzamento verso la scala a pioli, l'arresto per la rotazione vicino al ciglio della tromba scale faceva attivare l'accovacciamento protettivo di `SafetyMovementGuard`; `AutoWalkMotor` interpretava lo sneak sintetico di Minecraft come una pressione manuale del tasto Shift da parte dell'utente, revocando la navigazione con *"Navigazione automatica annullata"*.
+  3. *Falsi Allarmi di Caduta con Soffitto Basso o Muro Sopra*: `FallDetector` allarmava dislivelli anche se il varco superiore era bloccato da blocchi solidi ad altezza occhi.
+- **Evidenza Telemetrica / Log**:
+  - Salita Belvedere: `Pass1: NO_PATH (192 nodes)`. Scavalcata la scala a pioli: `Pass1: FOUND (4 nodes)`.
+  - Tromba scale: `SafetyMovementGuard.engageFallProtection()` -> `client.options.keyShift.setDown(true)` -> `AutoWalkMotor.isManualMovementKeyPressed` = `true` -> `cancel()`.
+- **Soluzioni Applicate (PRAPI)**:
+  1. *Contratto D6 (Geometria Voxel LadderBlock a 4 Pilastri)*:
+     - `AutoWalkPathfinder.isPassable`: restituisce `true` per `LadderBlock`.
+     - `AutoWalkPathfinder.isClearHeadroom`: restituisce `true` per `LadderBlock`.
+     - `AutoWalkPathfinder.isStandable`: restituisce categoricamente `false` per `belowState instanceof LadderBlock`, impedendo cadute nel vuoto o salite spurie verso botole e tetti.
+     - `AutoWalkPathfinder.isSolid`: restituisce `false` per `LadderBlock`, garantendo la trasparenza nelle discese verticali e linea di vista.
+  2. *Contratto D7 (Disaccoppiamento Shift Umano in AutoWalkMotor)*:
+     - Iniezione di `CrouchIntentProbe` con implementazione `RawCrouchIntentProvider` (lettura GLFW hardware puro).
+     - Riforma di `isManualMovementKeyPressed`: solo i tasti Shift fisici reali attivano il Takeover manuale. Lo sneak di emergenza sintetico non interrompe la navigazione.
+  3. *Contratto D8 (Clearance Volumetrica Occhi/Testa in FallDetector)*:
+     - In `isStandingOnDangerousEdge` e `findDangerAhead`: verifica clearance su `stepPos.above()`. Se il blocco a quota occhi è solido/non calpestabile, la cella viene scartata perché il giocatore non può fisicamente cadervi attraverso.
+- **Piani Tecnici e Rapporti di Riferimento**:
+  - `docs/piani/completati/PIANO_CORRETTIVO_FASE5D7_BUDGET_PORTE_GOAL_WAYPOINT_E_CONVERGENZA.md`
+  - `docs/report/archivio/RAPPORTO_REVISIONE_5D7_R3_LADDER_BLOCK_DISACCOPPIAMENTO_SHIFT_E_TORRE_BELVEDERE.md`
+- **Esito Collaudo**: Collaudata con successo empirico al 100% da Luca in-game il 05/09/2026: percorsi lunghi (stalla cava 90m in 27s, granaio, corte) e scalata ininterrotta alla torre Belvedere (81m in 21s) senza alcuna interruzione. 299/299 test automatici verdi.
+
+---
+
 ### 🟢 Rev MC-26.9 — NullPointer Guard su currentScreen e Anti-Ghost in InventoryControls
 - **Stato**: `[COLLAUDATA CON SUCCESSO]`
 - **Versione Chiusura**: 26.2-1.19.0-dev (Data 2026-09-04)

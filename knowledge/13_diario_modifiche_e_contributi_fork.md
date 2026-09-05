@@ -8,7 +8,33 @@
 Questo documento costituisce il **Diario Ufficiale delle Modifiche del Fork Personale in lingua Italiana**.
 Poiché il `README.md` pubblico e la documentazione del repository upstream rimangono in lingua Inglese per la community internazionale con la sola sezione `## [Unreleased]`, tutte le novità, i refactoring e i miglioramenti sviluppati sui nostri rami (`mymaster`, `dev`) vengono tracciati qui secondo la disciplina AVF (`V.A.R[.M]`).
 
-## 🚀 [v26.2-1.19.0-dev] — 2026-09-04 (Refactor Architetturale Cognitive Coordinator — Fasi 1, 2, 3, 4 — Branch feat/cognitive-orchestrator)
+## 🚀 [v26.2-1.19.0-dev] — 2026-09-05 (Refactor Architetturale Cognitive Coordinator & Navigatore — Fasi 1, 2, 3, 4, 5 — Branch feat/cognitive-orchestrator)
+
+### 🚶 Fase 5: Navigatore, AutoWalk & Disaccoppiamento Cinematica/Pathfinding (Revisioni 5A, 5B, 5C, 5D, 5D.1 - 5D.7-R3)
+- **Disaccoppiamento a 3 Livelli (`MovementCoordinator`, `RouteNavigator`, `AutoWalkMotor`)**:
+  - `MovementCoordinator`: arbitraggio eventi di navigazione verso `CognitiveCoordinator` e vocalizzazioni semantiche.
+  - `RouteNavigator`: ciclo ad anello chiuso su waypoints e percorso.
+  - `AutoWalkMotor`: esecuzione cinematica con smoothing yaw 20°/tick e controllo di trazione.
+- **Two-Pass Pathfinding Deterministico (`AutoWalkPathfinder`)**:
+  - Passaggio 1: calcolo rigoroso a porte aperte.
+  - Passaggio 2: fallback con attraversamento varchi chiusi a costo calibrato (penalità 5.0) e budget esteso a 5.000 nodi.
+- **Sblocco Visuale One-Shot su Varchi Chiusi (Rev 5D.2)**:
+  - Eliminato il lock della telecamera a 20 Hz davanti a porte chiuse: Luca mantiene il controllo libero al 100% della visuale da tastiera per esplorare la stanza durante l'attesa.
+- **Geometria Voxel Continua e Taglio Diagonali (Rev 5D.3)**:
+  - Scansione AABB nativa su collision box Minecraft per partenza da varchi chiusi.
+  - Divieto di taglio diagonale con compenetrazione di stipiti o soffitti bassi.
+- **Modello Voxel a 4 Pilastri per Scale a Pioli (`LadderBlock` — Rev 5D.7-R2)**:
+  - `isPassable` e `isClearHeadroom` permissive su `LadderBlock` (hitbox 0.6m transita nello spazio rimanente di 0.8125m).
+  - `isStandable` categoricamente falso per impedire cadute nel vuoto o salite spurie su botole/tetti.
+  - Trasparenza in `isSolid` per scansioni di discesa verticale e linea di vista.
+- **Disaccoppiamento Shift Hardware da Sneak di Sicurezza (Contratto D7 — Rev 5D.7-R3)**:
+  - Integrazione di `CrouchIntentProbe` / `RawCrouchIntentProvider` (GLFW nativo) in `AutoWalkMotor`.
+  - Lo sneak sintetico imposto da `SafetyMovementGuard` su cigli o curve a gomito non innesca più il falso annullamento della navigazione, consentendo l'avanzamento sicuro. Solo la pressione fisica reale dei tasti Shift da parte dell'utente interrompe l'AutoWalk.
+- **Clearance Volumetrica Occhi/Testa in FallDetector (Contratto D8 — Rev 5D.7-R3)**:
+  - Verifica dello spazio libero ad altezza occhi (`stepPos.above()`) nel presidio ciglio e nel look-ahead.
+  - Se il passaggio a quota testa è ostruito da blocchi solidi o barriere, la caduta è fisicamente impossibile e la cella viene scartata a monte, eliminando i falsi positivi di burrone sotto soffitti bassi, trombe scale o feritoie.
+- **Suite di Test Completa**: 299/299 test automatici verdi (`BUILD SUCCESSFUL in 43s`).
+- **Collaudo Empirico al 100%**: Validata con successo in-game da Luca su percorsi indoor/outdoor a lungo raggio (90m verso stalla cava in 27s) e salita/discesa ininterrotta alla torre Belvedere (81m in 21s).
 
 ### 🧠 Fase 1: Nucleo Cognitivo Centralizzato Certificato (Commit e41c3f9d)
 - **Fast-Path Emergenze a 0 ms**: Elaborazione immediata per eventi `CRITICAL` con micro-burst accodato per eventi critici concorrenti nel medesimo tick (prevenzione troncamento prime sillabe salvavita).

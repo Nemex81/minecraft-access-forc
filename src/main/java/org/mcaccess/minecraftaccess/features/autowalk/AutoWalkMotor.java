@@ -21,6 +21,9 @@ import java.util.function.Consumer;
 
 import org.mcaccess.minecraftaccess.Config;
 import org.mcaccess.minecraftaccess.features.autowalk.AutoWalkPathfinder.PathResult;
+import org.mcaccess.minecraftaccess.features.safety.traversal.CrouchIntent;
+import org.mcaccess.minecraftaccess.features.safety.traversal.CrouchIntentProbe;
+import org.mcaccess.minecraftaccess.features.safety.traversal.RawCrouchIntentProvider;
 
 /**
  * AutoWalk Motor (Level 2 - Motor Execution Body).
@@ -102,6 +105,16 @@ public class AutoWalkMotor {
 
     @Getter
     private int initialAlignmentTicks = 0;
+
+    private final CrouchIntentProbe crouchIntentProbe;
+
+    public AutoWalkMotor() {
+        this(new RawCrouchIntentProvider());
+    }
+
+    public AutoWalkMotor(CrouchIntentProbe crouchIntentProbe) {
+        this.crouchIntentProbe = crouchIntentProbe != null ? crouchIntentProbe : new RawCrouchIntentProvider();
+    }
 
     public boolean isActive() {
         return state == State.WALKING || state == State.JUMPING || state == State.SWIMMING;
@@ -524,10 +537,26 @@ public class AutoWalkMotor {
 
     public boolean isManualMovementKeyPressed(Minecraft client) {
         if (client == null || client.options == null) return false;
-        return client.options.keyDown.isDown()
-                || client.options.keyLeft.isDown()
-                || client.options.keyRight.isDown()
-                || client.options.keyShift.isDown();
+        return isManualMovementKeyPressed(
+                client.options.keyDown,
+                client.options.keyLeft,
+                client.options.keyRight,
+                client.options.keyShift
+        );
+    }
+
+    public boolean isManualMovementKeyPressed(
+            @Nullable KeyMapping keyDown,
+            @Nullable KeyMapping keyLeft,
+            @Nullable KeyMapping keyRight,
+            @Nullable KeyMapping keyShift
+    ) {
+        CrouchIntent crouchIntent = crouchIntentProbe.readIntent();
+        boolean manualShift = crouchIntent.reliable() ? crouchIntent.pressed() : (keyShift != null && keyShift.isDown());
+        return (keyDown != null && keyDown.isDown())
+                || (keyLeft != null && keyLeft.isDown())
+                || (keyRight != null && keyRight.isDown())
+                || manualShift;
     }
 
     public static boolean evaluateStepJump(boolean autoJump, double distH, boolean horizontalCollision, double deltaY, boolean onGround) {

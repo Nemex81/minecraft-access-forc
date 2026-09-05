@@ -400,7 +400,7 @@ public final class Config implements ConfigData {
         @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
         public EdgeBumpFeedbackMode edgeBumpFeedbackMode = EdgeBumpFeedbackMode.SOUND_AND_VOICE;
 
-        private FallDetector() {
+        public FallDetector() {
         }
 
         public enum EdgeBumpFeedbackMode {

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.minecraft.SharedConstants;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -13,8 +14,10 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.FenceGateBlock;
+import net.minecraft.world.level.block.LadderBlock;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.TrapDoorBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -33,6 +36,8 @@ import org.mcaccess.minecraftaccess.features.autowalk.AutoWalkPathfinder.PathSta
 import org.mcaccess.minecraftaccess.features.cognitive.CognitiveCoordinator;
 import org.mcaccess.minecraftaccess.features.cognitive.CognitiveEvent;
 import org.mcaccess.minecraftaccess.features.cognitive.CognitivePriority;
+import org.mcaccess.minecraftaccess.features.point_of_interest.waypoints.Waypoint;
+import org.mcaccess.minecraftaccess.features.point_of_interest.waypoints.WaypointType;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -936,4 +941,384 @@ class AutoWalkPathfinderTest {
         }
         assertTrue(reachedLanding, "Il percorso deve scendere fino al pianerottolo a X = 3");
     }
+
+    @Test
+    @DisplayName("Contratto B1: Budget esaurito nel Passaggio 1 autorizza il Fallback su Passaggio 2 con porte chiuse")
+    void testBudgetExhaustionAllowsFallbackWhenDoorBlocked() {
+        // Pavimento a Y = 69
+        setSolid(new BlockPos(0, 69, 0));
+        // Pavimento sotto la porta a X = 1
+        setSolid(new BlockPos(1, 69, 0));
+        // Porta chiusa a X = 1
+        setClosedDoor(new BlockPos(1, 70, 0), Direction.EAST);
+        setSolid(new BlockPos(2, 69, 0));
+
+        // Corridoio aperto verso -X (vicolo cieco di 30 nodi)
+        for (int x = -1; x >= -30; x--) {
+            setSolid(new BlockPos(x, 69, 0));
+        }
+
+        Vec3 start = new Vec3(0.5, 70.0, 0.5);
+        BlockPos target = new BlockPos(2, 70, 0);
+
+        // Verifica diretta della logica di gating del fallback
+        assertTrue(AutoWalkPathfinder.isCandidateForClosedDoorFallback(level, new BlockPos(0, 70, 0), target, 2.0, 32),
+                "La meta a distanza 2m con porta chiusa adiacente deve essere candidata al fallback");
+
+        // Con budget = 20:
+        // Passaggio 1 esplora il corridoio verso -X ed esaurisce i 20 nodi senza poter attraversare la porta.
+        // Contratto B1 rileva la porta chiusa e autorizza il Passaggio 2.
+        // Il Passaggio 2 esplora 15 nodi del corridoio prima che il costo f superi la porta, quindi attraversa
+        // la porta a X = 1 e trova il target entro i 20 nodi.
+        PathResult result = AutoWalkPathfinder.findPath(level, start, target, 32, 20);
+
+        assertEquals(PathStatus.FOUND, result.status(), "Il Passaggio 2 deve trovare il percorso attraverso la porta chiusa anche se il Passaggio 1 ha esaurito il budget");
+        assertNotNull(result.path());
+        assertTrue(result.path().contains(new BlockPos(1, 70, 0)), "Il percorso deve transitare per il varco della porta");
+
+        // Caso di esclusione (aperta campagna senza porte con distanza > 64m sia da start che da target):
+        // Non deve procedere al Passaggio 2 e deve restituire SEARCH_BUDGET_EXHAUSTED
+        BlockPos openFieldStart = new BlockPos(100, 70, 0);
+        BlockPos farOpenTarget = new BlockPos(180, 70, 0);
+        assertFalse(AutoWalkPathfinder.isCandidateForClosedDoorFallback(level, openFieldStart, farOpenTarget, 80.0, 100),
+                "In aperta campagna a 80m senza alcuna porta nei dintorni, non deve essere candidato al fallback");
+
+        // Corridoio aperto verso +X a partire da openFieldStart
+        for (int x = 100; x <= 180; x++) {
+            setSolid(new BlockPos(x, 69, 0));
+        }
+        PathResult farResult = AutoWalkPathfinder.findPath(level, new Vec3(100.5, 70.0, 0.5), farOpenTarget, 100, 20);
+        assertEquals(PathStatus.SEARCH_BUDGET_EXHAUSTED, farResult.status(), "In aperta campagna oltre 64m senza porte, deve mantenere SEARCH_BUDGET_EXHAUSTED");
+    }
+
+    @Test
+    @DisplayName("Contratto B2: Scala a L con pianerottolo d'angolo e scala a pioli (ladder) a parete")
+    void testLShapedStaircaseWithLadderLanding() {
+        // Piattaforma iniziale a Y = 76 (floor Y = 75)
+        setSolid(new BlockPos(0, 75, 0));
+
+        // Rampa 1: scende verso Sud (+Z)
+        BlockState stairNorth = Blocks.STONE_BRICK_STAIRS.defaultBlockState()
+                .setValue(StairBlock.FACING, Direction.NORTH);
+        setBlock(new BlockPos(0, 75, 1), stairNorth);
+        setBlock(new BlockPos(0, 74, 2), stairNorth);
+
+        // Pilastro d'angolo interno per impedire tagli diagonali nel vuoto
+        setSolid(new BlockPos(1, 72, 2));
+        setSolid(new BlockPos(1, 73, 2));
+        setSolid(new BlockPos(1, 74, 2));
+        setSolid(new BlockPos(1, 75, 2));
+        setSolid(new BlockPos(1, 76, 2));
+
+        // Pianerottolo d'angolo a (0, 73, 3): pavimento a Y = 72, ladder su parete a Y = 73 e 74
+        setSolid(new BlockPos(0, 72, 3));
+        BlockState ladderEast = Blocks.LADDER.defaultBlockState()
+                .setValue(LadderBlock.FACING, Direction.EAST);
+        setBlock(new BlockPos(0, 73, 3), ladderEast);
+        setBlock(new BlockPos(0, 74, 3), ladderEast);
+
+        // Rampa 2: gira a Est (+X) e scende verso Est
+        BlockState stairWest = Blocks.STONE_BRICK_STAIRS.defaultBlockState()
+                .setValue(StairBlock.FACING, Direction.WEST);
+        setBlock(new BlockPos(1, 72, 3), stairWest);
+        setBlock(new BlockPos(2, 71, 3), stairWest);
+
+        // Pianerottolo finale a Y = 70 (floor Y = 69)
+        setSolid(new BlockPos(3, 69, 3));
+        setSolid(new BlockPos(4, 69, 3));
+
+        Vec3 start = new Vec3(0.5, 76.0, 0.5);
+        BlockPos target = new BlockPos(4, 70, 3);
+
+        PathResult result = AutoWalkPathfinder.findPath(level, start, target, 32);
+
+        assertEquals(PathStatus.FOUND, result.status(), "Deve trovare il percorso lungo la scala a L");
+        assertNotNull(result.path());
+
+        // Deve transitare per la colonna del pianerottolo d'angolo (X=0, Z=3) provvisto di ladder
+        boolean visitedCorner = result.path().stream()
+                .anyMatch(p -> p.getX() == 0 && p.getZ() == 3);
+        assertTrue(visitedCorner, "Il percorso deve transitare per il pianerottolo d'angolo con la ladder");
+    }
+
+    @Test
+    @DisplayName("Contratto B3 & B4: Rotta reale Torre Belvedere -> cas ingresso solaio con rampe a L e porta")
+    void testBelvedereToSolaioMansionRoute() {
+        // Pavimento stanza torre a Y = 80
+        setSolid(new BlockPos(-62, 80, -39));
+        setSolid(new BlockPos(-62, 80, -38));
+
+        // Rampa 1: scende verso Sud (+Z)
+        BlockState stairNorth = Blocks.STONE_BRICK_STAIRS.defaultBlockState()
+                .setValue(StairBlock.FACING, Direction.NORTH);
+        setBlock(new BlockPos(-62, 80, -37), stairNorth);
+        setBlock(new BlockPos(-62, 79, -36), stairNorth);
+
+        // Pianerottolo d'angolo a (-62, 79, -35): floor Y = 78, ladder su parete a Y = 79 e 80
+        setSolid(new BlockPos(-62, 78, -35));
+        BlockState ladderEast = Blocks.LADDER.defaultBlockState()
+                .setValue(LadderBlock.FACING, Direction.EAST);
+        setBlock(new BlockPos(-62, 79, -35), ladderEast);
+        setBlock(new BlockPos(-62, 80, -35), ladderEast);
+
+        // Rampa 2: scende verso Est (+X)
+        BlockState stairWest = Blocks.STONE_BRICK_STAIRS.defaultBlockState()
+                .setValue(StairBlock.FACING, Direction.WEST);
+        setBlock(new BlockPos(-61, 78, -35), stairWest);
+        setBlock(new BlockPos(-60, 77, -35), stairWest);
+        setBlock(new BlockPos(-59, 76, -35), stairWest);
+        setBlock(new BlockPos(-58, 75, -35), stairWest);
+
+        // Pianerottolo a fine Rampa 2 a Y = 75 (floor Y = 74)
+        setSolid(new BlockPos(-57, 74, -35));
+
+        // Corridoio verso la porta del solaio
+        for (int x = -57; x >= -63; x--) {
+            setSolid(new BlockPos(x, 74, -36));
+        }
+
+        // Porta del solaio a (-64, 75, -36)
+        setClosedDoor(new BlockPos(-64, 75, -36), Direction.EAST);
+
+        // Pavimento interno solaio
+        setSolid(new BlockPos(-65, 74, -36));
+
+        // Simulazione terrazza aperta complanare alla torre a Y = 81 (distrazione per l'euristica)
+        for (int x = -61; x >= -65; x--) {
+            for (int z = -40; z >= -42; z--) {
+                setSolid(new BlockPos(x, 80, z));
+            }
+        }
+
+        Vec3 start = new Vec3(-61.5, 81.0, -38.6);
+        Waypoint solaioWaypoint = new Waypoint(
+                "solaio-1",
+                "cas ingresso solaio",
+                new BlockPos(-64, 75, -36),
+                Identifier.parse("minecraft:overworld"),
+                WaypointType.CUSTOM,
+                0L
+        );
+
+        PathResult result = AutoWalkPathfinder.findPath(level, start, solaioWaypoint, 32);
+
+        assertEquals(PathStatus.FOUND, result.status(), "Deve trovare il percorso dalla torre al solaio");
+        assertNotNull(result.path());
+
+        // Il punto di arrivo deve essere antistante la porta a (-63, 75, -36) o all'interno
+        BlockPos finalPos = result.path().get(result.path().size() - 1);
+        assertTrue(finalPos.equals(new BlockPos(-63, 75, -36)) || finalPos.equals(new BlockPos(-64, 75, -36)),
+                "La destinazione finale deve essere sulla soglia del solaio a quota Y = 75");
+    }
+
+    @Test
+    @DisplayName("Contratto B3: Bilanciamento euristico per dislivelli multi-piano")
+    void testCalculateHeuristicVerticalConvergence() {
+        BlockPos goal = new BlockPos(-64, 75, -36);
+
+        // Nodo complanare (dy = 0): distanza puramente orizzontale = 4.0
+        BlockPos sameFloorNode = new BlockPos(-60, 75, -36);
+        assertEquals(4.0, AutoWalkPathfinder.calculateHeuristic(sameFloorNode, goal), 1e-6);
+
+        // Nodo a dislivello lieve (dy = 2 < 4): moltiplicatore 1.5 -> dy_eff = 3.0
+        BlockPos slightVerticalNode = new BlockPos(-64, 77, -36);
+        assertEquals(3.0, AutoWalkPathfinder.calculateHeuristic(slightVerticalNode, goal), 1e-6);
+
+        // Nodo multi-piano (dy = 6 >= 4): moltiplicatore 2.5 -> dy_eff = 15.0
+        BlockPos multiFloorRoofNode = new BlockPos(-64, 81, -36);
+        assertEquals(15.0, AutoWalkPathfinder.calculateHeuristic(multiFloorRoofNode, goal), 1e-6);
+
+        // Nodo sulla scala intermedia a Y = 78 (dy = 3): h ~ 6.10
+        BlockPos stairNode = new BlockPos(-60, 78, -35);
+        double stairH = AutoWalkPathfinder.calculateHeuristic(stairNode, goal);
+
+        // Nodo sulla terrazza a Y = 81 (dy = 6): h ~ 15.42
+        BlockPos terraceNode = new BlockPos(-62, 81, -39);
+        double terraceH = AutoWalkPathfinder.calculateHeuristic(terraceNode, goal);
+
+        // Il nodo sulla scala DEVE avere un'euristica significativamente più vantaggiosa rispetto alla terrazza
+        assertTrue(stairH < terraceH, "Il nodo sulla scala (" + stairH + ") deve essere fortemente preferito rispetto alla terrazza (" + terraceH + ")");
+    }
+
+    // =========================================================================
+    // Scenario 10: Revisione 5D.7 (Budget 5000, Door Penalty 5.0, L-Stair Turn, Anti-Roof Waypoint)
+    // =========================================================================
+
+    @Test
+    @DisplayName("Contratto D3: MAX_EXPLORED_NODES è 5000 come budget globale")
+    void testMaxExploredNodesIs5000() {
+        assertEquals(5000, AutoWalkPathfinder.MAX_EXPLORED_NODES, "Il budget nodi globale deve essere elevato a 5000");
+    }
+
+    @Test
+    @DisplayName("Contratto D2: CLOSED_DOOR_PENALTY è ricalibrato a 5.0")
+    void testClosedDoorPenaltyIs5() {
+        assertEquals(5.0, AutoWalkPathfinder.CLOSED_DOOR_PENALTY, 1e-6, "La penalità per porta chiusa deve essere 5.0");
+    }
+
+    @Test
+    @DisplayName("Contratto D2: Una botola chiusa NON è attraversabile neanche in fallback allowClosedDoors=true")
+    void testClosedTrapdoorNotPassableInFallback() {
+        BlockPos trapPos = new BlockPos(10, 64, 10);
+        BlockState closedTrap = Blocks.OAK_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.OPEN, false);
+        setBlock(trapPos, closedTrap);
+
+        assertFalse(AutoWalkPathfinder.isPassable(level, trapPos, false),
+                "Botola chiusa non deve essere passabile in Pass 1");
+        assertFalse(AutoWalkPathfinder.isPassable(level, trapPos, true),
+                "Botola chiusa NON deve essere passabile in Pass 2 (fallback)");
+
+        BlockState openTrap = Blocks.OAK_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.OPEN, true);
+        setBlock(trapPos, openTrap);
+        assertTrue(AutoWalkPathfinder.isPassable(level, trapPos, true),
+                "Botola aperta deve essere passabile");
+    }
+
+    @Test
+    @DisplayName("Contratto D4: Sanificazione Waypoint esclude rawTargetPos.above() dai goal")
+    void testWaypointGoalExcludesAboveTarget() {
+        BlockPos wpPos = new BlockPos(-64, 75, -36);
+        Waypoint wp = new Waypoint("wp_1", "test_wp", wpPos, Identifier.parse("minecraft:overworld"), WaypointType.CUSTOM, 0L);
+
+        setBlock(wpPos, Blocks.AIR.defaultBlockState());
+        setBlock(wpPos.below(), Blocks.STONE.defaultBlockState());
+        setBlock(wpPos.above(), Blocks.AIR.defaultBlockState());
+        setBlock(wpPos.above(2), Blocks.AIR.defaultBlockState());
+
+        Set<BlockPos> goals = AutoWalkPathfinder.resolveValidGoalPositions(level, wp, wpPos, true);
+
+        assertTrue(goals.contains(wpPos), "I goal del waypoint devono contenere la posizione esatta");
+        assertFalse(goals.contains(wpPos.above()), "I goal del waypoint NON devono contenere rawTargetPos.above()");
+    }
+
+    @Test
+    @DisplayName("Contratto D1: Curva su scala a L riconosciuta in salita e discesa con corridoio esterno libero")
+    void testLStairTurnTransition() {
+        // Rampa 1 che sale verso ovest: gradino in (-61, 78, -35) facing WEST
+        BlockPos stair1 = new BlockPos(-61, 78, -35);
+        BlockPos feet1 = new BlockPos(-61, 79, -35);
+        BlockState stairState1 = Blocks.STONE_BRICK_STAIRS.defaultBlockState()
+                .setValue(StairBlock.FACING, Direction.WEST)
+                .setValue(StairBlock.HALF, net.minecraft.world.level.block.state.properties.Half.BOTTOM);
+        setBlock(stair1, stairState1);
+
+        // Rampa 2 che sale verso nord: gradino in (-62, 79, -36) facing NORTH
+        BlockPos stair2 = new BlockPos(-62, 79, -36);
+        BlockPos feet2 = new BlockPos(-62, 80, -36);
+        BlockState stairState2 = Blocks.STONE_BRICK_STAIRS.defaultBlockState()
+                .setValue(StairBlock.FACING, Direction.NORTH)
+                .setValue(StairBlock.HALF, net.minecraft.world.level.block.state.properties.Half.BOTTOM);
+        setBlock(stair2, stairState2);
+
+        // Corridoio interno: (-61, 79, -36) è un muro di pietra (solido)
+        BlockPos innerWall = new BlockPos(-61, 79, -36);
+        setSolid(innerWall);
+        setSolid(innerWall.above());
+
+        // Corridoio esterno: (-62, 79, -35) è aperto (aria)
+        BlockPos outerClear = new BlockPos(-62, 79, -35);
+        setBlock(outerClear, Blocks.AIR.defaultBlockState());
+        setBlock(outerClear.above(), Blocks.AIR.defaultBlockState());
+
+        // Test 1: Step-Up da feet1 a feet2 (salita a 90° con dislivello +1)
+        assertTrue(AutoWalkPathfinder.isLStairTurnTransition(level, feet1, feet2, 1, innerWall, outerClear),
+                "La transizione di salita su scala a L deve essere considerata lecita");
+
+        // Test 2: Descent da feet2 a feet1 (discesa a 90° con dislivello -1)
+        assertTrue(AutoWalkPathfinder.isLStairTurnTransition(level, feet2, feet1, -1, innerWall, outerClear),
+                "La transizione di discesa su scala a L deve essere considerata lecita");
+
+        // Test 3: Rampa rettilinea (stesso asse) non deve essere permessa
+        BlockState straightStair = Blocks.STONE_BRICK_STAIRS.defaultBlockState()
+                .setValue(StairBlock.FACING, Direction.WEST)
+                .setValue(StairBlock.HALF, net.minecraft.world.level.block.state.properties.Half.BOTTOM);
+        setBlock(stair2, straightStair);
+        assertFalse(AutoWalkPathfinder.isLStairTurnTransition(level, feet1, feet2, 1, innerWall, outerClear),
+                "Due gradini con lo stesso asse (rampa rettilinea) NON devono consentire tagli diagonali");
+
+        // Test 4: Se entrambi i corridoi sono bloccati, la diagonale deve essere rifiutata
+        setBlock(stair2, stairState2);
+        setSolid(outerClear);
+        assertFalse(AutoWalkPathfinder.isLStairTurnTransition(level, feet1, feet2, 1, innerWall, outerClear),
+                "Se entrambi i corridoi intermedi sono bloccati, la curva a L deve essere rifiutata");
+    }
+
+    @Test
+    @DisplayName("Contratto D6.1: LadderBlock è considerato passabile orizzontalmente dal giocatore")
+    void testLadderBlockIsPassable() {
+        BlockPos ladderPos = new BlockPos(20, 64, 20);
+        BlockState ladderState = Blocks.LADDER.defaultBlockState();
+        setBlock(ladderPos, ladderState);
+
+        assertTrue(AutoWalkPathfinder.isPassable(level, ladderPos, false),
+                "LadderBlock deve essere passabile orizzontalmente in Pass 1 (senza porte)");
+        assertTrue(AutoWalkPathfinder.isPassable(level, ladderPos, true),
+                "LadderBlock deve essere passabile orizzontalmente in Pass 2 (fallback)");
+    }
+
+    @Test
+    @DisplayName("Contratto D6.2: LadderBlock non ostruisce lo spazio per la testa del giocatore (isClearHeadroom)")
+    void testLadderBlockIsClearHeadroom() {
+        BlockPos headPos = new BlockPos(20, 65, 20);
+        BlockState ladderState = Blocks.LADDER.defaultBlockState();
+        setBlock(headPos, ladderState);
+
+        assertTrue(AutoWalkPathfinder.isClearHeadroom(level, headPos),
+                "LadderBlock a quota testa non deve essere considerato un ostacolo di collisione");
+    }
+
+    @Test
+    @DisplayName("Contratto D6.3: Vietato stazionare sopra un LadderBlock (isStandable = false)")
+    void testCannotStandOnLadderBlock() {
+        BlockPos feetPos = new BlockPos(20, 64, 20);
+        BlockPos belowPos = feetPos.below();
+
+        // Blocco sotto è una scala a pioli
+        setBlock(belowPos, Blocks.LADDER.defaultBlockState());
+        // Spazio piedi e testa sono aria
+        setBlock(feetPos, Blocks.AIR.defaultBlockState());
+        setBlock(feetPos.above(), Blocks.AIR.defaultBlockState());
+
+        assertFalse(AutoWalkPathfinder.isStandable(level, feetPos, false),
+                "Non deve essere consentito stazionare sopra una scala a pioli (non è calpestabile come pavimento)");
+        assertFalse(AutoWalkPathfinder.isStandable(level, feetPos, true),
+                "Non deve essere consentito stazionare sopra una scala a pioli neanche in modalità fallback");
+    }
+
+    @Test
+    @DisplayName("Contratto D6: Curva a L ammessa con scala a pioli (LadderBlock) sull'angolo ortogonale esterno")
+    void testLStairTurnTransitionAllowedWithLadderAtCorner() {
+        // Rampa 1: gradino (-61, 78, -35) facing WEST
+        BlockPos stair1 = new BlockPos(-61, 78, -35);
+        BlockPos feet1 = new BlockPos(-61, 79, -35);
+        BlockState stairState1 = Blocks.STONE_BRICK_STAIRS.defaultBlockState()
+                .setValue(StairBlock.FACING, Direction.WEST)
+                .setValue(StairBlock.HALF, net.minecraft.world.level.block.state.properties.Half.BOTTOM);
+        setBlock(stair1, stairState1);
+
+        // Rampa 2: gradino (-62, 79, -36) facing NORTH
+        BlockPos stair2 = new BlockPos(-62, 79, -36);
+        BlockPos feet2 = new BlockPos(-62, 80, -36);
+        BlockState stairState2 = Blocks.STONE_BRICK_STAIRS.defaultBlockState()
+                .setValue(StairBlock.FACING, Direction.NORTH)
+                .setValue(StairBlock.HALF, net.minecraft.world.level.block.state.properties.Half.BOTTOM);
+        setBlock(stair2, stairState2);
+
+        // Corridoio interno: (-61, 79, -36) è solido (muro di pietra)
+        BlockPos innerWall = new BlockPos(-61, 79, -36);
+        setSolid(innerWall);
+        setSolid(innerWall.above());
+
+        // Corridoio esterno: (-62, 79, -35) presenta una scala a pioli a parete (LadderBlock)
+        BlockPos outerWithLadder = new BlockPos(-62, 79, -35);
+        setBlock(outerWithLadder, Blocks.LADDER.defaultBlockState());
+        setBlock(outerWithLadder.above(), Blocks.AIR.defaultBlockState());
+
+        // La transizione deve ora avere successo sia in salita che in discesa
+        assertTrue(AutoWalkPathfinder.isLStairTurnTransition(level, feet1, feet2, 1, innerWall, outerWithLadder),
+                "La curva a L in salita deve essere permessa con LadderBlock sull'angolo esterno");
+        assertTrue(AutoWalkPathfinder.isLStairTurnTransition(level, feet2, feet1, -1, innerWall, outerWithLadder),
+                "La curva a L in discesa deve essere permessa con LadderBlock sull'angolo esterno");
+    }
 }
+

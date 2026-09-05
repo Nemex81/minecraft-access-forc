@@ -12,11 +12,13 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -117,5 +119,54 @@ class FallDetectorTraversalIntegrationTest {
         // Il pianerottolo in fondo alla rampa di scale deve essere riconosciuto come safe staircase
         boolean isSafe = FallDetector.isSafeWalkableStaircase(level, landingPos, 68);
         assertTrue(isSafe, "Il pianerottolo in fondo alla rampa di scale deve essere riconosciuto come discesa sicura");
+    }
+
+    @Test
+    @DisplayName("4. Contratto D8.1: isStandingOnDangerousEdge ignora buche se altezza occhi è bloccata da muro")
+    void testDangerousEdgeIgnoredWhenHeadLevelBlocked() {
+        Level level = mock(Level.class);
+        net.minecraft.world.entity.player.Player player = mock(net.minecraft.world.entity.player.Player.class);
+        when(player.getX()).thenReturn(10.0);
+        when(player.getY()).thenReturn(65.0);
+        when(player.getZ()).thenReturn(5.0);
+
+        BlockState stone = Blocks.STONE.defaultBlockState();
+        BlockState air = Blocks.AIR.defaultBlockState();
+
+        // Posizioni perimetrali a quota piedi (Y=65): aria
+        // Posizioni perimetrali a quota occhi (Y=66): pietra solida (bloccate!)
+        when(level.getBlockState(argThat(pos -> pos != null && pos.getY() == 65))).thenReturn(air);
+        when(level.getBlockState(argThat(pos -> pos != null && pos.getY() == 66))).thenReturn(stone);
+
+        net.minecraft.world.level.material.FluidState emptyFluid = net.minecraft.world.level.material.Fluids.EMPTY.defaultFluidState();
+        when(level.getFluidState(any())).thenReturn(emptyFluid);
+
+        FallDetector fallDetector = new FallDetector();
+        boolean edgeDetected = fallDetector.isStandingOnDangerousEdge(player, level);
+        assertFalse(edgeDetected, "Se quota occhi è ostruita, il ciglio non deve essere considerato pericoloso (caduta impossibile)");
+    }
+
+    @Test
+    @DisplayName("5. Contratto D8.2: findDangerAhead arresta look-ahead se quota occhi è ostruita da muro")
+    void testFindDangerAheadStopsWhenHeadLevelBlocked() {
+        Level level = mock(Level.class);
+        net.minecraft.world.entity.player.Player player = mock(net.minecraft.world.entity.player.Player.class);
+        when(player.getX()).thenReturn(10.0);
+        when(player.getY()).thenReturn(65.0);
+        when(player.getZ()).thenReturn(5.0);
+
+        BlockState stone = Blocks.STONE.defaultBlockState();
+        BlockState air = Blocks.AIR.defaultBlockState();
+
+        // Ai piedi aria, a quota testa pietra
+        when(level.getBlockState(argThat(pos -> pos != null && pos.getY() == 65))).thenReturn(air);
+        when(level.getBlockState(argThat(pos -> pos != null && pos.getY() == 66))).thenReturn(stone);
+
+        net.minecraft.world.level.material.FluidState emptyFluid = net.minecraft.world.level.material.Fluids.EMPTY.defaultFluidState();
+        when(level.getFluidState(any())).thenReturn(emptyFluid);
+
+        FallDetector fallDetector = new FallDetector();
+        FallDetector.DangerInfo danger = fallDetector.findDangerAhead(player, level, new Vec3(0, 0, 1));
+        assertNull(danger, "Se quota occhi è ostruita da blocco solido, look-ahead deve arrestarsi senza segnalare caduta");
     }
 }

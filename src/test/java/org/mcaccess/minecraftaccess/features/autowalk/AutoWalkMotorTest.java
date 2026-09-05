@@ -4,10 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.SharedConstants;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.Options;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
+import org.mcaccess.minecraftaccess.features.safety.traversal.CrouchIntent;
+import org.mcaccess.minecraftaccess.features.safety.traversal.CrouchIntentProbe;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.BeforeAll;
@@ -402,5 +406,62 @@ class AutoWalkMotorTest {
         // Completamento del primo segmento
         navigator.completeFirstSegment();
         assertFalse(navigator.isFirstSegmentPending());
+    }
+
+    @Test
+    @DisplayName("5D.7-R3: Shift fisico premuto attiva il Takeover manuale")
+    void testManualShiftFromPhysicalKeyboardTriggersTakeover() {
+        KeyMapping keyShift = mock(KeyMapping.class);
+        when(keyShift.isDown()).thenReturn(true);
+
+        // Probe GLFW fisico affidabile con Shift premuto dall'utente
+        CrouchIntentProbe physicalShiftProbe = () -> new CrouchIntent(true, true);
+        AutoWalkMotor motorWithProbe = new AutoWalkMotor(physicalShiftProbe);
+
+        assertTrue(motorWithProbe.isManualMovementKeyPressed(null, null, null, keyShift),
+                "Lo Shift fisico premuto dall'utente deve attivare il Takeover");
+    }
+
+    @Test
+    @DisplayName("5D.7-R3: Shift sintetico di sicurezza (FallDetector) NON attiva il Takeover")
+    void testSyntheticShiftFromFallProtectionIgnoredByMotor() {
+        KeyMapping keyShift = mock(KeyMapping.class);
+        // In Minecraft keyShift.isDown() restituisce true perché forzato da MinecraftSneakOverridePort
+        when(keyShift.isDown()).thenReturn(true);
+
+        // Probe GLFW fisico affidabile ma NON premuto dall'utente (premuto solo a livello sintetico)
+        CrouchIntentProbe syntheticOnlyProbe = () -> new CrouchIntent(false, true);
+        AutoWalkMotor motorWithProbe = new AutoWalkMotor(syntheticOnlyProbe);
+
+        assertFalse(motorWithProbe.isManualMovementKeyPressed(null, null, null, keyShift),
+                "L'accovacciamento sintetico del FallDetector NON deve essere scambiato per un Takeover manuale");
+    }
+
+    @Test
+    @DisplayName("5D.7-R3: Tasti S, A, D attivano il Takeover indipendentemente dallo Shift")
+    void testPhysicalMovementKeysSADTriggerTakeover() {
+        KeyMapping keyDown = mock(KeyMapping.class);
+        when(keyDown.isDown()).thenReturn(true);
+
+        // Probe con Shift non premuto
+        CrouchIntentProbe probe = () -> new CrouchIntent(false, true);
+        AutoWalkMotor motorWithProbe = new AutoWalkMotor(probe);
+
+        assertTrue(motorWithProbe.isManualMovementKeyPressed(keyDown, null, null, null),
+                "La pressione di S (indietro) deve attivare il Takeover");
+    }
+
+    @Test
+    @DisplayName("5D.7-R3: Fallback trasparente in ambiente headless (reliable = false)")
+    void testHeadlessFallbackWithoutWindow() {
+        KeyMapping keyShift = mock(KeyMapping.class);
+        when(keyShift.isDown()).thenReturn(true);
+
+        // In ambiente headless/senza finestra, reliable è false -> fallback su keyShift.isDown()
+        CrouchIntentProbe headlessProbe = () -> new CrouchIntent(false, false);
+        AutoWalkMotor motorWithProbe = new AutoWalkMotor(headlessProbe);
+
+        assertTrue(motorWithProbe.isManualMovementKeyPressed(null, null, null, keyShift),
+                "In assenza di probe affidabile, il fallback deve consultare keyShift");
     }
 }

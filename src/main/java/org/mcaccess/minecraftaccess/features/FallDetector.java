@@ -210,7 +210,8 @@ public class FallDetector implements BalmClientModule {
     public FallDetector() {
         clock = Clock.systemDefaultZone();
         previousTimeInMillis = clock.millis();
-        config = Config.getInstance().fallDetector;
+        Config cfg = Config.getInstance();
+        config = cfg != null && cfg.fallDetector != null ? cfg.fallDetector : new Config.FallDetector();
         movementGuard = SafetyMovementGuard.createDefault();
     }
 
@@ -355,7 +356,7 @@ public class FallDetector implements BalmClientModule {
         }
     }
 
-    private boolean isStandingOnDangerousEdge(Player player, Level level) {
+    boolean isStandingOnDangerousEdge(Player player, Level level) {
         int playerBaseY = (int) Math.floor(player.getY());
         double px = player.getX();
         double pz = player.getZ();
@@ -386,6 +387,14 @@ public class FallDetector implements BalmClientModule {
             BlockState stepState = level.getBlockState(stepPos);
             VoxelShape stepShape = stepState.getCollisionShape(level, stepPos);
             if (!stepShape.isEmpty()) {
+                continue;
+            }
+
+            // Contratto D8.1: Verifica Pervietà ad Altezza Occhi/Testa
+            BlockPos headPos = stepPos.above();
+            BlockState headState = level.getBlockState(headPos);
+            VoxelShape headShape = headState.getCollisionShape(level, headPos);
+            if (!headShape.isEmpty() || isInsurmountableBarrier(level, headPos)) {
                 continue;
             }
 
@@ -427,7 +436,7 @@ public class FallDetector implements BalmClientModule {
         }
     }
 
-    private @Nullable DangerInfo findDangerAhead(Player player, Level level, Vec3 moveDir) {
+    @Nullable DangerInfo findDangerAhead(Player player, Level level, Vec3 moveDir) {
         double maxLookAhead = Math.max(1.0, (double) config.slowdownDistance);
         int playerBaseY = (int) Math.floor(player.getY());
         Set<BlockPos> checkedPositions = new HashSet<>();
@@ -478,6 +487,15 @@ public class FallDetector implements BalmClientModule {
                 }
                 prevPos = stepPos;
                 continue;
+            }
+
+            // Contratto D8.2: Verifica Pervietà ad Altezza Occhi/Testa nel look-ahead
+            BlockPos headPos = stepPos.above();
+            BlockState headState = level.getBlockState(headPos);
+            VoxelShape headShape = headState.getCollisionShape(level, headPos);
+            if (!headShape.isEmpty() || isInsurmountableBarrier(level, headPos)) {
+                // Il varco orizzontale è ostruito in alto: la caduta orizzontale è fisicamente impossibile
+                break;
             }
 
             BlockPos groundUnderStep = stepPos.below();
@@ -623,7 +641,7 @@ public class FallDetector implements BalmClientModule {
         return false;
     }
 
-    private record DangerInfo(BlockPos pos, int depth, double distance) {
+    record DangerInfo(BlockPos pos, int depth, double distance) {
     }
 
     private void handleDangerDetected(Player player, BlockPos dangerPos, int depth, double distance) {
