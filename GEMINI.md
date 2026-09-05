@@ -1,4 +1,4 @@
-# Minecraft Access — Hub di Contesto Master (GEMINI.md — ASTRALIS v2.6.3)
+# Minecraft Access — Hub di Contesto Master (GEMINI.md — ASTRALIS v2.7.0)
 # Autore: Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA)
 # Target AI: Antigravity (Primario) & Codex/ChatGPT (Copilota Ausiliario)
 # Eredita da:
@@ -13,7 +13,7 @@ Questo file costituisce l'**Hub Centrale di Contesto e Governance** del progetto
 
 ---
 
-## 🏛️ 1. LA MATRICE DEGLI 11 PROTOCOLLI OPERATIVI (SPECIALIZZAZIONE MINECRAFT ACCESS)
+## 🏛️ 1. LA MATRICE DEI 12 PROTOCOLLI OPERATIVI (SPECIALIZZAZIONE MINECRAFT ACCESS)
 
 1. **Protocollo 1 — Progettazione** *(Strategy, Contracts & Architecture — Sotto-Fase 1A)*:
    - Redazione del piano formale in `docs/piani/attivi/` con dichiarazione incremento AVF (`# Incremento Versione Target (AVF)`);
@@ -46,6 +46,14 @@ Questo file costituisce l'**Hub Centrale di Contesto e Governance** del progetto
 11. **Protocollo 11 — Pulizia & Bonifica (Dead Code Purge)**:
     - Bonifica a 5 barriere: audit doppia chiave (codice + `sounds.json` + `lang/*.json` per identificatori dinamici protetti per default), dry-run lineare NVDA, quarantena, compilazione e rollback automatico a 1-click.
 
+12. **Protocollo 12 — Dialettica Ingegneristica & Auto-Revisione Avversariale (L'Inner Codex Pattern)**:
+    - Autonomia critica di Antigravity basata sui 5 Cancelli Inviolabili:
+      * *Cancello 1 (Rifiuto Patching Euristico)*: Divieto di forzare budget A*, pesi o ritardi artificiali quando la navigazione fallisce per discontinuità voxel (es. calpestabilità su scale/ladders);
+      * *Cancello 2 (Hardware Grounding)*: Probing GLFW puro per rilevare il takeover manuale del giocatore (`keySneak`), disaccoppiato dalle guardie reattive di salvataggio;
+      * *Cancello 3 (Hitbox & Clearance Continua)*: Verifica clearance occhi/testa ($0.6 \times 1.8\text{ m}$) per prevenire falsi allarmi caduta su pareti verticali e calcolo forme di collisione sottili ($0.1875\text{ m}$ per scale a pioli);
+      * *Cancello 4 (Named Contracts D0..DN / S1..SN)*: Scomposizione atomica delle modifiche complesse in contratti formali numerati;
+      * *Cancello 5 (Determinismo Headless)*: Test seams package-private per test unitari a 0 ms senza `Thread.sleep`.
+
 ---
 
 ## 🌟 2. LE REGOLE FONDAMENTALI DEL DOMINIO MINECRAFT ACCESS
@@ -80,7 +88,7 @@ Questo file costituisce l'**Hub Centrale di Contesto e Governance** del progetto
 
 ## 🧭 3. INDICE RAGIONATO DELLA BASE DI CONOSCENZA (`knowledge/`)
 
-- [`00_consuetudini_operative_e_sinergia_assistente.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/knowledge/00_consuetudini_operative_e_sinergia_assistente.md): Dialogo consultivo a 2 tempi, validazione preventiva 7 assi, eliminazione protetta e 11 protocolli.
+- [`00_consuetudini_operative_e_sinergia_assistente.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/knowledge/00_consuetudini_operative_e_sinergia_assistente.md): Dialogo consultivo a 2 tempi, validazione preventiva 7 assi, eliminazione protetta e 12 protocolli.
 - [`01_accessibilita_nvda.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/knowledge/01_accessibilita_nvda.md): Standard di sintesi vocale, audio 3D posizionale, navigazione a gruppi e celle (zero mouse).
 - [`02_architettura_e_versioni.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/knowledge/02_architettura_e_versioni.md): Minecraft 26.2 / 1.21.x, Fabric + NeoForge, Architectury Loom, SpongePowered Mixin, Java 25.
 - [`03_standard_sviluppo_fork_pr.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/knowledge/03_standard_sviluppo_fork_pr.md): Architettura branch (`dev`, `mymaster`, feature), rebase sicuro, focus IT/EN e JSON ordinato.

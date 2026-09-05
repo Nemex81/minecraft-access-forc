@@ -214,3 +214,27 @@ Prima di proporre refactoring architetturali, nuove factory o macchine a stati s
    - *Allora* è fatto divieto assoluto di riaprire refactoring speculativi sul modulo coinvolto (`FallDetector`, `TraversalSafetyAnalyzer`, `SafetyMovementGuard`).
 2. **Isolamento dell'Ambito Minimo Efficace**:
    - L'intervento tecnico deve circoscriversi rigorosamente al solo requisito minimo necessario (es. l'interruttore diagnostico volatile), congelando i componenti funzionanti ed evitando sovraingegnerizzazioni che introducono regressioni silenziose. Eventuali micro-imprecisioni di contorno (es. taratura soglie) vanno registrate come revisioni differite a bassa priorità.
+
+---
+
+## 13. Protocollo 12 — Dialettica Ingegneristica & Auto-Revisione Avversariale (L'Inner Codex Pattern)
+
+Quando Antigravity analizza, progetta o implementa soluzioni complesse nel dominio di Minecraft Access (sia in tandem con ChatGPT/Codex che in sessioni di lavoro solitarie):
+
+1. **L'Interiorizzazione del Senior Reviewer (Inner Codex Pattern)**:
+   - Antigravity non si limita ad accettare la prima soluzione tecnicamente valida o a proporre patch contingenti.
+   - Prima di considerare conclusa la Sotto-Fase 1A (Pianificazione) o la Sotto-Fase 1B (Esecuzione), attiva internamente il proprio ruolo avversariale, ponendosi come il più severo revisore della propria architettura.
+2. **I 5 Cancelli Inviolabili di Minecraft Access**:
+   - **Cancello 1 — Rifiuto del Patching Euristico (Invariante Voxel vs Sintomo Numerico)**:
+     * Divieto assoluto di ritoccare parametri arbitrari (budget di nodi in A*, ritardi nei tick di sblocco, pesi euristici, mosse di fuga fisse a coordinate relative) quando un percorso fallisce o il giocatore si incastra.
+     * *Se* una ricerca o un automatismo fallisce prematuramente -> *Allora* la causa è una disconnessione topologica (arco mancante, calpestabilità errata di gradini/scale, o blocco solidale non gestito) che va risolta strutturalmente nel grafo.
+   - **Cancello 2 — Purezza dell'Intento Fisico (Hardware Grounding)**:
+     * Nei sistemi cooperativi in cui convivono automatismi di salvataggio (es. `FallDetector` / `SafetyMovementGuard` con sneak forzato) e comandi del giocatore, il takeover o l'intento umano non deve mai essere desunto da stati logici simulati (`isSneaking()`, `keySneak.isDown()`).
+     * *Se* si deve determinare se il giocatore vuole prendere il controllo -> *Allora* si interroga il probe hardware puro (polling GLFW per il tasto fisico `keySneak`), preservando la purezza dell'intento motorio dell'utente.
+   - **Cancello 3 — Integrità della Hitbox e Volumetria Continua**:
+     * Il giocatore è un prisma 3D continuo ($0.6 \times 1.8\text{ m}$), non un punto discreto $1 \times 1$.
+     * *Se* si valuta la transitabilità o il rischio caduta -> *Allora* si verifica obbligatoriamente la clearance verticale continua (altezza occhi/testa `stepPos.above()`) e l'ingombro reale delle forme di collisione sottili (scale a pioli $0.1875\text{ m}$, porte $0.1875\text{ m}$, staccionate).
+   - **Cancello 4 — Disciplina dei Contratti Denominati e Chiusi (Named Contract Pattern)**:
+     * Ogni piano o revisione si struttura in contratti numerati atomici (D0..DN per le decisioni di design, S1..SN per i moduli software), ciascuno con precondizioni, postcondizioni, budget di complessità e invarianti anti-regressione.
+   - **Cancello 5 — Determinismo Headless e Time-Seam a 0 ms**:
+     * Logiche temporali (finestre di soppressione, debouncing vocale, TTL) devono esporre delegate o time-seam package-private per consentire suite di test JUnit deterministiche, istantanee a 0 ms e prive di `Thread.sleep`.

@@ -155,3 +155,21 @@ Nelle verifiche e nei rapporti di chiusura di fase (Fase 2 / Fase 3), la convali
    - Riscontro incrociato tra ciò che è stato vocalizzato ed eseguito (es. mob agganciato e abbattuto, danni inflitti, drop raccolti nell'inventario e blocchi estratti) e i dati registrati deterministicamente dall'engine di Minecraft.
 
 Solo la convergenza simultanea e coerente di tutte e tre le fonti sancisce il **superamento definitivo della Fase 2** e autorizza il passaggio alla Fase 3 (Chiusura Tecnica).
+
+
+---
+
+## 10. Audit Avversariale Preventivo sui 5 Cancelli Inviolabili (Protocollo 12 — Inner Codex Pattern)
+
+In ogni Piano Tecnico Formale (Sotto-Fase 1A), prima di richiedere la convalida a Luca, Antigravity include obbligatoriamente la sezione di **Audit Avversariale Preventivo**, valutando la soluzione contro il "peggior scenario possibile" secondo i 5 Cancelli Inviolabili:
+
+1. **Cancello 1 — Rifiuto Patching Euristico (Invariante Voxel vs Sintomo Numerico)**:
+   - *Verifica*: La proposta affronta la causa radice topologica (arco mancante nel grafo, calpestabilità errata di gradini/scale a pioli, orientamento voxel) o tenta di mascherare il problema aumentando budget di espansione A*, allungando delay di tick o iniettando mosse di fuga fisse?
+2. **Cancello 2 — Purezza dell'Intento Fisico nei Sistemi Ibridi (Hardware Grounding)**:
+   - *Verifica*: Nei sistemi cooperativi human-in-the-loop, la logica di takeover o decisione utente interroga direttamente l'hardware reale (GLFW probe raw input) o legge stati logici simulati (`isSneaking()`, `isDown()`) alterati da guardie concorrenti?
+3. **Cancello 3 — Integrità Hitbox e Volumetria Continua**:
+   - *Verifica*: L'algoritmo tratta il giocatore come prisma 3D continuo ($0.6 \times 1.8\text{ m}$) verificando clearance continua ad altezza occhi/testa (`stepPos.above()`) e collision shapes reali dei blocchi sottili (scale a pioli, porte, lastre), evitando semplificazioni a punti discreti?
+4. **Cancello 4 — Disciplina dei Contratti Denominati e Chiusi (Named Contract Pattern)**:
+   - *Verifica*: L'intervento è suddiviso in contratti formali atomici e numerati ($D_0 \dots D_N$, $S_1 \dots S_N$) con precondizioni, postcondizioni, complessità e invarianti anti-regressione esplicite?
+5. **Cancello 5 — Determinismo Headless e Time-Seams a 0 ms**:
+   - *Verifica*: Tutti i comportamenti dipendenti dal tempo (finestre di soppressione, debouncing vocale, cooldown, TTL) espongono package-private time seams per consentire test unitari JUnit istantanei a 0 ms senza `Thread.sleep`?
