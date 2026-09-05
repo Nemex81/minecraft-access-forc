@@ -8,11 +8,18 @@ import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.Bootstrap;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.StairBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import org.mcaccess.minecraftaccess.features.cognitive.CognitiveCoordinator;
 import org.mcaccess.minecraftaccess.features.cognitive.CognitiveEvent;
 import org.mcaccess.minecraftaccess.features.safety.traversal.CrouchIntent;
@@ -84,5 +91,31 @@ class FallDetectorTraversalIntegrationTest {
         FallDetector.setLegacyAudioConsumer(cue -> legacyAudioFired.set(true));
 
         assertFalse(CognitiveCoordinator.isCoordinatorEnabled());
+    }
+
+    @Test
+    @DisplayName("3. Contratto S4: isSafeWalkableStaircase riconosce il pianerottolo solido adiacente alla rampa discendente")
+    void testStairLandingRecognizedAsSafeStaircase() {
+        Level level = mock(Level.class);
+
+        BlockPos landingPos = new BlockPos(10, 65, 5);
+        BlockPos stairPos = new BlockPos(9, 66, 5); // Adiacente a Ovest, quota Y+1
+
+        // landingPos è un pavimento solido normale (non scala)
+        BlockState stoneBricks = Blocks.STONE_BRICKS.defaultBlockState();
+        when(level.getBlockState(landingPos)).thenReturn(stoneBricks);
+
+        // stairPos è una scala rivolta a OVEST (sale a Ovest, scende verso Est verso landingPos)
+        BlockState stairWest = Blocks.STONE_BRICK_STAIRS.defaultBlockState()
+                .setValue(StairBlock.FACING, Direction.WEST);
+        when(level.getBlockState(stairPos)).thenReturn(stairWest);
+
+        // Tutte le altre posizioni adiacenti o sopra sono aria
+        when(level.getBlockState(argThat(pos -> pos != null && !pos.equals(landingPos) && !pos.equals(stairPos))))
+                .thenReturn(Blocks.AIR.defaultBlockState());
+
+        // Il pianerottolo in fondo alla rampa di scale deve essere riconosciuto come safe staircase
+        boolean isSafe = FallDetector.isSafeWalkableStaircase(level, landingPos, 68);
+        assertTrue(isSafe, "Il pianerottolo in fondo alla rampa di scale deve essere riconosciuto come discesa sicura");
     }
 }

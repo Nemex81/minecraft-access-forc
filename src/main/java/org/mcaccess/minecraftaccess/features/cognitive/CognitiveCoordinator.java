@@ -525,6 +525,20 @@ public class CognitiveCoordinator implements BalmClientModule {
     }
 
     /**
+     * Atomically clears pending and queued events for a given domain and invalidates its recent deduplication cache.
+     * Level 1: tickBuffer.removeIf(event -> event.domain() == domain);
+     * Level 2: shortQueue.removeIf(event -> event.domain() == domain);
+     * Level 3: recentEvents.keySet().removeIf(key -> key.domain() == domain);
+     *
+     * @param domain the source domain to clear
+     */
+    public static synchronized void clearDomainEvents(SourceDomain domain) {
+        tickBuffer.removeIf(event -> event.domain() == domain);
+        shortQueue.removeIf(event -> event.domain() == domain);
+        recentEvents.keySet().removeIf(key -> key.domain() == domain);
+    }
+
+    /**
      * Reset output delegates to production defaults.
      */
     public static void resetDelegates() {

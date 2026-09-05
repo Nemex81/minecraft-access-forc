@@ -1,9 +1,9 @@
-# Documento Strategico Implementativo Unificato: Sistema Cognitivo Centralizzato del Personaggio (ASTRALIS v2.5.5)
+# Documento Strategico Implementativo Unificato: Sistema Cognitivo Centralizzato del Personaggio (ASTRALIS v2.6.3)
 
 Autori: Luca (Sviluppatore Senior Non Vedente) & Antigravity (Senior AI Pair Programmer)  
 Revisione Strategica Congiunta: Antigravity & ChatGPT  
 Repository: `minecraft-access` (Minecraft 26.2, Fabric / NeoForge, Balm, Java 25)  
-Stato Documento: **In Corso — Fasi 1, 2, 3, 4 Completate e Collaudate (Prossimo Passo: Fase 5 — Movimento e Didattica)**  
+Stato Documento: **In Corso — Fasi 1, 2, 3, 4 e 5 Implementate; Fase 5 in Revisione Post-Implementazione 5D.3 e Collaudo Telemetrico In-Game**
 
 ---
 
@@ -51,7 +51,7 @@ Interpretano i dati tecnici della propria area, applicano i filtri configurati d
 - **MovementManager**: auto-walk (`AutoWalkManager`), avanzamento percorso, arresti di rotta, orientamento cardinale continuo e passi sonori.
 - **StatusManager**: barra cuori, fame, bolle d'aria, effetti di stato, livello luce, meteo e ciclo orario.
 - **GuidanceManager**: Mentore contestuale (`ContextualMentor`), Accademia, tutorial e conferme didattiche.
-- **InterfaceManager**: navigazione GUI, inventari, toast, ricettario e messaggi di sistema (esclusi dall'arbitraggio ambientale, vedi Sezione 6).
+- **InterfaceManager**: navigazione GUI, inventari, toast, ricettario e messaggi di sistema (esclusi dall'arbitraggio ambientale, vedi Sezione 7).
 
 ### Livello 3 — Cognitive Coordinator Centrale
 Riceve gli eventi cognitivi, mantiene una memoria attentiva breve dello stato del giocatore e decide in modo deterministico l'azione di output attraverso l'astrazione di `MainClass.narrate`.
@@ -151,7 +151,19 @@ La classe `NarrationPriority` non viene cancellata: viene trasformata in un Adap
 
 ---
 
-## 🚫 6. Esclusione Deliberata: Input Diretti da Tastiera e Menu GUI
+## 🎓 6. Mentore, Accademia e Didattica
+
+Mentore e Accademia costituiscono un dominio autonomo rispetto al Navigatore e alla marcia automatica. La loro funzione è accompagnare Luca nella comprensione di un'attività, non dirigere lo spostamento del personaggio.
+
+1. **Mentore contestuale**: propone un consiglio breve soltanto quando il contesto lo rende utile. Un consiglio opzionale può attendere o essere abbandonato se Luca ha già cambiato situazione.
+2. **Accademia**: accompagna una missione avviata volontariamente da Luca, confermando l'inizio, il successo e il passo seguente senza spezzare il filo dell'apprendimento.
+3. **Priorità funzionale**: un pericolo o un evento del Navigatore che richiede una decisione immediata interrompe la didattica. Al termine, la didattica riprende solo dall'obiettivo ancora attuale, mai da una frase rimasta indietro.
+4. **Discrezione**: il Mentore non ripete consigli già consegnati e non compete con una risposta richiesta direttamente da Luca.
+5. **Separazione dei collaudi**: il comportamento di Mentore e Accademia viene affrontato in una fase distinta, dopo il completamento del Navigatore e dell'Auto-Walk. Questo permette di verificare con chiarezza sia l'esperienza di movimento sia quella di apprendimento.
+
+---
+
+## 🚫 7. Esclusione Deliberata: Input Diretti da Tastiera e Menu GUI
 
 Non tutti i messaggi del mod devono transitare dal coordinatore cognitivo:
 - **Interazione Diretta Tastiera / GUI**:
@@ -164,7 +176,7 @@ Non tutti i messaggi del mod devono transitare dal coordinatore cognitivo:
 
 ---
 
-## 🔗 7. Regole di Sintesi e Concatenazione I18N
+## 🔗 8. Regole di Sintesi e Concatenazione I18N
 
 Quando a fine tick sono presenti eventi compatibili di aree diverse:
 1. **Gerarchia di Composizione**:
@@ -181,7 +193,7 @@ Quando a fine tick sono presenti eventi compatibili di aree diverse:
 
 ---
 
-## 🧠 8. Memoria Attentiva Breve (Short-Term Attention Memory)
+## 🧠 9. Memoria Attentiva Breve (Short-Term Attention Memory)
 
 Il coordinatore conserva una struttura dati leggera (massimo 8 voci, azzerata a ogni cambio mondo, morte, respawn, disconnessione o cambio dimensione):
 - **Ultimo Pericolo Attivo**: tipologia, coordinate, livello di gravità e timestamp dell'ultimo allarme critico;
@@ -190,13 +202,13 @@ Il coordinatore conserva una struttura dati leggera (massimo 8 voci, azzerata a 
   - Se un pericolo di burrone o ostacolo alto era stato annunciato, e il giocatore cambia rotta o arretra entrando in uno stato di cammino sicuro per almeno 300 ms, il coordinatore pronuncia una conferma sintetica: *"Percorso libero"*.
   - Questo elimina l'incertezza del giocatore non vedente ("sarò ancora sul bordo del burrone o mi sono disimpegnato?").
 
-### 8.1 Origine delle Transizioni e Reset Affidabili
+### 9.1 Origine delle Transizioni e Reset Affidabili
 - Solo il sottogestore competente può dichiarare il ritorno alla sicurezza: `FallDetector` per il burrone, `ObstacleDetector` per l'ostacolo e `AutoWalkManager` per il percorso automatico. Il coordinatore non deve inferirlo da solo.
 - Il piano tecnico deve collegare `clearAllBuffers()` a hook espliciti: cambio o disconnessione dal server, cambio di livello/dimensione e transizioni morte/respawn. Non basta il solo reset su connessione già offerto da `ServerChangeDetector`.
 
 ---
 
-## 🛡️ 9. Validazione Preventiva ASTRALIS sui 7 Assi di Qualità
+## 🛡️ 10. Validazione Preventiva ASTRALIS sui 7 Assi di Qualità
 
 1. **Validità**: Pienamente compatibile con Balm, Fabric, NeoForge e Java 25. Nessun Mixin invasivo necessario. Utilizzo corretto di `ClientPlayingTick.AFTER` e `MainClass.narrate`.
 2. **Efficacia**: Obiettivo di test primario: eliminazione totale degli speech truncation con NVDA durante camminata, combattimento ed esplorazione.
@@ -208,7 +220,7 @@ Il coordinatore conserva una struttura dati leggera (massimo 8 voci, azzerata a 
 
 ---
 
-## 🧪 10. Matrice di Simulazione a 3 Livelli
+## 🧪 11. Matrice di Simulazione a 3 Livelli
 
 ### Livello 1 — Scenari Comuni (Happy Path)
 - **Scenario 1.1: Camminata con dislivello e mirino su blocco**  
@@ -251,7 +263,7 @@ Il coordinatore conserva una struttura dati leggera (massimo 8 voci, azzerata a 
 
 ---
 
-## 🚀 11. Tabella Gerarchica delle Priorità Cognitive
+## 🚀 12. Tabella Gerarchica delle Priorità Cognitive
 
 - **1. CRITICA (Fast-Path 0 ms tramite `MainClass.narrate`)**:
   - *Interrompe*: Operativa, Contestuale, Passiva.
@@ -272,7 +284,7 @@ Il coordinatore conserva una struttura dati leggera (massimo 8 voci, azzerata a 
 
 ---
 
-## 🗺️ 12. Roadmap di Implementazione a 6 Fasi (Branch `feat/cognitive-orchestrator`)
+## 🗺️ 13. Roadmap di Implementazione a 9 Fasi (Branch `feat/cognitive-orchestrator`)
 
 Tutto il lavoro sarà isolato nel branch `feat/cognitive-orchestrator` creato da `mymaster`. 
 **Vincolo di Sicurezza ASTRALIS (Regola 0)**: Nessun codice raggiungerà `mymaster` senza collaudo completo in-game con NVDA, esito positivo e via libera esplicito di Luca.
@@ -295,12 +307,81 @@ Tutto il lavoro sarà isolato nel branch `feat/cognitive-orchestrator` creato da
   - [x] Sotto-Fase 4B: Migrazione del feed automatico del mirino (`CrosshairExplorationEventFactory`, ID canonici `EXPLORATION` / `PASSIVE`, fallback diretto).
   - [x] Sotto-Fase 4C: `DirectInteractionShield` per comandi espliciti (tasto `B`, rotazione visuale/sguardo livellato, radar POI e lock entità `X`).
   - [x] Collaudo in-game positivo con NVDA (tracciamento mucca, XP/drop, centramento visuale, 208 test JUnit verdi, zero eccezioni).
-- [ ] **Fase 5 — Migrazione Movimento e Didattica (Prossimo Passo Operativo)**:
-  - [ ] Collegamento di `AutoWalkManager`, `ContextualMentor` e `AcademyManager`.
-  - [ ] Verifica dello scudo didattico e dell'interruzione per emergenze.
-  - [ ] Prioritizzazione dei messaggi di movimento rispetto alla narrazione passiva.
-- [ ] **Fase 6 — Collaudo Globale, Rifinitura PRAPI & Validazione Luca per Merge**:
-  - [ ] Stress-test finale in-game di tutte le casistiche concorrenti con screen reader NVDA;
-  - [ ] Aggiornamento della documentazione di rilascio e del rapporto di collaudo;
-  - [ ] Presentazione del resoconto a Luca e merge su `mymaster` **esclusivamente su suo esplicito consenso**.
+- [x] **Fase 5 — Navigatore e Auto-Walk (Implementata — Revisione Post-Implementazione 5D.3 e Collaudo Telemetrico In-Game in Corso)**:
+  - [x] Ordinamento dei messaggi dell'intero Navigatore: scelta della meta, avvio, avanzamento significativo, percorso non disponibile, arresto, arrivo e restituzione del controllo manuale.
+  - [x] Priorità dei cambiamenti di navigazione rispetto alle descrizioni ambientali di sfondo.
+  - [ ] Lo scanner direzionale attivato con Pagina Su e Pagina Giù rimane un sistema storico indipendente ed è esplicitamente fuori dallo scopo del coordinamento cognitivo.
+- [ ] **Fase 6 — Mentore e Accademia**:
+  - [ ] Ordinamento delle missioni, dei traguardi e dei suggerimenti contestuali senza sovrapposizioni o ripetizioni tardive.
+  - [ ] Protezione della didattica attiva dalle informazioni ambientali di sfondo, senza mai ritardare sicurezza o cambiamenti importanti del Navigatore.
+  - [ ] Collaudo autonomo delle esperienze di apprendimento.
+- [ ] **Fase 7 — Collaudo Globale della Strategia Cognitiva**:
+  - [ ] Stress-test in-game di tutti i domini consolidati con screen reader NVDA;
+  - [ ] Verifica che Navigatore, didattica, sicurezza ed esplorazione convivano senza messaggi sovrapposti o tardivi;
+  - [ ] Convalida di Luca del completamento dei punti strategici.
+- [ ] **Fase 8 — Buffer Registro Revisioni Post-Strategia**:
+  - [ ] Affrontare, soltanto dopo la Fase 7 convalidata, tutte le revisioni oggi differite nel Registro Revisioni;
+  - [ ] Eseguire per ogni revisione il proprio ciclo di verifica e collaudo, senza riaprire gli ambiti già protetti se non strettamente necessario.
+- [ ] **Fase 9 — Validazione Finale, Documentazione e Merge**:
+  - [ ] Rieseguire il collaudo globale dopo il buffer delle revisioni;
+  - [ ] Aggiornare documentazione e rapporto di rilascio;
+  - [ ] Presentare il resoconto a Luca e proporre il merge su `mymaster` esclusivamente su suo esplicito consenso.
 
+---
+
+## 14. Strategia Funzionale Fase 5 — Navigatore e Auto-Walk
+
+**Stato:** Implementata; le osservazioni emerse dal collaudo in-game sono gestite nella revisione post-implementazione 5D.3, senza riaprire le sotto-fasi già concluse.
+
+Questa sezione definisce l'esperienza di navigazione desiderata. Non prescrive soluzioni tecniche e non autorizza modifiche al codice.
+
+### 14.1 Obiettivo percepito dal giocatore
+
+Luca deve poter sapere sempre se il Navigatore ha una meta valida, se la marcia è iniziata, se il percorso prosegue, se occorre intervenire e quando la destinazione è stata raggiunta.
+
+La voce non deve commentare la marcia regolare passo per passo. Interviene con frasi brevi nei cambiamenti che modificano concretamente le possibilità di agire. I passi e i suoni ambientali restano il sottofondo naturale della navigazione.
+
+### 14.2 Ordine funzionale delle informazioni
+
+1. **Sicurezza immediata**: pericoli e avvisi che richiedono reazione prevalgono sempre e possono interrompere ogni altra frase.
+2. **Azione esplicita di Luca**: la richiesta di avvio o arresto, la scelta di una meta e la ripresa del controllo manuale ricevono una risposta chiara e tempestiva.
+3. **Cambiamento del Navigatore**: percorso non disponibile, bersaglio troppo lontano, arresto necessario, arrivo e ripresa della marcia sono più importanti delle descrizioni ambientali di sfondo.
+4. **Informazioni ambientali spontanee**: mirino e descrizioni di sfondo restano gli ultimi a parlare e non devono ricomparire tardi dopo un evento del Navigatore.
+
+### 14.3 Regola della frase utile unica
+
+In ogni istante il giocatore deve ricevere una sola informazione utile, non una sequenza di messaggi in concorrenza. Quando un messaggio perde valore perché la situazione cambia, viene abbandonato invece di essere pronunciato in ritardo.
+
+Le conferme richieste direttamente da Luca non vengono sacrificate ai messaggi automatici. Un messaggio relativo a una meta precedente non deve comparire dopo che Luca ha annullato la marcia, ripreso il controllo o scelto un'altra destinazione.
+
+### 14.4 Esperienza del Navigatore
+
+Il Navigatore deve dare certezze nei momenti di cambiamento: meta assente o non raggiungibile, partenza, avanzamento significativo, arresto, arrivo alla destinazione e restituzione immediata del controllo a Luca.
+
+Durante una marcia regolare non deve commentare ogni passo o ogni piccolo avanzamento. Se il sistema trova autonomamente una soluzione a una difficoltà temporanea, continua con discrezione. Parla solo quando la situazione richiede una decisione di Luca oppure quando il risultato finale della marcia è cambiato.
+
+Se Luca riprende il movimento manuale, la sua scelta prevale senza ambiguità. La risposta deve confermare il nuovo stato una volta sola, senza lasciare annunci residui della marcia automatica.
+
+### 14.5 Scenari guida da preservare
+
+1. Luca chiede di navigare senza avere scelto una meta: riceve una risposta immediata e comprensibile, senza messaggi ambientali sovrapposti.
+2. La meta è troppo lontana oppure non esiste un percorso sicuro: il Navigatore spiega il motivo una sola volta e restituisce il controllo a Luca.
+3. La marcia automatica procede normalmente: il sistema resta discreto e non trasforma il tragitto in una cronaca vocale.
+4. Il Navigatore deve arrestarsi perché non può proseguire: l'avviso domina le descrizioni ambientali e lascia Luca libero di decidere cosa fare.
+5. Luca riprende manualmente il controllo o raggiunge la meta: il sistema riconosce subito il nuovo stato e non continua a parlare come se la marcia fosse ancora attiva.
+
+### 14.6 Confini della Fase 5
+
+La Fase 5 riguarda soltanto l'ordine e la chiarezza dei messaggi del Navigatore e dell'Auto-Walk. Mentore, Accademia, scanner direzionale con Pagina Su e Pagina Giù, protezioni già affidabili, mirino e suoni spaziali non vengono ridefiniti.
+
+Non si introducono nuove abitudini di gioco prima di avere dimostrato che le informazioni già esistenti sono ordinate, comprensibili e non intrusive.
+
+### 14.7 Criteri per passare al piano tecnico
+
+La strategia sarà considerata consolidata quando Luca confermerà questi cinque risultati percepibili:
+
+1. nessun pericolo viene ritardato dal Navigatore;
+2. ogni avvio, arresto, annullamento e arrivo è chiaro, breve e univoco;
+3. una meta assente, troppo lontana o non raggiungibile riceve una spiegazione utile senza ripetizioni;
+4. la ripresa manuale del controllo è immediata e non lascia messaggi residui;
+5. le descrizioni ambientali non scavalcano mai un cambiamento importante della navigazione.

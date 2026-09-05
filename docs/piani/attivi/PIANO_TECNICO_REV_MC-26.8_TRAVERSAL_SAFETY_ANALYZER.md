@@ -1,8 +1,8 @@
-# Piano Tecnico Implementativo — Rev. MC-26.8: Interruttore Diagnostico del Cognitive Coordinator (Ctrl+Alt+C) (ASTRALIS v2.6.2)
+# Piano Tecnico Implementativo — Rev. MC-26.8: Interruttore Diagnostico del Cognitive Coordinator (Ctrl+Alt+C) (ASTRALIS v2.6.3)
 
 **Ramo di lavoro:** feat/cognitive-orchestrator  
-**Ambito:** revisione MC-26.8 — Interruttore Diagnostico Globale Volatile (`CognitiveCoordinator`) (Differita a post-Fase 5 / pre-Fase 6)  
-**Stato:** [PIANO AGGIORNATO E DIFFERITO A POST-FASE 5 / PRE-FASE 6 — STOP OBBLIGATORIO REGOLA 0]  
+**Ambito:** revisione MC-26.8 — Interruttore Diagnostico Globale Volatile (`CognitiveCoordinator`) (Differita al Buffer RRU post-strategia, Fase 8)
+**Stato:** [PIANO AGGIORNATO E DIFFERITO AL BUFFER RRU POST-STRATEGIA — FASE 8 — STOP OBBLIGATORIO REGOLA 0]
 **Riferimenti:**
 - docs/report/archivio/RAPPORTO_INDIRIZZO_CORRETTIVO_TRAVERSAL_SAFETY_ANALYZER.md
 - docs/strategie/STRATEGIA_COGNITIVE_COORDINATOR.md
@@ -25,7 +25,7 @@ L'anomalia segnalata (annuncio di *"discesa sicura"* su dislivelli minimi e non 
 
 Lo **scope operativo esclusivo** di MC-26.8 viene quindi circoscritto all'**interruttore diagnostico globale volatile di sessione per il `CognitiveCoordinator`**.
 
-**Pianificazione Temporale (Direttiva Luca Chiusura Fase 4)**: Su direttiva esplicita di Luca, la lavorazione di questo piano viene formalmente **posticipata a valle del completamento e collaudo della Fase 5 (Movimento & Didattica)**, per essere affrontata come fase iniziale preparatoria pre-Fase 6.
+**Pianificazione Temporale (Direttiva Luca)**: Su direttiva esplicita di Luca, la lavorazione di questo piano viene formalmente **posticipata fino al completamento e alla convalida della Fase 7**, quindi affrontata nella Fase 8 — Buffer RRU Post-Strategia, prima della validazione finale.
 
 ---
 

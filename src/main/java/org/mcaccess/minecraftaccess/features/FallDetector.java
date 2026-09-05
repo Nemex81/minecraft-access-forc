@@ -491,7 +491,7 @@ public class FallDetector implements BalmClientModule {
         return null;
     }
 
-    private boolean isSafeWalkableStaircase(Level level, BlockPos landingPos, int playerBaseY) {
+    public static boolean isSafeWalkableStaircase(Level level, BlockPos landingPos, int playerBaseY) {
         BlockState landingState = level.getBlockState(landingPos);
         if (landingState.getBlock() instanceof StairBlock || landingState.getBlock() instanceof SlabBlock) {
             return true;
@@ -503,6 +503,18 @@ public class FallDetector implements BalmClientModule {
             BlockState aboveState = level.getBlockState(abovePos);
             if (aboveState.getBlock() instanceof StairBlock || aboveState.getBlock() instanceof SlabBlock) {
                 return true;
+            }
+        }
+
+        // Contratto S4: Check if landingPos is the floor landing of an adjacent descending staircase
+        for (Direction dir : Direction.Plane.HORIZONTAL) {
+            BlockPos adjacentPos = landingPos.relative(dir).above(1);
+            BlockState adjState = level.getBlockState(adjacentPos);
+            if (adjState.getBlock() instanceof StairBlock) {
+                Direction stairFacing = adjState.getValue(StairBlock.FACING);
+                if (stairFacing == dir) {
+                    return true;
+                }
             }
         }
 

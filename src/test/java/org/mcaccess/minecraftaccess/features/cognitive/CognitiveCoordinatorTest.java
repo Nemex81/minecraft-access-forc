@@ -502,4 +502,162 @@ class CognitiveCoordinatorTest {
         assertEquals(2, emittedSounds.size(), "Sound must be emitted again after debounce window expires");
         assertTrue(emittedNarrations.isEmpty());
     }
+    @Test
+    @DisplayName("15. [Fase 5B] Selective domain event clear cleans tickBuffer, shortQueue and deduplication cache only for specified domain")
+    void testSelectiveDomainEventClear() {
+        long t0 = 10000;
+
+        // 1. Submit a critical safety event to engage the critical shield (suppressing lower priority events into shortQueue)
+        CognitiveEvent cliff = CognitiveEvent.createCritical(
+                SourceDomain.SAFETY, "pit:cliff", StateSignature.of(1, 3), "Burrone!", BlockPos.ZERO, 1.0, null
+        );
+        CognitiveCoordinator.submitEvent(cliff, t0);
+
+        // 2. Submit a movement operational event and a safety contextual event during shield
+        CognitiveEvent moveOp = new CognitiveEvent(
+                SourceDomain.MOVEMENT,
+                CognitivePriority.OPERATIONAL,
+                "autowalk:start",
+                StateSignature.of(10, 5, "Waypoint1"),
+                "Navigazione verso Waypoint1",
+                BlockPos.ZERO,
+                10.0,
+                SpatialDirection.FORWARD,
+                CognitiveEvent.OutputType.VOICE_ONLY,
+                null,
+                3000,
+                false,
+                t0
+        );
+        CognitiveEvent safeCtx = new CognitiveEvent(
+                SourceDomain.SAFETY,
+                CognitivePriority.CONTEXTUAL,
+                "safety:ledge",
+                StateSignature.of(2, 1, "ledge"),
+                "Bordo sporgente",
+                BlockPos.ZERO,
+                2.0,
+                SpatialDirection.FORWARD,
+                CognitiveEvent.OutputType.VOICE_ONLY,
+                null,
+                3000,
+                false,
+                t0
+        );
+        CognitiveCoordinator.submitEvent(moveOp, t0);
+        CognitiveCoordinator.submitEvent(safeCtx, t0);
+
+        // 3. Flush tick during critical shield (t0 + 50ms): moveOp and safeCtx are deferred to shortQueue
+        emittedNarrations.clear();
+        CognitiveCoordinator.flushTick(t0 + 50);
+        assertTrue(emittedNarrations.isEmpty(), "Both events deferred while shield is active");
+
+        // 4. Now also submit new events into tickBuffer
+        CognitiveEvent moveBuffer = new CognitiveEvent(
+                SourceDomain.MOVEMENT,
+                CognitivePriority.OPERATIONAL,
+                "autowalk:progress",
+                StateSignature.EMPTY,
+                "Ancora 5 passi",
+                BlockPos.ZERO,
+                5.0,
+                SpatialDirection.FORWARD,
+                CognitiveEvent.OutputType.VOICE_ONLY,
+                null,
+                3000,
+                false,
+                t0 + 100
+        );
+        CognitiveEvent safeBuffer = new CognitiveEvent(
+                SourceDomain.SAFETY,
+                CognitivePriority.OPERATIONAL,
+                "safety:obstacle",
+                StateSignature.EMPTY,
+                "Ostacolo davanti",
+                BlockPos.ZERO,
+                1.0,
+                SpatialDirection.FORWARD,
+                CognitiveEvent.OutputType.VOICE_ONLY,
+                null,
+                3000,
+                false,
+                t0 + 100
+        );
+        CognitiveCoordinator.submitEvent(moveBuffer, t0 + 100);
+        CognitiveCoordinator.submitEvent(safeBuffer, t0 + 100);
+
+        // 5. Execute selective clear for MOVEMENT domain only!
+        CognitiveCoordinator.clearDomainEvents(SourceDomain.MOVEMENT);
+
+        // 6. Flush after critical shield expires (t0 + 1600ms): only SAFETY events must emerge!
+        CognitiveCoordinator.flushTick(t0 + 1600);
+
+        // SAFETY events: safeCtx (from shortQueue) and safeBuffer (from tickBuffer)
+        boolean hasMovement = emittedNarrations.stream().anyMatch(r -> r.text().contains("Navigazione") || r.text().contains("passi"));
+        boolean hasSafety = emittedNarrations.stream().anyMatch(r -> r.text().contains("Bordo") || r.text().contains("Ostacolo"));
+
+        assertFalse(hasMovement, "No MOVEMENT events should survive clearDomainEvents(MOVEMENT)");
+        assertTrue(hasSafety, "SAFETY events must remain intact after clearing MOVEMENT domain");
+
+        // 7. Rigorous Test for Level 3 Deduplication Cache Invalidation:
+        CognitiveCoordinator.clearAllBuffers();
+        emittedNarrations.clear();
+
+        long tDedup = 20000;
+        CognitiveEvent startWalk = new CognitiveEvent(
+                SourceDomain.MOVEMENT,
+                CognitivePriority.OPERATIONAL,
+                "autowalk:start",
+                StateSignature.of(10, 5, "WaypointAlpha"),
+                "Avvio marcia verso WaypointAlpha",
+                BlockPos.ZERO,
+                10.0,
+                SpatialDirection.FORWARD,
+                CognitiveEvent.OutputType.VOICE_ONLY,
+                null,
+                3000,
+                false,
+                tDedup
+        );
+        CognitiveEvent safeAlert = new CognitiveEvent(
+                SourceDomain.SAFETY,
+                CognitivePriority.CONTEXTUAL,
+                "safety:ledge",
+                StateSignature.of(1, 1, "ledge"),
+                "Attenzione bordo",
+                BlockPos.ZERO,
+                1.0,
+                SpatialDirection.FORWARD,
+                CognitiveEvent.OutputType.VOICE_ONLY,
+                null,
+                3000,
+                false,
+                tDedup
+        );
+
+        // First emission: unchained events are sequenced cleanly over 2 ticks to prevent TTS speech truncation
+        CognitiveCoordinator.submitEvent(startWalk, tDedup);
+        CognitiveCoordinator.submitEvent(safeAlert, tDedup);
+        CognitiveCoordinator.flushTick(tDedup);
+        assertEquals(1, emittedNarrations.size(), "Primary OPERATIONAL event emitted in first tick");
+        CognitiveCoordinator.flushTick(tDedup + 50);
+        assertEquals(2, emittedNarrations.size(), "Secondary CONTEXTUAL event delivered from shortQueue in next tick");
+
+        // Now, at tDedup + 300ms (well within the 1500ms deduplication window):
+        // We selectively clear MOVEMENT domain events. This invalidates recentEvents for MOVEMENT, but keeps SAFETY intact.
+        CognitiveCoordinator.clearDomainEvents(SourceDomain.MOVEMENT);
+
+        emittedNarrations.clear();
+        // Re-submit identical events at tDedup + 300ms
+        CognitiveCoordinator.submitEvent(startWalk, tDedup + 300);
+        CognitiveCoordinator.submitEvent(safeAlert, tDedup + 300);
+        CognitiveCoordinator.flushTick(tDedup + 300);
+        CognitiveCoordinator.flushTick(tDedup + 350);
+
+        // Verification:
+        // startWalk MUST be emitted because its deduplication cache key was cleared!
+        // safeAlert MUST NOT be emitted because it was NOT cleared and is within the 1500ms deduplication window!
+        assertEquals(1, emittedNarrations.size(), "Only MOVEMENT event should be emitted; SAFETY event must be suppressed as duplicate");
+        assertEquals("Avvio marcia verso WaypointAlpha", emittedNarrations.get(0).text());
+    }
 }
