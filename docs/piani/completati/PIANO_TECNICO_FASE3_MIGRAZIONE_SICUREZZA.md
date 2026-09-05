@@ -1,17 +1,35 @@
 # Piano Tecnico Implementativo — Fase 3: Migrazione Pilota Dominio Sicurezza (3A FallDetector & 3B ObstacleDetector)
-
-# Incremento Versione Target (AVF): v26.2-1.19.0-dev (Fase 3: Migrazione Pilota Dominio Sicurezza)
-**Autore:** Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA) & Antigravity  
-**Riferimento Standard:** ASTRALIS Framework v2.5.5  
-**Ramo di Lavoro:** `feat/cognitive-orchestrator`  
-**Stato:** `[FASE 3 — COMPLETATA E COLLAUDATA CON SUCCESSO SUL CAMPO — ARCHIVIATA]`  
-**Documenti di Riferimento:**
-- `docs/report/REPORT_PASSAGGIO_CONSEGNE_FASE3_SICUREZZA.md`
-- `docs/report/RAPPORTO_CHIUSURA_FASE2_E_INDIRIZZO_FASE3_SICUREZZA.md`
-- `docs/report/RAPPORTO_CHIUSURA_FASE1_E_INDIRIZZO_FASE2_COGNITIVE_COORDINATOR.md`
+- **Tipologia:** REFACTORING
+- **Autore:** Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA) & Antigravity
+- **Revisori:** Luca / Antigravity / GPT Codex
+- **Data e Ora:** 2026-09-03
+- **Stato Operativo:** [COMPLETATO E ARCHIVIATO — CONVALIDATO AL 100% DA LUCA IN-GAME]
+- **Incremento Versione Target (AVF):** [Tracciato nel Diario Modifiche Fork]
+- **Piani & Documenti Correlati:**
+  * [`docs/report/REGISTRO_REVISIONI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/REGISTRO_REVISIONI.md)
+- **Conformità ai 5 Cancelli (Protocollo 12):** Conforme al 100% (Rifiuto patching euristico, Hardware grounding, Hitbox continua, Contratti denominati, Determinismo headless a 0 ms)
 
 ---
+## 🗺️ Sommario Operativo & Registro di Avanzamento (Checklist con Gating di Convalida)
 
+> **Regola Aurea di Avanzamento (Matrice a 3 Stati)**:
+> - `- [ ] [DA AVVIARE]`: Attività pianificata ma non ancora iniziata.
+> - `- [/] [IMPLEMENTATO — IN ATTESA DI CONVALIDA]`: Codice scritto o intervento completato, ma in attesa di test o collaudo formale (spunta parziale).
+> - `- [x] [CONVALIDATO CON SUCCESSO]`: Spunta definitiva concessa **esclusivamente POST-CONVALIDA** (approvazione di Luca per la 1A, test suite 100% verde per la 1B, collaudo pratico in-game di Luca per la Fase 2).
+
+- [x] **0. Revisione di convalida Codex — correzioni vincolanti** [CONVALIDATO CON SUCCESSO]
+- [x] **🎯 0. Visione d'Insieme & Obiettivi della Fase 3** [CONVALIDATO CON SUCCESSO]
+- [x] **🧭 1. Analisi dei Componenti Coinvolti & Confini Rigorosi** [CONVALIDATO CON SUCCESSO]
+- [x] **📊 2. Matrice di Configurazione, Priorità e Output** [CONVALIDATO CON SUCCESSO]
+- [x] **🛠️ 3. Elenco Dettagliato File-per-File e Modifiche Previste** [CONVALIDATO CON SUCCESSO]
+- [x] **🔬 4. Piano di Test Unitari Puri (Headless, Senza Minecraft)** [CONVALIDATO CON SUCCESSO]
+- [x] **🎧 5. Piano di Collaudo Manuale NVDA In-Game (Scenari Concreti per Non Vedenti)** [CONVALIDATO CON SUCCESSO]
+- [x] **🛡️ 6. Validazione Preventiva secondo i 7 Assi di Qualità ASTRALIS** [CONVALIDATO CON SUCCESSO]
+- [x] **🎲 7. Matrice di Simulazione a 3 Livelli (Stress-Test Logico)** [CONVALIDATO CON SUCCESSO]
+- [x] **🚦 8. Piano Esecutivo in Fasi Atomiche & Protocollo di Rollback** [CONVALIDATO CON SUCCESSO]
+- [x] **🛑 9. Stop Obbligatorio (Regola 0 — Gating Semantico)** [CONVALIDATO CON SUCCESSO]
+
+---
 ## 0. Revisione di convalida Codex — correzioni vincolanti
 
 Il piano è coerente nell'impianto, ma viene convalidato solo con le seguenti correzioni, che evitano regressioni percettive e test puramente nominali:

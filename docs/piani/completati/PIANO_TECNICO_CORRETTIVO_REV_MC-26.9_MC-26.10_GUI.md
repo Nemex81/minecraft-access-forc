@@ -1,13 +1,34 @@
 # Piano tecnico correttivo — Rev MC-26.9 e MC-26.10: robustezza GUI e ownership dello Shift
-
-**Ramo di lavoro:** `feat/cognitive-orchestrator`  
-**Stato:** `[PIANO FORMALE — PRONTO ALLA SOTTOFASE 1B; NESSUNA MODIFICA DI CODICE CONTENUTA IN QUESTO DOCUMENTO]`  
-**Ambito:** due difetti GUI indipendenti, rilevati nel collaudo in-game dopo la chiusura tecnica della Fase 3B.  
-**Riferimento diagnostico:** `docs/report/REPORT_STATO_SISTEMA_E_HANDOFF_ANOMALIE_GUI.md`  
-**Baseline verificata:** branch pulito, Fase 3B già distribuita e collaudata; suite precedente: 185 test, zero errori/fallimenti.
+- **Tipologia:** CORRETTIVO
+- **Autore:** Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA) & Antigravity
+- **Revisori:** Luca / Antigravity / GPT Codex
+- **Data e Ora:** 2026-09-05
+- **Stato Operativo:** [COMPLETATO E ARCHIVIATO — CONVALIDATO AL 100% DA LUCA IN-GAME]
+- **Incremento Versione Target (AVF):** [Tracciato nel Diario Modifiche Fork]
+- **Piani & Documenti Correlati:**
+  * [`docs/report/REGISTRO_REVISIONI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/REGISTRO_REVISIONI.md)
+- **Conformità ai 5 Cancelli (Protocollo 12):** Conforme al 100% (Rifiuto patching euristico, Hardware grounding, Hitbox continua, Contratti denominati, Determinismo headless a 0 ms)
 
 ---
+## 🗺️ Sommario Operativo & Registro di Avanzamento (Checklist con Gating di Convalida)
 
+> **Regola Aurea di Avanzamento (Matrice a 3 Stati)**:
+> - `- [ ] [DA AVVIARE]`: Attività pianificata ma non ancora iniziata.
+> - `- [/] [IMPLEMENTATO — IN ATTESA DI CONVALIDA]`: Codice scritto o intervento completato, ma in attesa di test o collaudo formale (spunta parziale).
+> - `- [x] [CONVALIDATO CON SUCCESSO]`: Spunta definitiva concessa **esclusivamente POST-CONVALIDA** (approvazione di Luca per la 1A, test suite 100% verde per la 1B, collaudo pratico in-game di Luca per la Fase 2).
+
+- [x] **0. Decisione, obiettivo e confini** [CONVALIDATO CON SUCCESSO]
+- [x] **1. Invarianti non negoziabili** [CONVALIDATO CON SUCCESSO]
+- [x] **2. Architettura di destinazione** [CONVALIDATO CON SUCCESSO]
+- [x] **3. Rev MC-26.9 — contratto di validita della GUI inventario** [CONVALIDATO CON SUCCESSO]
+- [x] **4. Rev MC-26.10 — contratto di ownership del crouch in GUI** [CONVALIDATO CON SUCCESSO]
+- [x] **5. Modifiche autorizzate per file** [CONVALIDATO CON SUCCESSO]
+- [x] **6. Piano di test automatizzato** [CONVALIDATO CON SUCCESSO]
+- [x] **7. Collaudo manuale NVDA obbligatorio** [CONVALIDATO CON SUCCESSO]
+- [x] **8. Build, deploy e chiusura controllata** [CONVALIDATO CON SUCCESSO]
+- [x] **9. Sequenza esecutiva obbligatoria** [CONVALIDATO CON SUCCESSO]
+
+---
 ## 0. Decisione, obiettivo e confini
 
 Questo piano risolve in modo chirurgico:

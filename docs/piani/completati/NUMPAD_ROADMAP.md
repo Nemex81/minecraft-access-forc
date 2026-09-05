@@ -1,9 +1,15 @@
 # Roadmap Implementazione Supporto Tastierino Numerico (Numpad Controls)
-
-Documento di riferimento strategico e tecnico per l'integrazione del supporto completo al tastierino numerico (Numpad) in **Minecraft Access**, progettato come consolle di controllo tattile per giocatori non vedenti.
+- **Tipologia:** ESPLORATIVO
+- **Autore:** Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA) & Antigravity
+- **Revisori:** Luca / Antigravity / GPT Codex
+- **Data e Ora:** 2026-09-03
+- **Stato Operativo:** [COMPLETATO E ARCHIVIATO — CONVALIDATO AL 100% DA LUCA IN-GAME]
+- **Incremento Versione Target (AVF):** [Tracciato nel Diario Modifiche Fork]
+- **Piani & Documenti Correlati:**
+  * [`docs/report/REGISTRO_REVISIONI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/REGISTRO_REVISIONI.md)
+- **Conformità ai 5 Cancelli (Protocollo 12):** Conforme al 100% (Rifiuto patching euristico, Hardware grounding, Hitbox continua, Contratti denominati, Determinismo headless a 0 ms)
 
 ---
-
 ## 1. Obiettivo e Visione
 
 Il tastierino numerico (Numpad) offre un vantaggio ergonomico e cognitivo fondamentale:

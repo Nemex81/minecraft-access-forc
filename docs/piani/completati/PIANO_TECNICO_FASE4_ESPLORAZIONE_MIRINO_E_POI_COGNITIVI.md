@@ -1,14 +1,39 @@
 # Piano Tecnico Implementativo — Fase 4: Esplorazione, Mirino e POI Cognitivi
-
-**Riferimento strategico:** `docs/strategie/STRATEGIA_COGNITIVE_COORDINATOR.md`
-**Stato:** `[SOTTO-FASE 1A — PIANO RIVISTO, DA CONVALIDARE]`
-**Ramo operativo:** `feat/cognitive-orchestrator`
-**Base verificata:** commit documentale `2fe2bc91`; albero Git pulito; ultimo report JUnit disponibile: 197 test, 0 failure, 0 error.
-**Incremento AVF proposto:** `v1.13.0`, subordinato a conferma di Luca prima del rilascio.
-**Autori:** Luca, Antigravity, revisione architetturale ChatGPT.
+- **Tipologia:** IMPLEMENTATIVO
+- **Autore:** Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA) & Antigravity
+- **Revisori:** Luca / Antigravity / GPT Codex
+- **Data e Ora:** 2026-09-03
+- **Stato Operativo:** [COMPLETATO E ARCHIVIATO — CONVALIDATO AL 100% DA LUCA IN-GAME]
+- **Incremento Versione Target (AVF):** [Tracciato nel Diario Modifiche Fork]
+- **Piani & Documenti Correlati:**
+  * [`docs/report/REGISTRO_REVISIONI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/REGISTRO_REVISIONI.md)
+- **Conformità ai 5 Cancelli (Protocollo 12):** Conforme al 100% (Rifiuto patching euristico, Hardware grounding, Hitbox continua, Contratti denominati, Determinismo headless a 0 ms)
 
 ---
+## 🗺️ Sommario Operativo & Registro di Avanzamento (Checklist con Gating di Convalida)
 
+> **Regola Aurea di Avanzamento (Matrice a 3 Stati)**:
+> - `- [ ] [DA AVVIARE]`: Attività pianificata ma non ancora iniziata.
+> - `- [/] [IMPLEMENTATO — IN ATTESA DI CONVALIDA]`: Codice scritto o intervento completato, ma in attesa di test o collaudo formale (spunta parziale).
+> - `- [x] [CONVALIDATO CON SUCCESSO]`: Spunta definitiva concessa **esclusivamente POST-CONVALIDA** (approvazione di Luca per la 1A, test suite 100% verde per la 1B, collaudo pratico in-game di Luca per la Fase 2).
+
+- [x] **1. Decisione di avvio e obiettivo operativo** [CONVALIDATO CON SUCCESSO]
+- [x] **2. Esito della revisione tecnica** [CONVALIDATO CON SUCCESSO]
+- [x] **3. Confine architetturale definitivo** [CONVALIDATO CON SUCCESSO]
+- [x] **4. Delimitazione negativa: cosa non toccare** [CONVALIDATO CON SUCCESSO]
+- [x] **5. Matrice delle invarianti anti-regressione** [CONVALIDATO CON SUCCESSO]
+- [x] **6. Classificazione vincolante degli eventi** [CONVALIDATO CON SUCCESSO]
+- [x] **7. Sotto-fase 4A — Fondazioni di routing e ciclo di vita** [CONVALIDATO CON SUCCESSO]
+- [x] **8. Sotto-fase 4B — Evento automatico del mirino** [CONVALIDATO CON SUCCESSO]
+- [x] **9. Sotto-fase 4C — Interazioni dirette e radar POI** [CONVALIDATO CON SUCCESSO]
+- [x] **10. File previsti e responsabilità** [CONVALIDATO CON SUCCESSO]
+- [x] **11. Piano di test automatico** [CONVALIDATO CON SUCCESSO]
+- [x] **12. Collaudo manuale NVDA** [CONVALIDATO CON SUCCESSO]
+- [x] **13. Validazione ASTRALIS a 7 assi** [CONVALIDATO CON SUCCESSO]
+- [x] **14. Procedura esecutiva dopo approvazione** [CONVALIDATO CON SUCCESSO]
+- [x] **15. Checkpoint vincolante** [CONVALIDATO CON SUCCESSO]
+
+---
 ## 1. Decisione di avvio e obiettivo operativo
 
 La Fase 4 non centralizza indiscriminatamente ogni suono o ogni chiamata a `MainClass.narrate`. Centralizza soltanto la decisione cognitiva relativa al feed automatico del mirino: priorità, deduplicazione, validità temporale e consegna della voce ambientale.

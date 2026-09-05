@@ -1,11 +1,34 @@
 # Piano Tecnico Correttivo — Revisione 5D.7-R3
-# Convergenza Indoor, Goal Waypoint, Budget Adattivo, Scala a Pioli (LadderBlock), Disaccoppiamento Shift Umano e Clearance Volumetrica FallDetector
-# Data: 5 settembre 2026
-# Autori: Antigravity (bozza 5D.7, R2, R3) e GPT Codex (revisione tecnica R1)
-# Stato: COMPLETATO E CONVALIDATO CON SUCCESSO EMPIRICO AL 100% DA LUCA IN-GAME (05/09/2026)
+- **Tipologia:** CORRETTIVO
+- **Autore:** Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA) & Antigravity
+- **Revisori:** Luca / Antigravity / GPT Codex
+- **Data e Ora:** 2026-09-05
+- **Stato Operativo:** [COMPLETATO E ARCHIVIATO — CONVALIDATO AL 100% DA LUCA IN-GAME]
+- **Incremento Versione Target (AVF):** [Tracciato nel Diario Modifiche Fork]
+- **Piani & Documenti Correlati:**
+  * [`docs/report/REGISTRO_REVISIONI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/REGISTRO_REVISIONI.md)
+- **Conformità ai 5 Cancelli (Protocollo 12):** Conforme al 100% (Rifiuto patching euristico, Hardware grounding, Hitbox continua, Contratti denominati, Determinismo headless a 0 ms)
 
 ---
+## 🗺️ Sommario Operativo & Registro di Avanzamento (Checklist con Gating di Convalida)
 
+> **Regola Aurea di Avanzamento (Matrice a 3 Stati)**:
+> - `- [ ] [DA AVVIARE]`: Attività pianificata ma non ancora iniziata.
+> - `- [/] [IMPLEMENTATO — IN ATTESA DI CONVALIDA]`: Codice scritto o intervento completato, ma in attesa di test o collaudo formale (spunta parziale).
+> - `- [x] [CONVALIDATO CON SUCCESSO]`: Spunta definitiva concessa **esclusivamente POST-CONVALIDA** (approvazione di Luca per la 1A, test suite 100% verde per la 1B, collaudo pratico in-game di Luca per la Fase 2).
+
+- [x] **Addendum vincolante R3 — Disaccoppiamento Intento Shift in AutoWalkMotor e Clearance Volumetrica Occhi in FallDetector** [CONVALIDATO CON SUCCESSO]
+- [x] **Addendum vincolante R2 — Risoluzione della Scala a Pioli (LadderBlock) e Convergenza Definitiva Belvedere** [CONVALIDATO CON SUCCESSO]
+- [x] **Addendum vincolante R1 — Integrazione 5D.6/5D.7 e correzione strutturale della Torre Belvedere** [CONVALIDATO CON SUCCESSO]
+- [x] **Incremento Versione Target (AVF)** [CONVALIDATO CON SUCCESSO]
+- [x] **1. Contesto e Motivazione** [CONVALIDATO CON SUCCESSO]
+- [x] **2. Contratti di Implementazione** [CONVALIDATO CON SUCCESSO]
+- [x] **3. Ordine di Esecuzione (Sotto-Fase 1B)** [CONVALIDATO CON SUCCESSO]
+- [x] **4. Validazione Preventiva (Protocollo 2 — 7 Assi + Matrice a 3 Livelli)** [CONVALIDATO CON SUCCESSO]
+- [x] **5. File Impattati (Riepilogo Revisione 5D.7-R3)** [CONVALIDATO CON SUCCESSO]
+- [x] **6. Conclusione Formale e Chiusura della Revisione 5D.7-R3** [CONVALIDATO CON SUCCESSO]
+
+---
 ## Addendum vincolante R3 — Disaccoppiamento Intento Shift in AutoWalkMotor e Clearance Volumetrica Occhi in FallDetector
 
 ### A. Autorità, precedenza e stato avanzamento

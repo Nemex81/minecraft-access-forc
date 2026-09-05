@@ -1,13 +1,37 @@
 # Piano tecnico implementativo completo — Traversal Safety e integrazione cognitiva
-
-**Ramo vincolato:** `feat/cognitive-orchestrator`  
-**Baseline da verificare prima di iniziare:** `d60c234acab2126250a3997de84b0699cb99a01f`  
-**Riferimento strategico:** `docs/strategie/STRATEGIA_SISTEMICA_TRAVERSAL_SAFETY_E_CENTRALIZZAZIONE_COGNITIVA.md`  
-**Stato:** `[PIANO COMPLETO — IMPLEMENTAZIONE AUTORIZZABILE SOLO PER FASE A]`  
-**Ambito:** Fase 3A, sicurezza di attraversamento verticale, ownership dello sneak e pubblicazione di osservazioni cognitive.  
+- **Tipologia:** IMPLEMENTATIVO
+- **Autore:** Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA) & Antigravity
+- **Revisori:** Luca / Antigravity / GPT Codex
+- **Data e Ora:** 2026-09-03
+- **Stato Operativo:** [COMPLETATO E ARCHIVIATO — CONVALIDATO AL 100% DA LUCA IN-GAME]
+- **Incremento Versione Target (AVF):** [Tracciato nel Diario Modifiche Fork]
+- **Piani & Documenti Correlati:**
+  * [`docs/report/REGISTRO_REVISIONI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/REGISTRO_REVISIONI.md)
+- **Conformità ai 5 Cancelli (Protocollo 12):** Conforme al 100% (Rifiuto patching euristico, Hardware grounding, Hitbox continua, Contratti denominati, Determinismo headless a 0 ms)
 
 ---
+## 🗺️ Sommario Operativo & Registro di Avanzamento (Checklist con Gating di Convalida)
 
+> **Regola Aurea di Avanzamento (Matrice a 3 Stati)**:
+> - `- [ ] [DA AVVIARE]`: Attività pianificata ma non ancora iniziata.
+> - `- [/] [IMPLEMENTATO — IN ATTESA DI CONVALIDA]`: Codice scritto o intervento completato, ma in attesa di test o collaudo formale (spunta parziale).
+> - `- [x] [CONVALIDATO CON SUCCESSO]`: Spunta definitiva concessa **esclusivamente POST-CONVALIDA** (approvazione di Luca per la 1A, test suite 100% verde per la 1B, collaudo pratico in-game di Luca per la Fase 2).
+
+- [x] **0. Decisione, scopo e regola di avanzamento** [CONVALIDATO CON SUCCESSO]
+- [x] **1. Diagnosi tecnica da preservare** [CONVALIDATO CON SUCCESSO]
+- [x] **2. Invarianti architetturali e di sicurezza** [CONVALIDATO CON SUCCESSO]
+- [x] **3. Architettura di destinazione e dipendenze consentite** [CONVALIDATO CON SUCCESSO]
+- [x] **4. Contratti implementativi** [CONVALIDATO CON SUCCESSO]
+- [x] **5. Gate preliminare A0 — verifica prima di modificare codice** [CONVALIDATO CON SUCCESSO]
+- [x] **6. Fase A — ownership dello sneak e revoca dei permessi residui** [CONVALIDATO CON SUCCESSO]
+- [x] **7. Fase B — macchina a stati formale** [CONVALIDATO CON SUCCESSO]
+- [x] **8. Fase C — percezione volumetrica e fonte geometrica unica** [CONVALIDATO CON SUCCESSO]
+- [x] **9. Fase D — pubblicazione cognitiva e guida non invasiva** [CONVALIDATO CON SUCCESSO]
+- [x] **10. Sequenza commit, revisione e rollback** [CONVALIDATO CON SUCCESSO]
+- [x] **11. Matrice di accettazione e collaudo NVDA** [CONVALIDATO CON SUCCESSO]
+- [x] **12. Definition of Done e stop finale** [CONVALIDATO CON SUCCESSO]
+
+---
 ## 0. Decisione, scopo e regola di avanzamento
 
 Questo piano corregge il comportamento per cui una discesa validata può restare bloccata dallo sticky-sneak e definisce l'evoluzione verso una gestione riusabile delle osservazioni dei rilevatori.

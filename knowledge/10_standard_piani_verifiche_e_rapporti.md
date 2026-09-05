@@ -32,14 +32,33 @@ Poiché lo sviluppo e il collaudo avvengono con uno sviluppatore e giocatore tot
    - Un piano tecnico NON viene archiviato automaticamente dopo la compilazione o il deploy di prova.
    - Viene spostato nella sottocartella `docs\piani\completati\` **esclusivamente dopo che Luca ha effettuato il test manuale in-game di persona aprendo il gioco e confermato formalmente il superamento del collaudo**.
 4. **Organizzazione Documentale in `docs/`**:
-   - `docs\piani\attivi\`: Piani tecnici attivi.
+   - `docs\piani\attivi\`: Piani tecnici attivi (massimo 1-2 in lavorazione).
    - `docs\piani\completati\`: Piani tecnici collaudati e integrati.
    - `docs\strategie\`: Documenti di strategia, architettura e metodologie.
    - `docs\report\`: Relazioni diagnostiche, audit e collaudi.
    - `docs\idee\`: Promemoria, spunti futuri e meccaniche da esplorare.
    - `docs\manuali\`: Manuali d'uso e guide comandi in-game.
 
+5. **I 7 Archetipi dei Piani Tecnici ASTRALIS (v2.7.1)**:
+   - Ogni piano tecnico appartiene a uno dei 7 archetipi deterministici:
+     * **Implementativo** *(Feature & New Modules)*: nuove funzionalità, architettura a layer, contratti denominati (D0..DN, S1..SN) e localizzazione I18N ordinata;
+     * **Correttivo** *(Bug Fix & PRAPI Mirato)*: evidenza empirica, Root Cause Analysis (RCA) senza pezze euristiche (Cancello 1), test di riproduzione e patch chirurgica;
+     * **Refactoring** *(Architectural Grooming)*: pulizia debito tecnico, disaccoppiamento interfacce/DIP e garanzia di **invarianza assoluta del comportamento esterno**;
+     * **Bonifica & Pulizia** *(Dead Code Purge)*: eliminazione codice/asset morti con la Strategia a 5 Barriere di Sicurezza (Protocollo 11);
+     * **Migrazione & Aggiornamento Stack** *(Runtime Upgrade)*: avanzamento versione runtime/motore (Java, Minecraft, Fabric, Python), breaking changes e compatibilità binaria;
+     * **Convalida, Hardening & Suite Test** *(QA Engineering)*: test seams headless a 0 ms (Cancello 5), eliminazione `Thread.sleep` e matrici di stress-test;
+     * **Esplorativo & Fattibilità** *(Spike & PoC)*: benchmark preventivi su incertezze complesse (es. analisi chunk MCA) e dossier decisionale per il piano implementativo.
+
+6. **Intestazione a 8 Campi & Sommario Operativo con Gating di Convalida**:
+   - *Intestazione Standard*: Titolo con ID, Tipologia, Autore, Revisori, Data e Ora, Stato Operativo (`[IN STESURA 1A]`, `[APPROVATO 1B]`, `[COMPLETATO]`), Target Version AVF, Documenti Correlati e Audit dei 5 Cancelli (Protocollo 12);
+   - *Sommario Operativo & Registro di Avanzamento (Checklist)*: collocato subito in cima come Sezione 0 per consentire l'atterraggio istantaneo con tasto `H` in NVDA;
+   - *La Matrice a 3 Stati per NVDA*:
+     * `- [ ] [DA AVVIARE]`: Attività pianificata ma non iniziata;
+     * `- [/] [IMPLEMENTATO — IN ATTESA DI CONVALIDA]`: Spunta parziale. Codice scritto e compilato, ma **NON ancora convalidato**;
+     * `- [x] [CONVALIDATO CON SUCCESSO]`: Spunta definitiva concessa **esclusivamente POST-CONVALIDA formale** (approvazione di Luca per la 1A, test suite 100% verde per la 1B, collaudo empirico in-game di Luca per la Fase 2).
+
 ---
+
 
 ## 3. Protocollo di Analisi Preliminare & Prevenzione Falsi Positivi
 

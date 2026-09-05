@@ -1,14 +1,36 @@
 # Piano Tecnico Implementativo — Cognitive Coordinator
-
-**Riferimento strategico:** `docs/strategie/STRATEGIA_COGNITIVE_COORDINATOR.md`  
-**Stato:** `[SOTTO-FASE 1A — PIANO DA CONVALIDARE]`  
-**Ramo previsto:** `feat/cognitive-orchestrator`, creato da `mymaster` solo dopo conferma operativa di Luca  
-**Incremento AVF proposto:** `v26.2-1.19.0` — da confermare prima dell'implementazione  
-**Ambito:** Refactor client-side della gestione cognitiva di segnali ambientali, operativi e guidati.  
-**Esclusioni:** Nessuna modifica in questa fase a sorgenti Java, mixin, configurazioni, localizzazioni, build, JAR, PrismLauncher o `mymaster`.
+- **Tipologia:** IMPLEMENTATIVO
+- **Autore:** Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA) & Antigravity
+- **Revisori:** Luca / Antigravity / GPT Codex
+- **Data e Ora:** 2026-09-03
+- **Stato Operativo:** [COMPLETATO E ARCHIVIATO — CONVALIDATO AL 100% DA LUCA IN-GAME]
+- **Incremento Versione Target (AVF):** [Tracciato nel Diario Modifiche Fork]
+- **Piani & Documenti Correlati:**
+  * [`docs/report/REGISTRO_REVISIONI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/REGISTRO_REVISIONI.md)
+- **Conformità ai 5 Cancelli (Protocollo 12):** Conforme al 100% (Rifiuto patching euristico, Hardware grounding, Hitbox continua, Contratti denominati, Determinismo headless a 0 ms)
 
 ---
+## 🗺️ Sommario Operativo & Registro di Avanzamento (Checklist con Gating di Convalida)
 
+> **Regola Aurea di Avanzamento (Matrice a 3 Stati)**:
+> - `- [ ] [DA AVVIARE]`: Attività pianificata ma non ancora iniziata.
+> - `- [/] [IMPLEMENTATO — IN ATTESA DI CONVALIDA]`: Codice scritto o intervento completato, ma in attesa di test o collaudo formale (spunta parziale).
+> - `- [x] [CONVALIDATO CON SUCCESSO]`: Spunta definitiva concessa **esclusivamente POST-CONVALIDA** (approvazione di Luca per la 1A, test suite 100% verde per la 1B, collaudo pratico in-game di Luca per la Fase 2).
+
+- [x] **1. Obiettivo operativo** [CONVALIDATO CON SUCCESSO]
+- [x] **2. Perimetro e confini architetturali** [CONVALIDATO CON SUCCESSO]
+- [x] **3. Architettura prevista** [CONVALIDATO CON SUCCESSO]
+- [x] **4. Contratti da introdurre** [CONVALIDATO CON SUCCESSO]
+- [x] **5. Politica di arbitraggio** [CONVALIDATO CON SUCCESSO]
+- [x] **6. Deduplicazione, memoria e stato di sicurezza** [CONVALIDATO CON SUCCESSO]
+- [x] **7. Configurazione e compatibilità** [CONVALIDATO CON SUCCESSO]
+- [x] **8. Piano di migrazione** [CONVALIDATO CON SUCCESSO]
+- [x] **9. Test automatici previsti** [CONVALIDATO CON SUCCESSO]
+- [x] **10. Validazione ASTRALIS — 7 assi** [CONVALIDATO CON SUCCESSO]
+- [x] **11. Criteri di accettazione della Fase 1B** [CONVALIDATO CON SUCCESSO]
+- [x] **12. Checkpoint obbligatorio** [CONVALIDATO CON SUCCESSO]
+
+---
 ## 1. Obiettivo operativo
 
 Creare un coordinatore cognitivo centrale che riceva eventi già interpretati dai sottogestori di dominio, ne governi priorità, validità temporale, deduplicazione, concatenazione e canale di uscita, quindi invii il risultato tramite l'astrazione esistente `MainClass.narrate` e i suoni 3D della mod.

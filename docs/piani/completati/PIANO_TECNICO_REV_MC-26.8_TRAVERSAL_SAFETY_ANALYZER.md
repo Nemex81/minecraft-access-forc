@@ -1,15 +1,37 @@
 # Piano Tecnico Implementativo — Rev. MC-26.8: Traversal Safety Analyzer
-
-**Ramo di lavoro:** `feat/cognitive-orchestrator`  
-**Ambito:** affinamento strutturale della Fase 3A — dominio Sicurezza / `FallDetector`  
-**Stato:** `[PIANO FORMALE — STOP OBBLIGATORIO REGOLA 0 — NON IMPLEMENTARE PRIMA DELL'APPROVAZIONE]`  
-**Riferimenti:**
-- `docs/report/RAPPORTO_INDIRIZZO_CORRETTIVO_TRAVERSAL_SAFETY_ANALYZER.md`
-- `docs/piani/attivi/PIANO_TECNICO_FASE3_MIGRAZIONE_SICUREZZA.md`
-- `docs/report/RAPPORTO_CORRETTIVO_FASE3A_FALLDETECTOR.md`
+- **Tipologia:** CORRETTIVO
+- **Autore:** Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA) & Antigravity
+- **Revisori:** Luca / Antigravity / GPT Codex
+- **Data e Ora:** 2026-09-05
+- **Stato Operativo:** [COMPLETATO E ARCHIVIATO — CONVALIDATO AL 100% DA LUCA IN-GAME]
+- **Incremento Versione Target (AVF):** [Tracciato nel Diario Modifiche Fork]
+- **Piani & Documenti Correlati:**
+  * [`docs/report/REGISTRO_REVISIONI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/REGISTRO_REVISIONI.md)
+- **Conformità ai 5 Cancelli (Protocollo 12):** Conforme al 100% (Rifiuto patching euristico, Hardware grounding, Hitbox continua, Contratti denominati, Determinismo headless a 0 ms)
 
 ---
+## 🗺️ Sommario Operativo & Registro di Avanzamento (Checklist con Gating di Convalida)
 
+> **Regola Aurea di Avanzamento (Matrice a 3 Stati)**:
+> - `- [ ] [DA AVVIARE]`: Attività pianificata ma non ancora iniziata.
+> - `- [/] [IMPLEMENTATO — IN ATTESA DI CONVALIDA]`: Codice scritto o intervento completato, ma in attesa di test o collaudo formale (spunta parziale).
+> - `- [x] [CONVALIDATO CON SUCCESSO]`: Spunta definitiva concessa **esclusivamente POST-CONVALIDA** (approvazione di Luca per la 1A, test suite 100% verde per la 1B, collaudo pratico in-game di Luca per la Fase 2).
+
+- [x] **0. Decisione e perimetro** [CONVALIDATO CON SUCCESSO]
+- [x] **1. Diagnosi tecnica consolidata** [CONVALIDATO CON SUCCESSO]
+- [x] **2. Architettura di destinazione** [CONVALIDATO CON SUCCESSO]
+- [x] **3. Contratti dati proposti** [CONVALIDATO CON SUCCESSO]
+- [x] **4. Algoritmo del TraversalSafetyAnalyzer** [CONVALIDATO CON SUCCESSO]
+- [x] **5. SafetyMovementGuard e proprietà dell'input** [CONVALIDATO CON SUCCESSO]
+- [x] **6. Integrazione in FallDetector** [CONVALIDATO CON SUCCESSO]
+- [x] **7. Feedback cognitivo e compatibilità** [CONVALIDATO CON SUCCESSO]
+- [x] **8. File previsti e file vietati** [CONVALIDATO CON SUCCESSO]
+- [x] **9. Piano di test obbligatorio** [CONVALIDATO CON SUCCESSO]
+- [x] **10. Sequenza di implementazione e gate** [CONVALIDATO CON SUCCESSO]
+- [x] **11. Criteri di accettazione finali** [CONVALIDATO CON SUCCESSO]
+- [x] **12. Stop obbligatorio** [CONVALIDATO CON SUCCESSO]
+
+---
 ## 0. Decisione e perimetro
 
 Il test NVDA sul tetto ha confermato un difetto funzionale: una scala a parete è riconosciuta da un sistema come elemento di mobilità, ma il `FallDetector` classifica il suo ingresso come burrone e blocca fisicamente il giocatore con lo sticky-sneak.

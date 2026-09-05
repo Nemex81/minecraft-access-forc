@@ -1,15 +1,30 @@
-# Piano Tecnico Implementativo — Rev. MC-26.8: Interruttore Diagnostico del Cognitive Coordinator (Ctrl+Alt+C) (ASTRALIS v2.6.3)
-
-**Ramo di lavoro:** feat/cognitive-orchestrator  
-**Ambito:** revisione MC-26.8 — Interruttore Diagnostico Globale Volatile (`CognitiveCoordinator`) (Differita al Buffer RRU post-strategia, Fase 8)
-**Stato:** [PIANO AGGIORNATO E DIFFERITO AL BUFFER RRU POST-STRATEGIA — FASE 8 — STOP OBBLIGATORIO REGOLA 0]
-**Riferimenti:**
-- docs/report/archivio/RAPPORTO_INDIRIZZO_CORRETTIVO_TRAVERSAL_SAFETY_ANALYZER.md
-- docs/strategie/STRATEGIA_COGNITIVE_COORDINATOR.md
-- docs/report/REGISTRO_REVISIONI.md
+# Piano Tecnico Implementativo — Rev. MC-26.8: Traversal Safety Analyzer
+- **Tipologia:** CORRETTIVO
+- **Autore:** Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA) & Antigravity
+- **Revisori:** Luca / Antigravity / GPT Codex
+- **Data e Ora:** 2026-09-05
+- **Stato Operativo:** [PIANO ATTIVO — IN STESURA / DIFFERITO AL BUFFER RRU FASE 8]
+- **Incremento Versione Target (AVF):** [Tracciato nel Diario Modifiche Fork]
+- **Piani & Documenti Correlati:**
+  * [`docs/report/REGISTRO_REVISIONI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/REGISTRO_REVISIONI.md)
+- **Conformità ai 5 Cancelli (Protocollo 12):** Conforme al 100% (Rifiuto patching euristico, Hardware grounding, Hitbox continua, Contratti denominati, Determinismo headless a 0 ms)
 
 ---
+## 🗺️ Sommario Operativo & Registro di Avanzamento (Checklist con Gating di Convalida)
 
+> **Regola Aurea di Avanzamento (Matrice a 3 Stati)**:
+> - `- [ ] [DA AVVIARE]`: Attività pianificata ma non ancora iniziata.
+> - `- [/] [IMPLEMENTATO — IN ATTESA DI CONVALIDA]`: Codice scritto o intervento completato, ma in attesa di test o collaudo formale (spunta parziale).
+> - `- [x] [CONVALIDATO CON SUCCESSO]`: Spunta definitiva concessa **esclusivamente POST-CONVALIDA** (approvazione di Luca per la 1A, test suite 100% verde per la 1B, collaudo pratico in-game di Luca per la Fase 2).
+
+- [ ] **0. Decisione e perimetro** [DA AVVIARE]
+- [ ] **1. Obiettivo operativo: Interruttore Diagnostico del Cognitive Coordinator (Ctrl+Alt+C)** [DA AVVIARE]
+- [ ] **2. Inventario dei file** [DA AVVIARE]
+- [ ] **3. Piano di test obbligatorio** [DA AVVIARE]
+- [ ] **4. Criteri di accettazione finali** [DA AVVIARE]
+- [ ] **5. Checkpoint vincolante (Regola 0)** [DA AVVIARE]
+
+---
 ## 0. Decisione e perimetro
 
 Il collaudo sul campo eseguito da Luca ha verificato che il problema storico dello sticky-sneak sulle scale a pioli a parete è **risolto**: davanti a una scala viene annunciata correttamente *"discesa sicura"* e il giocatore può attraversarla e scendere liberamente.

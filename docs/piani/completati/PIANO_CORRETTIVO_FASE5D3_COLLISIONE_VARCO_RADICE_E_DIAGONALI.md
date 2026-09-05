@@ -1,14 +1,34 @@
 # Piano Correttivo Formale — Revisione 5D.3: Collisione Fisica del Varco Radice e Sicurezza delle Diagonali
-# Autore: Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA), Antigravity e Codex / ChatGPT
-# Framework: ASTRALIS v2.6.3 — Sotto-Fase 1A Correttiva (PRAPI)
-# Repository: minecraft-access (Fabric / NeoForge, Java 25, Minecraft 26.2)
-# Incremento Versione Target (AVF): invariato, v26.2-1.19.0
-
-> [!IMPORTANT]
-> **Gating Semantico — Regola 0**: questo è un piano correttivo, non un'autorizzazione a modificare il codice. Antigravity può iniziare la Sotto-Fase 1B soltanto dopo un comando esplicito di Luca, ad esempio: *"procedi con la revisione 5D.3"*.
+- **Tipologia:** CORRETTIVO
+- **Autore:** Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA) & Antigravity
+- **Revisori:** Luca / Antigravity / GPT Codex
+- **Data e Ora:** 2026-09-05
+- **Stato Operativo:** [COMPLETATO E ARCHIVIATO — CONVALIDATO AL 100% DA LUCA IN-GAME]
+- **Incremento Versione Target (AVF):** [Tracciato nel Diario Modifiche Fork]
+- **Piani & Documenti Correlati:**
+  * [`docs/report/REGISTRO_REVISIONI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/REGISTRO_REVISIONI.md)
+- **Conformità ai 5 Cancelli (Protocollo 12):** Conforme al 100% (Rifiuto patching euristico, Hardware grounding, Hitbox continua, Contratti denominati, Determinismo headless a 0 ms)
 
 ---
+## 🗺️ Sommario Operativo & Registro di Avanzamento (Checklist con Gating di Convalida)
 
+> **Regola Aurea di Avanzamento (Matrice a 3 Stati)**:
+> - `- [ ] [DA AVVIARE]`: Attività pianificata ma non ancora iniziata.
+> - `- [/] [IMPLEMENTATO — IN ATTESA DI CONVALIDA]`: Codice scritto o intervento completato, ma in attesa di test o collaudo formale (spunta parziale).
+> - `- [x] [CONVALIDATO CON SUCCESSO]`: Spunta definitiva concessa **esclusivamente POST-CONVALIDA** (approvazione di Luca per la 1A, test suite 100% verde per la 1B, collaudo pratico in-game di Luca per la Fase 2).
+
+- [x] **1. Identità, perimetro e linguaggio non ambiguo** [CONVALIDATO CON SUCCESSO]
+- [x] **2. Origine delle criticità residue** [CONVALIDATO CON SUCCESSO]
+- [x] **3. Obiettivi di accettazione** [CONVALIDATO CON SUCCESSO]
+- [x] **4. Contratto correttivo A — Uscita fisica dalla cella radice** [CONVALIDATO CON SUCCESSO]
+- [x] **5. Contratto correttivo B — Inviolabilità fisica delle diagonali** [CONVALIDATO CON SUCCESSO]
+- [x] **6. Suite di test vincolante** [CONVALIDATO CON SUCCESSO]
+- [x] **7. Collaudo manuale e telemetria** [CONVALIDATO CON SUCCESSO]
+- [x] **8. Verifica ASTRALIS sui sette assi** [CONVALIDATO CON SUCCESSO]
+- [x] **9. Procedura obbligatoria di esecuzione dopo il via libera di Luca** [CONVALIDATO CON SUCCESSO]
+- [x] **10. Stato di avanzamento: Sotto-Fase 1B e Fase 2 Completate** [CONVALIDATO CON SUCCESSO]
+
+---
 ## 1. Identità, perimetro e linguaggio non ambiguo
 
 Questo documento disciplina esclusivamente la **Revisione Correttiva 5D.3** della Fase 5D, emersa dopo l'audit della Revisione 5D.2.

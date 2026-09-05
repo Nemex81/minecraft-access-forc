@@ -1,14 +1,32 @@
 # Piano Tecnico Implementativo — Fase 2: Configurazione Cloth Config & Facciata Retrocompatibile NarrationPriority
-
-**Riferimento strategico:** `docs/strategie/STRATEGIA_COGNITIVE_COORDINATOR.md`  
-**Riferimento operativo:** `docs/report/RAPPORTO_CHIUSURA_FASE1_E_INDIRIZZO_FASE2_COGNITIVE_COORDINATOR.md`  
-**Stato:** `[FASE 2 — PIANO TECNICO REVISIONATO, DA CONVALIDARE]`  
-**Ramo di lavoro:** `feat/cognitive-orchestrator`  
-**Ambito:** Configurazione controllabile dall'utente, I18N accessibile Cloth Config, Facade `NarrationPriority` e binding deterministico.  
-**Vincolo assoluto di non-regressione:** Nessuna modifica a sensori storici (`FallDetector`, `ObstacleDetector`, mirino, AutoWalk, POI, Mentore), mixin, o percorsi diretti esistenti. Zero migrazioni di produttori in questa fase.
+- **Tipologia:** IMPLEMENTATIVO
+- **Autore:** Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA) & Antigravity
+- **Revisori:** Luca / Antigravity / GPT Codex
+- **Data e Ora:** 2026-09-03
+- **Stato Operativo:** [COMPLETATO E ARCHIVIATO — CONVALIDATO AL 100% DA LUCA IN-GAME]
+- **Incremento Versione Target (AVF):** [Tracciato nel Diario Modifiche Fork]
+- **Piani & Documenti Correlati:**
+  * [`docs/report/REGISTRO_REVISIONI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/REGISTRO_REVISIONI.md)
+- **Conformità ai 5 Cancelli (Protocollo 12):** Conforme al 100% (Rifiuto patching euristico, Hardware grounding, Hitbox continua, Contratti denominati, Determinismo headless a 0 ms)
 
 ---
+## 🗺️ Sommario Operativo & Registro di Avanzamento (Checklist con Gating di Convalida)
 
+> **Regola Aurea di Avanzamento (Matrice a 3 Stati)**:
+> - `- [ ] [DA AVVIARE]`: Attività pianificata ma non ancora iniziata.
+> - `- [/] [IMPLEMENTATO — IN ATTESA DI CONVALIDA]`: Codice scritto o intervento completato, ma in attesa di test o collaudo formale (spunta parziale).
+> - `- [x] [CONVALIDATO CON SUCCESSO]`: Spunta definitiva concessa **esclusivamente POST-CONVALIDA** (approvazione di Luca per la 1A, test suite 100% verde per la 1B, collaudo pratico in-game di Luca per la Fase 2).
+
+- [x] **0. Esito della revisione e correzioni vincolanti** [CONVALIDATO CON SUCCESSO]
+- [x] **1. Analisi dei Componenti Esistenti & Confini Operativi** [CONVALIDATO CON SUCCESSO]
+- [x] **2. Elenco Dettagliato File-per-File e Modifiche Previste** [CONVALIDATO CON SUCCESSO]
+- [x] **3. Schema del Binding Config $\rightarrow$ Coordinator** [CONVALIDATO CON SUCCESSO]
+- [x] **4. Matrice di Test Previsti per la Fase 2** [CONVALIDATO CON SUCCESSO]
+- [x] **5. Vincoli di Compilazione & Criteri di Accettazione della Fase 2** [CONVALIDATO CON SUCCESSO]
+- [x] **6. Procedura di Rollback della Fase 2** [CONVALIDATO CON SUCCESSO]
+- [x] **🛑 7. Checkpoint di chiusura della pianificazione della Fase 2** [CONVALIDATO CON SUCCESSO]
+
+---
 ## 0. Esito della revisione e correzioni vincolanti
 
 La struttura del piano è valida, ma la sua prima stesura conteneva tre punti che avrebbero creato configurazioni senza effetto reale o test fragili:

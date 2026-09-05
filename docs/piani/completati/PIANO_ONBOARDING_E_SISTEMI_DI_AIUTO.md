@@ -1,14 +1,27 @@
 # Piano Tecnico di Implementazione: Onboarding & Sistemi di Aiuto per Principianti
-# Percorso: docs/piani/attivi/PIANO_ONBOARDING_E_SISTEMI_DI_AIUTO.md
-
-**Modulo**: `minecraft-access` (Fork Luca)  
-**Obiettivo**: Perfezionare l'architettura integrata di onboarding (Mentor Contestuale + Accademia a Mini-Missioni) con:
-1. Avanzamento sequenziale automatico (`autoAdvanceMissions`).
-2. Guard Rail di protezione fisica e disabilitazione adattiva nell'Hub per prevenire l'avvio di missioni non compatibili con la modalità di gioco (`GameType`).
-3. Precisione assoluta dei comandi suggeriti vocalmente per tastiera estesa italiana e tastierino numerico.
+- **Tipologia:** IMPLEMENTATIVO
+- **Autore:** Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA) & Antigravity
+- **Revisori:** Luca / Antigravity / GPT Codex
+- **Data e Ora:** 2026-09-03
+- **Stato Operativo:** [COMPLETATO E ARCHIVIATO — CONVALIDATO AL 100% DA LUCA IN-GAME]
+- **Incremento Versione Target (AVF):** [Tracciato nel Diario Modifiche Fork]
+- **Piani & Documenti Correlati:**
+  * [`docs/report/REGISTRO_REVISIONI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/REGISTRO_REVISIONI.md)
+- **Conformità ai 5 Cancelli (Protocollo 12):** Conforme al 100% (Rifiuto patching euristico, Hardware grounding, Hitbox continua, Contratti denominati, Determinismo headless a 0 ms)
 
 ---
+## 🗺️ Sommario Operativo & Registro di Avanzamento (Checklist con Gating di Convalida)
 
+> **Regola Aurea di Avanzamento (Matrice a 3 Stati)**:
+> - `- [ ] [DA AVVIARE]`: Attività pianificata ma non ancora iniziata.
+> - `- [/] [IMPLEMENTATO — IN ATTESA DI CONVALIDA]`: Codice scritto o intervento completato, ma in attesa di test o collaudo formale (spunta parziale).
+> - `- [x] [CONVALIDATO CON SUCCESSO]`: Spunta definitiva concessa **esclusivamente POST-CONVALIDA** (approvazione di Luca per la 1A, test suite 100% verde per la 1B, collaudo pratico in-game di Luca per la Fase 2).
+
+- [x] **👥 Specifiche e Vincoli Rispettati** [CONVALIDATO CON SUCCESSO]
+- [x] **🏛️ Dettaglio delle Modifiche da Applicare** [CONVALIDATO CON SUCCESSO]
+- [x] **📋 Pipeline di Realizzazione a 4 Fasi** [CONVALIDATO CON SUCCESSO]
+
+---
 ## 👥 Specifiche e Vincoli Rispettati
 
 - **Priorità Vocale Assoluta**: I messaggi didattici e i suggerimenti contestuali usano lo scudo temporale dinamico `HelpNarrator.narrateHelp`, silenziando la lettura continua del mirino (`NarrateCrosshair`) e i rilevatori per tutta la durata della frase. Opzione `helpPriorityOverride: true/false` configurabile.
