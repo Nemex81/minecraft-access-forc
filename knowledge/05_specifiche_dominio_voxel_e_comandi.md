@@ -47,6 +47,16 @@ Per prevenire qualsiasi falso allarme vocale e garantire la massima precisione n
    - La misura di profondità di una colonna verticale d'aria non deve valutare solo il blocco sul fondo: se il blocco d'atterraggio è uno `StairBlock`/`SlabBlock` **oppure** se lungo la colonna verticale tra atterraggio e quota piedi sono presenti i gradini sovrastanti della scala, l'intera campata della rampa è considerata sicura (`drop = 0`).
 3. **Arresto Immediato su Davanzali / Ostacoli Solidi ($\ge 1.0\text{ m}$)**:
    - Nei raycast di avanzamento, un blocco solido a quota piedi di altezza $\ge 1.0\text{ m}$ (o con ostacolo/vetro a quota testa) arresta istantaneamente il raggio (`break;`), impedendo lo scavalcamento errato del davanzale verso il vuoto esterno.
+4. **Modello Voxel a 4 Pilastri per Elementi a Parete (`LadderBlock`)**:
+   - Se un blocco a parete possiede una bounding box di collisione fisica parziale (es. i 3 pixel di spessore di una scala a pioli o un cartello):
+     1. `isPassable = true`: la hitbox del giocatore ($0.60\text{ m}$) transita liberamente nei restanti $0.8125\text{ m}$ di spazio utile;
+     2. `isClearHeadroom = true`: la testa del giocatore non subisce collisione dall'ingombro a parete;
+     3. `isStandable = false`: divieto categorico di appoggio sui pioli nel vuoto (previene cadute orizzontali e salite improprie verso botole e tetti);
+     4. `isSolid = false`: trasparenza per i raggi di discesa verticale e controlli di linea visiva.
+5. **Clearance Volumetrica a Quota Occhi nel Rilevamento Cadute (`FallDetector`)**:
+   - Nel presidio del ciglio (`isStandingOnDangerousEdge`) e nel look-ahead (`findDangerAhead`), non limitare la valutazione al solo piano dei piedi ($Y$ o $Y-1$);
+   - Verificare sempre che la cella ad altezza occhi/testa ($Y+1$, `stepPos.above()`) sia libera;
+   - Se la cella superiore è ostruita da blocchi solidi, soffitti bassi, muri o barriere, la caduta è fisicamente impossibile per la statura del giocatore ($1.80\text{ m}$) e la cella viene scartata a monte, azzerando i falsi allarmi nei vani scale, corridoi chiusi e passaggi bassi.
 
 ---
 

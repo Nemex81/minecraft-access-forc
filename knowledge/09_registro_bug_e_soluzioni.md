@@ -476,4 +476,37 @@ Questo registro documenta i problemi tecnici complessi risolti nel tempo, preser
   4. *Resilienza Gradle Cloud*: Adozione del flag obbligatorio `.\gradlew.bat --no-daemon --no-watch-fs test`, eliminando qualsiasi crash con i file system cloud.
   5. *Suite di Test*: 6 nuovi test unitari in `SafetyMovementGuardTest.java` per verificare ownership, trasparenza GLFW, idempotenza e ripresa manuale al 100%.
 
+---
+
+### Record 37 — Cortocircuito di Priorità tra AutoWalk Human Takeover e Sneak Salvavita Sintetico (Rev MC-26.11 / 5D.7-R3)
+- **Data**: 2026-09-05
+- **Moduli Coinvolti**: `AutoWalkMotor.java`, `CrouchIntentProbe.java`, `RawCrouchIntentProvider.java`, `AutoWalkMotorTest.java`
+- **Sintomi**: Durante la marcia automatica (AutoWalk), l'arrivo su pianerottoli intermedi stretti con tromba delle scale adiacente o curve a gomito provocava l'annullamento improvviso della navigazione con la notifica vocale *"Navigazione automatica annullata"* e due suoni di accovacciamento (`crouch`). Raddrizzando lo sguardo e premendo di nuovo `Alt+W`, la navigazione riprendeva senza problemi.
+- **Causa Radice**:
+  1. Nelle curve a gomito, `shouldBrakeForTurn` disattivava temporaneamente l'avanzamento per orientare lo Yaw. Da fermo, il `FallDetector` rilevava il dislivello della tromba scale laterale e attivava legittimamente l'auto-sneak di salvataggio via `SafetyMovementGuard.engageFallProtection()`.
+  2. `MinecraftSneakOverridePort` scriveva `client.options.keyShift.setDown(true)`.
+  3. Nel tick di `AutoWalkMotor`, il controllo di `Human Takeover` risiedeva al Passo 1 (prima di watchdog e correzione rotta) e verificava `client.options.keyShift.isDown()`.
+  4. Poiché Minecraft riporta `true` anche per lo sneak sintetico del sistema di sicurezza, il motore interpretava l'intervento salvavita come una pressione manuale del tasto Shift da parte dell'utente, annullando la marcia.
+- **Soluzione Definitiva**:
+  1. *Iniezione CrouchIntentProbe in AutoWalkMotor*: Adozione dell'interfaccia `CrouchIntentProbe` con implementazione predefinita `RawCrouchIntentProvider`.
+  2. *Disaccoppiamento HW/SW*: Riformulazione di `isManualMovementKeyPressed`: il controllo dello Shift interroga unicamente il probe hardware GLFW (`crouchIntent.pressed()`), che legge i tasti fisici reali della tastiera.
+  3. *Immunità dallo Sneak Sintetico*: L'accovacciamento di sicurezza generato da `SafetyMovementGuard` viene ignorato dal takeover, consentendo all'AutoWalk di superare i cigli a velocità protetta senza annullare la navigazione.
+  4. *Suite di Test*: 4 nuovi test unitari in `AutoWalkMotorTest.java` superati al 100%.
+
+---
+
+### Record 38 — Clearance Volumetrica Occhi in FallDetector e Topologia LadderBlock a 4 Pilastri (Rev MC-26.11 / 5D.7-R3)
+- **Data**: 2026-09-05
+- **Moduli Coinvolti**: `FallDetector.java`, `AutoWalkPathfinder.java`, `FallDetectorTraversalIntegrationTest.java`, `AutoWalkPathfinderTest.java`
+- **Sintomi**:
+  1. Il pathfinder falliva sistematicamente con `Nessun percorso sicuro` (`NO_PATH`) nel superare rampe di scale a gomito a L con presenza di scale a pioli a parete (`LadderBlock`) sull'angolo esterno.
+  2. Il `FallDetector` innescava allarmi e frenate ingiustificate in corrispondenza di trombe scale o corridoi dove il dislivello inferiore era sormontato da pareti o soffitti bassi.
+- **Causa Radice**:
+  1. In Minecraft 1.21.x / Fabric, `LadderBlock` ha una bounding box di 3 pixel aderente al muro. `AutoWalkPathfinder` controllava se la collision shape era vuota; non essendolo, trattava la scala a parete come un blocco di pietra compatto da 1 metro pieno, spezzando la connettività del grafo A*.
+  2. `FallDetector` controllava unicamente la profondità di caduta sul piano dei piedi ($Y$ e $Y-1$), senza verificare se il passaggio fosse dimensionalmente pervio ad altezza testa per la hitbox del giocatore ($1.80\text{ m}$).
+- **Soluzione Definitiva**:
+  1. *Modello Voxel LadderBlock a 4 Pilastri*: In `AutoWalkPathfinder`, `LadderBlock` è reso passabile (`isPassable = true`), con spazio testa libero (`isClearHeadroom = true`), non calpestabile (`isStandable = false`) e trasparente per discese verticali (`isSolid = false`).
+  2. *Clearance Volumetrica Occhi in FallDetector*: In `isStandingOnDangerousEdge` e `findDangerAhead`, aggiunta la verifica su `stepPos.above()`. Se il blocco a quota occhi è solido o un ostacolo, la caduta orizzontale è fisicamente impossibile e la cella viene scartata a monte.
+  3. *Suite di Test*: 4 test D6 in `AutoWalkPathfinderTest` e 2 test D8 in `FallDetectorTraversalIntegrationTest` superati al 100%.
+
 
