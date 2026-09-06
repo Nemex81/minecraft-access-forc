@@ -1,4 +1,4 @@
-# Minecraft Access — Hub di Contesto Master (GEMINI.md — ASTRALIS v2.8.0)
+# Minecraft Access — Hub di Contesto Master (GEMINI.md — ASTRALIS v3.0.0)
 # Autore: Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA)
 # Target AI: Antigravity (Primario) & Codex/ChatGPT (Copilota Ausiliario)
 # Eredita da:
@@ -80,12 +80,13 @@ Questo file costituisce l'**Hub Centrale di Contesto e Governance** del progetto
     - Bonifica a 5 barriere: audit doppia chiave (codice + `sounds.json` + `lang/*.json` per identificatori dinamici protetti per default), dry-run lineare NVDA, quarantena, compilazione e rollback automatico a 1-click.
 
 12. **Protocollo 12 — Dialettica Ingegneristica & Auto-Revisione Avversariale (L'Inner Codex Pattern)**:
-    - Autonomia critica di Antigravity basata sui 5 Cancelli Inviolabili:
+    - Autonomia critica di Antigravity basata sui 6 Cancelli Inviolabili:
       * *Cancello 1 (Rifiuto Patching Euristico)*: Divieto di forzare budget A*, pesi o ritardi artificiali quando la navigazione fallisce per discontinuità voxel (es. calpestabilità su scale/ladders);
       * *Cancello 2 (Hardware Grounding)*: Probing GLFW puro per rilevare il takeover manuale del giocatore (`keySneak`), disaccoppiato dalle guardie reattive di salvataggio;
       * *Cancello 3 (Hitbox & Clearance Continua)*: Verifica clearance occhi/testa ($0.6 \times 1.8\text{ m}$) per prevenire falsi allarmi caduta su pareti verticali e calcolo forme di collisione sottili ($0.1875\text{ m}$ per scale a pioli);
       * *Cancello 4 (Named Contracts D0..DN / S1..SN)*: Scomposizione atomica delle modifiche complesse in contratti formali numerati;
-      * *Cancello 5 (Determinismo Headless)*: Test seams package-private per test unitari a 0 ms senza `Thread.sleep`.
+      * *Cancello 5 (Determinismo Headless)*: Test seams package-private per test unitari a 0 ms senza `Thread.sleep`;
+      * *Cancello 6 (Budget Token & Anti-Bloat Normativo)*: Rispetto dei canoni di token budget (file router $\le 250$ righe, zero duplicazioni di codice o testo nei prompt).
 
 ---
 
