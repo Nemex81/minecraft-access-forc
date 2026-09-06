@@ -10,6 +10,15 @@ Poiché il `README.md` pubblico e la documentazione del repository upstream rima
 
 ## 🚀 [v26.2-1.19.0-dev] — 2026-09-05 (Refactor Architetturale Cognitive Coordinator & Navigatore — Fasi 1, 2, 3, 4, 5 — Branch feat/cognitive-orchestrator)
 
+### 🌐 Governance & Multi-AI: Allineamento Ecosistema ASTRALIS v2.8.0 (Commit bac2c87b)
+- **Allineamento Rete a 4 Nodi & Profilo di Resilienza**:
+  - `GEMINI.md`: Aggiornato al framework ASTRALIS v2.8.0 con Profilo di Resilienza a 4 canali (VCS, Ponte Hot, Cold Archive, No-Git Resiliente), normalizzato senza righe vuote multiple (184 righe).
+  - `AGENTS.md`: Aggiornato ad ASTRALIS v2.8.0, integrato con la Rete a 4 Nodi (inclusa `docs/strategie/attive/`), vincoli di non-concorrenza con Antigravity e conformità ai 6 Canoni di Meta-Governance (54 righe).
+- **Integrazione della Guardia Ausiliaria On-Demand**:
+  - Il repository è pienamente conforme e monitorato dalla sentinella silente Multi-AI, garantendo perfetta omogeneità tra le direttive machine-level di GPT Codex (`%USERPROFILE%\.codex\AGENTS.md`) e le direttive locali del repository.
+
+
+
 ### 🚶 Fase 5: Navigatore, AutoWalk & Disaccoppiamento Cinematica/Pathfinding (Revisioni 5A, 5B, 5C, 5D, 5D.1 - 5D.7-R3)
 - **Disaccoppiamento a 3 Livelli (`MovementCoordinator`, `RouteNavigator`, `AutoWalkMotor`)**:
   - `MovementCoordinator`: arbitraggio eventi di navigazione verso `CognitiveCoordinator` e vocalizzazioni semantiche.
