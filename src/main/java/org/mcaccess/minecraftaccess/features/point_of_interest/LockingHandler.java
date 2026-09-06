@@ -96,7 +96,7 @@ public class LockingHandler implements BalmClientModule {
                     if (client.getCameraEntity().is(client.player)) {
                         relock();
                     } else {
-                        MainClass.narrate(I18n.get("minecraft_access.other.camera_locked"), true);
+                        narrateDirect(I18n.get("minecraft_access.other.camera_locked"), true);
                     }
                     return true;
                 })
@@ -237,14 +237,14 @@ public class LockingHandler implements BalmClientModule {
         if (!isStillValid) MainClass.poiManager.objectTracker.clearCurrentObject();
 
         if (narrate) {
-            MainClass.narrate(I18n.get("narrator.button.difficulty_lock.unlocked"), true);
+            narrateDirect(I18n.get("narrator.button.difficulty_lock.unlocked"), true);
         }
     }
 
     public void relock() {
         Object target = MainClass.poiManager.objectTracker.getCurrentObject();
         if (target == null) {
-            MainClass.narrate(I18n.get("minecraft_access.point_of_interest.not_selected"), true);
+            narrateDirect(I18n.get("minecraft_access.point_of_interest.not_selected"), true);
             return;
         }
         switch (target) {
@@ -273,7 +273,7 @@ public class LockingHandler implements BalmClientModule {
                         .append(NarrationUtils.narrateRelativePositionOfPlayerAnd(convertedPos));
             }
         }
-        MainClass.narrate(I18n.get("minecraft_access.point_of_interest.locking.locked", narration), true);
+        narrateDirect(I18n.get("minecraft_access.point_of_interest.locking.locked", narration), true);
         return true;
     }
 
@@ -348,7 +348,7 @@ public class LockingHandler implements BalmClientModule {
             narration.append(' ')
                     .append(NarrationUtils.narrateRelativePositionOfPlayerAnd(entity.blockPosition()));
         }
-        MainClass.narrate(I18n.get("minecraft_access.point_of_interest.locking.locked", narration), true);
+        narrateDirect(I18n.get("minecraft_access.point_of_interest.locking.locked", narration), true);
         return true;
     }
 
@@ -375,6 +375,12 @@ public class LockingHandler implements BalmClientModule {
             blockDescription.append(' ')
                     .append(NarrationUtils.narrateRelativePositionOfPlayerAnd(lockedOnBlockPos));
         }
-        MainClass.narrate(I18n.get("minecraft_access.point_of_interest.locking.locked", blockDescription), true);
+        narrateDirect(I18n.get("minecraft_access.point_of_interest.locking.locked", blockDescription), true);
+    }
+
+    private static void narrateDirect(String text, boolean interrupt) {
+        if (text == null || text.isBlank()) return;
+        org.mcaccess.minecraftaccess.features.cognitive.DirectInteractionShield.protectVoiceResponse(text);
+        MainClass.narrate(text, interrupt);
     }
 }

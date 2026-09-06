@@ -1,5 +1,15 @@
 # Piano Tecnico Implementativo: Navigatore & Marcia Automatica verso Target (Auto-Walk)
+- **Tipologia:** IMPLEMENTATIVO
+- **Autore:** Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA) & Antigravity
+- **Revisori:** Luca / Antigravity / GPT Codex
+- **Data e Ora:** 2026-09-03
+- **Stato Operativo:** [COMPLETATO E ARCHIVIATO — CONVALIDATO AL 100% DA LUCA IN-GAME]
+- **Incremento Versione Target (AVF):** [Tracciato nel Diario Modifiche Fork]
+- **Piani & Documenti Correlati:**
+  * [`docs/report/REGISTRO_REVISIONI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/REGISTRO_REVISIONI.md)
+- **Conformità ai 5 Cancelli (Protocollo 12):** Conforme al 100% (Rifiuto patching euristico, Hardware grounding, Hitbox continua, Contratti denominati, Determinismo headless a 0 ms)
 
+---
 ## 1. Obiettivo e Visione del Progetto
 
 Il presente documento definisce la strategia, l'architettura tecnica e i dettagli implementativi per il nuovo modulo di **Navigatore e Marcia Automatica verso Bersaglio (Auto-Walk Navigation System)** in **Minecraft Access 1.12.0** su **Minecraft Java 26.2** (Fabric/NeoForge).

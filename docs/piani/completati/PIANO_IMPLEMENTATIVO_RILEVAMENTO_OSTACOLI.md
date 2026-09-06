@@ -1,12 +1,28 @@
 # [COMPLETATO, COLLAUDATO E INTEGRATO] Piano Tecnico Implementativo: Rilevatore Ostacoli Frontali e Dislivelli (ObstacleDetector)
-
-> **STATO: COMPLETATO E COLLAUDATO CON SUCCESSO IN-GAME DA LUCA**  
-> **Data di Rilascio e Chiusura**: 26 Agosto 2026  
-> **Versione Target**: Minecraft Access 1.12.0 (Minecraft Java Edition 26.2)  
-> **Esito Collaudo**: Superato con successo in-game. Riconoscimento a contatto, dislivello assoluto $\Delta Y$ con auto-step a $0.6\text{ m}$, navigazione rive a pelo d'acqua, 4 stili di narrazione adattivi e tasto `Ctrl + Home` per `ObjectTracker`. Promosso nel backup ufficiale del PC Portatile.
+- **Tipologia:** IMPLEMENTATIVO
+- **Autore:** Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA) & Antigravity
+- **Revisori:** Luca / Antigravity / GPT Codex
+- **Data e Ora:** 2026-09-03
+- **Stato Operativo:** [COMPLETATO E ARCHIVIATO — CONVALIDATO AL 100% DA LUCA IN-GAME]
+- **Incremento Versione Target (AVF):** [Tracciato nel Diario Modifiche Fork]
+- **Piani & Documenti Correlati:**
+  * [`docs/report/REGISTRO_REVISIONI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/REGISTRO_REVISIONI.md)
+- **Conformità ai 5 Cancelli (Protocollo 12):** Conforme al 100% (Rifiuto patching euristico, Hardware grounding, Hitbox continua, Contratti denominati, Determinismo headless a 0 ms)
 
 ---
+## 🗺️ Sommario Operativo & Registro di Avanzamento (Checklist con Gating di Convalida)
 
+> **Regola Aurea di Avanzamento (Matrice a 3 Stati)**:
+> - `- [ ] [DA AVVIARE]`: Attività pianificata ma non ancora iniziata.
+> - `- [/] [IMPLEMENTATO — IN ATTESA DI CONVALIDA]`: Codice scritto o intervento completato, ma in attesa di test o collaudo formale (spunta parziale).
+> - `- [x] [CONVALIDATO CON SUCCESSO]`: Spunta definitiva concessa **esclusivamente POST-CONVALIDA** (approvazione di Luca per la 1A, test suite 100% verde per la 1B, collaudo pratico in-game di Luca per la Fase 2).
+
+- [x] **1. Descrizione del Problema e Obiettivi di Accessibilità** [CONVALIDATO CON SUCCESSO]
+- [x] **2. Modello Geometrico Voxel & Motore di Rilevamento Universale** [CONVALIDATO CON SUCCESSO]
+- [x] **3. Architettura dei File e Modifiche al Codice** [CONVALIDATO CON SUCCESSO]
+- [x] **4. Verifica e Ciclo di Vita** [CONVALIDATO CON SUCCESSO]
+
+---
 ## 1. Descrizione del Problema e Obiettivi di Accessibilità
 
 ### 1.1 Contesto e Necessità

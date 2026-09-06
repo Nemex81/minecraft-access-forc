@@ -1,5 +1,29 @@
 # Piano Tecnico Formale (Fase 1A): Risoluzione ClassCastException Ricettario e Annotazione @Excluded Config
+- **Tipologia:** CORRETTIVO
+- **Autore:** Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA) & Antigravity
+- **Revisori:** Luca / Antigravity / GPT Codex
+- **Data e Ora:** 2026-09-03
+- **Stato Operativo:** [COMPLETATO E ARCHIVIATO — CONVALIDATO AL 100% DA LUCA IN-GAME]
+- **Incremento Versione Target (AVF):** [Tracciato nel Diario Modifiche Fork]
+- **Piani & Documenti Correlati:**
+  * [`docs/report/REGISTRO_REVISIONI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/REGISTRO_REVISIONI.md)
+- **Conformità ai 5 Cancelli (Protocollo 12):** Conforme al 100% (Rifiuto patching euristico, Hardware grounding, Hitbox continua, Contratti denominati, Determinismo headless a 0 ms)
 
+---
+## 🗺️ Sommario Operativo & Registro di Avanzamento (Checklist con Gating di Convalida)
+
+> **Regola Aurea di Avanzamento (Matrice a 3 Stati)**:
+> - `- [ ] [DA AVVIARE]`: Attività pianificata ma non ancora iniziata.
+> - `- [/] [IMPLEMENTATO — IN ATTESA DI CONVALIDA]`: Codice scritto o intervento completato, ma in attesa di test o collaudo formale (spunta parziale).
+> - `- [x] [CONVALIDATO CON SUCCESSO]`: Spunta definitiva concessa **esclusivamente POST-CONVALIDA** (approvazione di Luca per la 1A, test suite 100% verde per la 1B, collaudo pratico in-game di Luca per la Fase 2).
+
+- [x] **📌 0. Stato del Piano** [CONVALIDATO CON SUCCESSO]
+- [x] **📌 1. Quadro di Riferimento & Diagnostica** [CONVALIDATO CON SUCCESSO]
+- [x] **🛡️ 2. Validazione Preventiva sui 7 Assi** [CONVALIDATO CON SUCCESSO]
+- [x] **🛠️ 3. Dettaglio delle Modifiche Previste (Sotto-Fase 1B)** [CONVALIDATO CON SUCCESSO]
+- [x] **🧪 4. Piano di Verifica e Collaudo** [CONVALIDATO CON SUCCESSO]
+
+---
 ## 📌 0. Stato del Piano
 # Stato: Completato con successo e collaudato in-game (Fase 3)
 

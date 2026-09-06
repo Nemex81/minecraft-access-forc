@@ -127,7 +127,8 @@ public class NarrateCrosshair implements BalmClientModule {
         boolean hasMoveInput = client.options.keyUp.isDown() || client.options.keyDown.isDown() || client.options.keyLeft.isDown() || client.options.keyRight.isDown();
         boolean inActiveMovement = isMoving || hasMoveInput;
 
-        CrosshairFeedbackManager.processCrosshairTick(rayCast, target, narration, distance, inActiveMovement);
+        String canonicalId = org.mcaccess.minecraftaccess.features.crosshair.CrosshairExplorationEventFactory.extractCanonicalId(rayCast, level);
+        CrosshairFeedbackManager.processCrosshairTick(rayCast, target, narration, distance, inActiveMovement, canonicalId);
     }
 
     private boolean isIgnored(Identifier identifier) {

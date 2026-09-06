@@ -48,11 +48,16 @@ public class MockMinecraftClientExtension implements BeforeTestExecutionCallback
      */
     private static void enableMCBootstrapFlag() {
         try {
-            var b = Bootstrap.class.getDeclaredField("isBootstrapped");
-            b.trySetAccessible();
-            b.set(null, true);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new RuntimeException(e);
+            net.minecraft.SharedConstants.tryDetectVersion();
+            Bootstrap.bootStrap();
+        } catch (Throwable t) {
+            try {
+                var b = Bootstrap.class.getDeclaredField("isBootstrapped");
+                b.trySetAccessible();
+                b.set(null, true);
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 

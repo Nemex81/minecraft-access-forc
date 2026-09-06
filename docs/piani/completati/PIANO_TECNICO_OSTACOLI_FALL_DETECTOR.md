@@ -1,5 +1,28 @@
 # Piano Tecnico Implementativo: Gestione Davanzali, Finestre Ermetiche & Struttura Completa Scale nel Fall Detector 2.4
+- **Tipologia:** IMPLEMENTATIVO
+- **Autore:** Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA) & Antigravity
+- **Revisori:** Luca / Antigravity / GPT Codex
+- **Data e Ora:** 2026-09-03
+- **Stato Operativo:** [COMPLETATO E ARCHIVIATO — CONVALIDATO AL 100% DA LUCA IN-GAME]
+- **Incremento Versione Target (AVF):** [Tracciato nel Diario Modifiche Fork]
+- **Piani & Documenti Correlati:**
+  * [`docs/report/REGISTRO_REVISIONI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/REGISTRO_REVISIONI.md)
+- **Conformità ai 5 Cancelli (Protocollo 12):** Conforme al 100% (Rifiuto patching euristico, Hardware grounding, Hitbox continua, Contratti denominati, Determinismo headless a 0 ms)
 
+---
+## 🗺️ Sommario Operativo & Registro di Avanzamento (Checklist con Gating di Convalida)
+
+> **Regola Aurea di Avanzamento (Matrice a 3 Stati)**:
+> - `- [ ] [DA AVVIARE]`: Attività pianificata ma non ancora iniziata.
+> - `- [/] [IMPLEMENTATO — IN ATTESA DI CONVALIDA]`: Codice scritto o intervento completato, ma in attesa di test o collaudo formale (spunta parziale).
+> - `- [x] [CONVALIDATO CON SUCCESSO]`: Spunta definitiva concessa **esclusivamente POST-CONVALIDA** (approvazione di Luca per la 1A, test suite 100% verde per la 1B, collaudo pratico in-game di Luca per la Fase 2).
+
+- [x] **1. Obiettivo e Visione del Progetto** [CONVALIDATO CON SUCCESSO]
+- [x] **2. Architettura Geometrica & Algoritmo Voxel** [CONVALIDATO CON SUCCESSO]
+- [x] **3. Specifiche di Modifica del Codice (`features/FallDetector.java`)** [CONVALIDATO CON SUCCESSO]
+- [x] **4. Scheda di Convalida dei Parametri** [CONVALIDATO CON SUCCESSO]
+
+---
 ## 1. Obiettivo e Visione del Progetto
 
 Il presente documento definisce l'architettura tecnica definitiva del **Rilevatore di Cadute (Fall Detector 2.4)** in **Minecraft Access 1.12.0** per **Minecraft Java 26.2** (Fabric/NeoForge, Java 25).

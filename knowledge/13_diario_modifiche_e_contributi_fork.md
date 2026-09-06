@@ -8,7 +8,100 @@
 Questo documento costituisce il **Diario Ufficiale delle Modifiche del Fork Personale in lingua Italiana**.
 Poiché il `README.md` pubblico e la documentazione del repository upstream rimangono in lingua Inglese per la community internazionale con la sola sezione `## [Unreleased]`, tutte le novità, i refactoring e i miglioramenti sviluppati sui nostri rami (`mymaster`, `dev`) vengono tracciati qui secondo la disciplina AVF (`V.A.R[.M]`).
 
-## 🚀 [v26.2-1.18.0] — 2026-09-02 (Feedback Dislivello Adattivo, Verbosità Faccia, Micro-Voxel Raymarch & Armonizzazione SSOT Mirino/Ostacoli — Versione Attuale)
+## 🚀 [v26.2-1.19.0-dev] — 2026-09-05 (Refactor Architetturale Cognitive Coordinator & Navigatore — Fasi 1, 2, 3, 4, 5 — Branch feat/cognitive-orchestrator)
+
+### 🌐 Governance & Multi-AI: Allineamento Ecosistema ASTRALIS v2.8.0 (Commit bac2c87b)
+- **Allineamento Rete a 4 Nodi & Profilo di Resilienza**:
+  - `GEMINI.md`: Aggiornato al framework ASTRALIS v2.8.0 con Profilo di Resilienza a 4 canali (VCS, Ponte Hot, Cold Archive, No-Git Resiliente), normalizzato senza righe vuote multiple (184 righe).
+  - `AGENTS.md`: Aggiornato ad ASTRALIS v2.8.0, integrato con la Rete a 4 Nodi (inclusa `docs/strategie/attive/`), vincoli di non-concorrenza con Antigravity e conformità ai 6 Canoni di Meta-Governance (54 righe).
+- **Integrazione della Guardia Ausiliaria On-Demand**:
+  - Il repository è pienamente conforme e monitorato dalla sentinella silente Multi-AI, garantendo perfetta omogeneità tra le direttive machine-level di GPT Codex (`%USERPROFILE%\.codex\AGENTS.md`) e le direttive locali del repository.
+
+
+
+### 🚶 Fase 5: Navigatore, AutoWalk & Disaccoppiamento Cinematica/Pathfinding (Revisioni 5A, 5B, 5C, 5D, 5D.1 - 5D.7-R3)
+- **Disaccoppiamento a 3 Livelli (`MovementCoordinator`, `RouteNavigator`, `AutoWalkMotor`)**:
+  - `MovementCoordinator`: arbitraggio eventi di navigazione verso `CognitiveCoordinator` e vocalizzazioni semantiche.
+  - `RouteNavigator`: ciclo ad anello chiuso su waypoints e percorso.
+  - `AutoWalkMotor`: esecuzione cinematica con smoothing yaw 20°/tick e controllo di trazione.
+- **Two-Pass Pathfinding Deterministico (`AutoWalkPathfinder`)**:
+  - Passaggio 1: calcolo rigoroso a porte aperte.
+  - Passaggio 2: fallback con attraversamento varchi chiusi a costo calibrato (penalità 5.0) e budget esteso a 5.000 nodi.
+- **Sblocco Visuale One-Shot su Varchi Chiusi (Rev 5D.2)**:
+  - Eliminato il lock della telecamera a 20 Hz davanti a porte chiuse: Luca mantiene il controllo libero al 100% della visuale da tastiera per esplorare la stanza durante l'attesa.
+- **Geometria Voxel Continua e Taglio Diagonali (Rev 5D.3)**:
+  - Scansione AABB nativa su collision box Minecraft per partenza da varchi chiusi.
+  - Divieto di taglio diagonale con compenetrazione di stipiti o soffitti bassi.
+- **Modello Voxel a 4 Pilastri per Scale a Pioli (`LadderBlock` — Rev 5D.7-R2)**:
+  - `isPassable` e `isClearHeadroom` permissive su `LadderBlock` (hitbox 0.6m transita nello spazio rimanente di 0.8125m).
+  - `isStandable` categoricamente falso per impedire cadute nel vuoto o salite spurie su botole/tetti.
+  - Trasparenza in `isSolid` per scansioni di discesa verticale e linea di vista.
+- **Disaccoppiamento Shift Hardware da Sneak di Sicurezza (Contratto D7 — Rev 5D.7-R3)**:
+  - Integrazione di `CrouchIntentProbe` / `RawCrouchIntentProvider` (GLFW nativo) in `AutoWalkMotor`.
+  - Lo sneak sintetico imposto da `SafetyMovementGuard` su cigli o curve a gomito non innesca più il falso annullamento della navigazione, consentendo l'avanzamento sicuro. Solo la pressione fisica reale dei tasti Shift da parte dell'utente interrompe l'AutoWalk.
+- **Clearance Volumetrica Occhi/Testa in FallDetector (Contratto D8 — Rev 5D.7-R3)**:
+  - Verifica dello spazio libero ad altezza occhi (`stepPos.above()`) nel presidio ciglio e nel look-ahead.
+  - Se il passaggio a quota testa è ostruito da blocchi solidi o barriere, la caduta è fisicamente impossibile e la cella viene scartata a monte, eliminando i falsi positivi di burrone sotto soffitti bassi, trombe scale o feritoie.
+- **Suite di Test Completa**: 299/299 test automatici verdi (`BUILD SUCCESSFUL in 43s`).
+- **Collaudo Empirico al 100%**: Validata con successo in-game da Luca su percorsi indoor/outdoor a lungo raggio (90m verso stalla cava in 27s) e salita/discesa ininterrotta alla torre Belvedere (81m in 21s).
+
+### 🧠 Fase 1: Nucleo Cognitivo Centralizzato Certificato (Commit e41c3f9d)
+- **Fast-Path Emergenze a 0 ms**: Elaborazione immediata per eventi `CRITICAL` con micro-burst accodato per eventi critici concorrenti nel medesimo tick (prevenzione troncamento prime sillabe salvavita).
+- **Arbitraggio Deterministico a Fine Tick**: Matrice gerarchica dinamica a 4 priorità (`CRITICAL`, `OPERATIONAL`, `CONTEXTUAL`, `PASSIVE`).
+- **Scudo Critico Vincolante (`criticalShieldUntil`)**: Soppressione totale dei messaggi non critici per 1500 ms con custodia sicura degli `OPERATIONAL` in `shortQueue` ed emissione differita automatica.
+- **Fusione Vocale Vincolata a I18N (`SpatialDirection`)**: Concatenazione ammessa unicamente con template I18N semantico autorizzato (`minecraft_access.cognitive.join_*`) e coerenza spaziale (stessa direzione o omni). Divieto assoluto di fallback hardcoded con punteggiatura fissa; differimento del secondario valido in coda breve.
+- **14 Test Unitari Deterministiche a 0 ms**: Suite completa con iniezione temporale controllata.
+
+### ⚙️ Fase 2: Configurazione Cloth Config & Facciata Retrocompatibile (Commit 88c3ddb7, 580c060a)
+- **Categoria Cloth Config `cognitiveCoordinator`**: Gestione unificata con binding runtime di `cognitiveCoordinatorEnabled`, `chainedNarrationEnabled` e normalizzazione `deduplicationWindowMs` (500–5000 ms). Rinvio trasparente delle opzioni non ancora attive (anti-pattern controlli decorativi per screen reader).
+- **Facciata `NarrationPriority` Trasparente**: Conservazione integrale delle 4 firme legacy, rimozione del blocco catch-all `Throwable` e introduzione di seam package-private dedicati (`scannerSuppressor`, `narrationConsumer`, `timeSupplier`) per test deterministici headless.
+- **Localizzazioni IT/EN Rigorosamente Alfabetiche**: 7 nuove chiavi configurative e tooltip conformi ai controlli CI.
+- **8 Nuovi Test Unitari di Fase 2**: Test mirati sulla facciata e sul binding configurativo (22 test cognitivi totali superati, intera suite del progetto verde in 21s).
+
+### 🛡️ Fase 3: Migrazione Pilota Dominio Sicurezza (3A FallDetector & 3B ObstacleDetector)
+- **Pilota 3A (`FallDetector`)**: Migrazione degli avvisi burrone e ciglio a `CognitiveEvent` con priorità `CRITICAL` / `OPERATIONAL`, preservando integra la logica di auto-sneak e il bypass per elementi arrampicabili e discesa assistita su scale a pioli (`Rev MC-26.8`).
+- **Pilota 3B (`ObstacleDetector`)**:
+  - **Factory Pura Eventi (`ObstacleSafetyEventFactory`)**: Normalizzazione angolare simmetrica in $[0^\circ, 360^\circ)$ su `SpatialDirection` (`FORWARD`, `RIGHT`, `BACK`, `LEFT`), generazione deterministica del `SoundCue` condiviso (`NOTE_BLOCK_PLING` 1.5f per `STEP_CLIMBABLE`, `NOTE_BLOCK_BASS` 0.6f per barriere) ed emissione con priorità `CONTEXTUAL` e TTL 2500 ms.
+  - **Compositore di Testo Puro (`ObstacleNarrationComposer`)**: Utility condivisa per la formattazione dei messaggi ostacoli con distanza e mirino, identica tra percorso cognitivo e percorso legacy per tutte le modalità (`FOUR_DIRECTIONS`, `EIGHT_DIRECTIONS`, `OMIT_FORWARD`, `OFF`).
+  - **Snapshot Contesto Mirino (`ObstacleNarrationContext`)**: Record immutabile per snapshot in sola lettura di target e distanza corrente.
+  - **Armonizzazione Mirino (`CrosshairFeedbackManager`)**: Finestra temporale di soppressione monotona `suppressAutomaticMovementFeedback(100ms)` con `Math.max` e assorbimento silenzioso (`absorbAutomaticMovementFeedbackIfSuppressed`), eliminando qualsiasi doppia voce o annuncio arretrato durante il movimento, senza toccare la reattività istantanea dei comandi manuali (`Alt+V`, `B`).
+  - **Doppio Percorso Deterministico**: Inoltro al `CognitiveCoordinator` se attivo, oppure bypass legacy con `legacyVoiceConsumer` e `legacyAudioConsumer` (con passaggio del `Level` locale e identico `SoundCue`).
+  - **Suite di Test & Collaudo In-Game**: 29 test specifici aggiunti (totale 185 test del progetto al 100% verdi) e validazione sul campo completata con successo (oltre 1h 12m di gioco continuo senza warning o errori).
+
+### 🎛️ Bonifica Anomalie GUI Post-Collaudo (Rev MC-26.9 & Rev MC-26.10 — Commit 6413d721)
+- **Rev MC-26.9 (NullPointer Guard & Anti-Ghost in `InventoryControls`)**:
+  - Predicato centrale `isActiveContainerScreen()` con verifica rigorosa di identità d'istanza (`activeScreen instanceof AbstractContainerScreen && activeScreen == currentScreen`).
+  - Sincronizzazione ciclo di vita in `tick()` prima del debounce dell'intervallo con `clearNavigationState()`.
+  - Guard a monte sui 18 handler Kuma e su tutti i metodi di navigazione/focus (`changeGroup`, `selectGroup`, `focusSlotItemAt`, `focusSlotItem`, `changeRecipeTab`, `changeCreativeInventoryTab`, `narrateRecipeInfo`).
+  - Guard a valle in entrambi gli overload di `moveToSlotItem` (`if (slotItem == null || !isActiveContainerScreen()) return;`).
+  - Inizializzazione difensiva di `interval` con `Interval.ms(150)` per disaccoppiamento totale dal ciclo di vita di `Config`.
+  - 6 nuovi test unitari in `InventoryControlsLifecycleTest` superati al 100%.
+- **Rev MC-26.10 (Soppressione Shift Sneak Hijack in GUI)**:
+  - `RawCrouchIntentProvider` mantenuto puro al 100% come lettore hardware GLFW (Single Responsibility).
+  - Metodo `suspendForGui()` in `SafetyMovementGuard` con ownership token rigoroso: rilascia il crouch con `applyIfChanged(false)` solo se `systemOverrideActive` era vero, senza toccare la postura manuale né interrogare il probe hardware.
+  - Routing prioritario in `FallDetector.tick`: se `client.gui.screen() != null`, esecuzione immediata di `resetSafetyStateForGui()` (che invoca `suspendForGui()`), disaccoppiata dal reset ordinario nel mondo (`resetSafetyState()`).
+  - Revoca immediata di `currentAllowedDescentId` e ripresa trasparente dello Shift manuale una volta chiusa la schermata GUI.
+  - 6 nuovi test unitari in `SafetyMovementGuardTest` superati al 100%.
+
+### 🎯 Fase 4: Migrazione Esplorazione, Mirino Automatico & POI Cognitivi (Commit b05ea8f9, 80c8d66d, 4bc424c3)
+- **Sotto-Fase 4A — Gate di Rollout & Reset di Sessione (Commit `b05ea8f9`)**:
+  - Introduzione del gate condizionale `explorationCognitiveRoutingEnabled` (disattivato per default): l'instradamento cognitivo dell'esplorazione si attiva solo se sia l'impostazione globale `cognitiveCoordinatorEnabled` sia questo gate sono attivi.
+  - Reset deterministico di sessione: azzeramento atomico di buffer, scudi e memorie brevi del `CognitiveCoordinator` su cambio dimensione, morte e respawn del giocatore.
+- **Sotto-Fase 4B — Routing Cognitivo Mirino Automatico & ID Canonici (Commit `80c8d66d`)**:
+  - Creazione di `CrosshairExplorationEventFactory`: costruzione pura di record `CognitiveEvent` con dominio `EXPLORATION` e priorità `PASSIVE` per il feed automatico in movimento.
+  - Identità canonica immutabile basata su tipo blocco/entità e bucket di coordinate voxel; deduplicazione deterministica per prevenire il chatter vocale durante il cammino.
+  - Fallback trasparente: conservazione integrale del percorso legacy diretto con `interrupt=true` in caso di coordinatore disattivato.
+- **Sotto-Fase 4C — DirectInteractionShield per Comandi Espliciti & Radar POI (Commit `4bc424c3`)**:
+  - Implementazione di `DirectInteractionShield`: scudo temporale dedicato per le interazioni esplicite dell'utente.
+  - Protezione a latenza zero per comandi manuali: lettura mirino su tasto `B`, centramento/livellamento visuale orizzonte e comandi radar/lock POI (`X`).
+  - Gli annunci espliciti mantengono priorità assoluta e vocalizzazione immediata con `interrupt=true`, impedendo qualsiasi soppressione o ritardo da parte del feed passivo del mirino.
+- **Suite di Test & Collaudo In-Game**:
+  - 23 nuovi test unitari deterministici (suite totale portata a 208 test JUnit verdi, 0 failure, 0 error).
+  - Collaudo empirico sul campo con NVDA superato al 100%: navigazione fluida tra blocchi, tracciamento dinamico e abbattimento mucca con radar POI, raccolta drop (`Cuoio`, `Manzo crudo`), rotazioni di sguardo istantanee e zero eccezioni di runtime.
+
+---
+
+## 🚀 [v26.2-1.18.0] — 2026-09-02 (Feedback Dislivello Adattivo, Verbosità Faccia, Micro-Voxel Raymarch & Armonizzazione SSOT Mirino/Ostacoli)
 
 ### 🌟 Feedback Dislivello Adattivo & Altezza Cubi (Rev MC-29.0)
 - **4 Modalità Operative (`SoundCueMode`)**: `SOUND_AND_VOICE`, `SOUND_ONLY`, `VOICE_ONLY`, `OFF` configurabili in Cloth Config.

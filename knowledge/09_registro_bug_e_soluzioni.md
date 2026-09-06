@@ -366,3 +366,147 @@ Questo registro documenta i problemi tecnici complessi risolti nel tempo, preser
   3. *Dispacciamento Diretto al Manager*: Invocazione diretta `CrosshairFeedbackManager.onObstacleDetected(result, msg, relAngle)` da `ObstacleDetector.java`, garantendo sincronia totale al 100% tra suono OpenAL e voce narrante.
   4. *Armonizzazione Colonna Unica $XZ$*: Merge deterministico degli annunci frontali se $X_{\text{target}} == X_{\text{ostacolo}} \land Z_{\text{target}} == Z_{\text{ostacolo}}$ (*"Davanti: Ostacolo di Pannello di vetro, a 3 blocchi"*), preservando la frase multidirezionale per i lati e il retro (*"A destra: Salita su Fornace. Davanti: Assi di quercia, a 2 blocchi"*).
   5. *Podometro Parete*: Preservata la ripetizione continua metro per metro dei blocchi in cammino per mantenere il sonar di velocità e cadenza per il non vedente.
+
+---
+
+### Record 29 — Cloud Locking di OneDrive sulla Cartella `build/` e Risoluzione Atomica PowerShell (Refactor Cognitivo)
+- **Data**: 2026-09-03
+- **Moduli Coinvolti**: Gradle Build Pipeline (`build/`, Loom, Daemon)
+- **Sintomi**: Errore `java.io.IOException: Cannot snapshot ... ar_sa.json: not a regular file` oppure `Unable to delete directory 'build'` durante `.\gradlew.bat --no-daemon clean test`.
+- **Causa Radice**: Il motore di sincronizzazione cloud di OneDrive o Dropbox aggancia i file di classe o di lingua estratti in `build/` durante l'indicizzazione in background, bloccandone l'eliminazione da parte del plugin Gradle JavaBase/LifecycleBase.
+- **Soluzione Definitiva**:
+  1. Arrestare eventuali processi orfani o daemon con `.\gradlew.bat --stop`.
+  2. Eseguire l'eliminazione forzata nativa PowerShell bypassando i lock ereditari di processo:
+     `Remove-Item -Recurse -Force build -ErrorAction SilentlyContinue; Test-Path build`
+  3. Rilanciare la build Gradle con il flag obbligatorio `--no-daemon`.
+
+---
+
+### Record 30 — Risoluzione Traduzioni in Minecraft 1.21.x / Balm (`I18n.get` vs `I18n.exists`)
+- **Data**: 2026-09-03
+- **Moduli Coinvolti**: `CognitiveCoordinator.java`, Fabric Loom, Mojang `I18n`
+- **Sintomi**: Errore del compilatore Java `error: cannot find symbol: method exists(String) in class I18n`.
+- **Causa Radice**: A differenza di vecchie versioni Forge o wrapper custom, la classe `net.minecraft.client.resources.language.I18n` in 1.21.x / 26.2 non espone un metodo `exists(String)`.
+- **Soluzione Definitiva**:
+  Adottare il pattern canonico Mojang/Balm per verificare se una chiave è effettivamente tradotta:
+  ```java
+  String translated = I18n.get(key, args);
+  if (!translated.equals(key)) {
+      return translated; // Traduzione valida trovata
+  }
+  return null; // Chiave inesistente o non tradotta
+  ```
+
+---
+
+### Record 31 — Iniezione Temporale e Determinismo nei Test Unitari con TTL (`currentTimeMillis` vs `now`)
+- **Data**: 2026-09-03
+- **Moduli Coinvolti**: `CognitiveCoordinatorTest.java`, `CognitiveCoordinator.java`, `CognitiveEvent.java`
+- **Sintomi**: Fallimento di test con asserzioni su eventi differiti o scaduti (`isExpired`), dove l'evento non veniva scartato o non veniva recapitato come previsto.
+- **Causa Radice**: Le factory creavano istanze di evento con `timestamp = System.currentTimeMillis()`, mentre il test simulava il flusso del tempo con un valore virtuale arbitrario (es. `now = 10000`). La differenza `now - timestamp` produceva numeri negativi enormi ($\approx -1.7 \times 10^{12}$), rendendo i controlli di scadenza matematicamente insensati.
+- **Soluzione Definitiva**:
+  1. Sovraccaricare i metodi di sottomissione per accettare un timestamp esplicito: `submitEvent(@NotNull CognitiveEvent event, long now)`.
+  2. Esporre costruttori/factory con timestamp parametrico per i test.
+  3. Nei test unitari con clock virtuale, usare sempre lo stesso riferimento `now` per la creazione dell'evento e per il `flushTick(now)`.
+
+---
+
+### Record 32 — Anti-Pattern `catch (Throwable ignored)` e Preservazione Trasparenza Errori (`NarrationPriority`)
+- **Data**: 2026-09-03
+- **Moduli Coinvolti**: `NarrationPriority.java`, `NarrationPriorityFacadeTest.java`
+- **Sintomi**: Inserimento di blocchi `try/catch (Throwable ignored)` attorno alle chiamate degli scanner legacy per evitare `NullPointerException` durante l'esecuzione dei test headless privi di ambiente Minecraft.
+- **Causa Radice**: Catturare `Throwable` nei metodi di produzione silenzia errori reali della JVM e bug di inizializzazione a runtime in gioco, rischiando di lasciare scanner attivi a insaputa del sistema e introducendo chatter vocale intermittente non diagnosticabile.
+- **Soluzione Definitiva**:
+  1. I componenti di produzione devono eseguire chiamate dirette senza mascherare le eccezioni, preservando la piena trasparenza degli errori.
+  2. L'isolamento per i test headless deve avvenire esclusivamente tramite **seam package-private dedicati** (es. `scannerSuppressor = duration -> ...`), iniettati in `@BeforeEach` e ripristinati in `@AfterEach`.
+
+---
+
+### Record 33 — Soppressione Mirino in Movimento & Pattern "Silent Commit" (`CrosshairFeedbackManager`)
+- **Data**: 2026-09-04
+- **Moduli Coinvolti**: `CrosshairFeedbackManager.java`, `ObstacleDetector.java`, `CrosshairMovementSuppressionTest.java`
+- **Sintomi**: Durante il cammino verso un ostacolo, alla scadenza della finestra di soppressione vocale dell'ostacolo (100 ms), il mirino automatico vocalizzava in ritardo una mutazione di bersaglio o distanza superata, generando una doppia voce o un annuncio fuorviante a fermata avvenuta.
+- **Causa Radice**: La semplice soppressione temporale della chiamata a `MainClass.narrate` non aggiornava lo stato interno del mirino (`currentTarget`, `currentNarration`, `currentDistance`). Alla riattivazione del tick, il mirino rilevava la divergenza di stato accumulata durante la soppressione e la interpretava come una nuova mutazione valida da annunciare.
+- **Soluzione Definitiva**:
+  1. Introdotto il metodo `absorbAutomaticMovementFeedbackIfSuppressed(...)` in `CrosshairFeedbackManager`: se il giocatore è in movimento attivo ed è all'interno della finestra di soppressione, il mirino esegue il **Silent Commit** aggiornando atomicamente `currentTarget`, `currentNarration` e `currentDistance` prima di uscire con `return true`.
+  2. La finestra temporale `suppressAutomaticMovementFeedback(durationMillis)` è aggiornata in modo **monotono** con `Math.max(automaticMovementSuppressedUntil, clock.getAsLong() + durationMillis)` per evitare accorciamenti accidentali da chiamate concorrenti.
+  3. I comandi manuali dell'utente (`Alt+V`, tasto `B`) non passano dal blocco automatico e rispondono sempre a 0 ms.
+
+---
+
+### Record 34 — Disaccoppiamento tra Geometria Cognitiva (`SpatialDirection`) e Formulazione Linguistica (`ObstacleNarrationComposer`)
+- **Data**: 2026-09-04
+- **Moduli Coinvolti**: `ObstacleSafetyEventFactory.java`, `ObstacleNarrationComposer.java`, `ObstacleDetector.java`
+- **Sintomi**: In modalità di scansione non standard (`EIGHT_DIRECTIONS`, `OMIT_FORWARD`, `OFF`), l'evento cognitivo tentava di dedurre se l'ostacolo fosse frontale controllando `SpatialDirection == FORWARD`, alterando la stringa e divergendo dalla composizione legacy.
+- **Causa Radice**: Sovraccarico di responsabilità: `SpatialDirection` è un enum di dominio spaziale per l'arbitraggio prioritario e l'audio 3D posizionale, non un parser linguistico.
+- **Soluzione Definitiva**:
+  1. `SpatialDirection` resta un metadato cognitivo puro per il record immutabile `CognitiveEvent`.
+  2. La formattazione del testo per NVDA è interamente delegata alla utility pura `ObstacleNarrationComposer.composeFinalNarration(rawMsg, distance, crosshairContext)`, che opera direttamente sul messaggio `rawMsg` prodotto dalla modalità di scansione selezionata dall'utente.
+  3. Parità garantita al 100% per tutte le 4 modalità direzionali e piena testabilità headless deterministica senza dipendenza da client grafico.
+
+---
+
+### Record 35 — NullPointerException su `currentScreen`, Ghost Narration e Lifecycle Guard in `InventoryControls` (Rev MC-26.9)
+- **Data**: 2026-09-04
+- **Moduli Coinvolti**: `InventoryControls.java`, `InventoryControlsLifecycleTest.java`, Kuma API
+- **Sintomi**: Eccezione non gestita nei log a runtime durante la navigazione della griglia inventario: `java.lang.NullPointerException: Cannot invoke "org.mcaccess.minecraftaccess.mixin.AbstractContainerScreenAccessor.getLeftPos()" because "this.currentScreen" is null`, accompagnata da movimento cursoriale spurio o narrazioni di slot orfani durante transizioni rapide verso il menu di pausa (`Esc`).
+- **Causa Radice**: Race condition durante la rapida chiusura o transizione della GUI, dove la pressione di un tasto gestito da Kuma inoltrava l'evento a `moveToSlotItem` quando `this.currentScreen` era nullo o non più allineato con la schermata attiva del client. Inoltre, l'inizializzazione di `Interval.defaultDelay()` dereferenziava prematuramente `Config.getInstance()`, rischiando crash in test headless.
+- **Soluzione Definitiva**:
+  1. *Predicato Centrale*: Creato `isActiveContainerScreen()` che verifica `screen instanceof AbstractContainerScreen && screen == this.currentScreen`.
+  2. *Guard a Monte*: Applicato `if (!isActiveContainerScreen()) return;` su tutti i 18 handler Kuma e su tutti i metodi di navigazione (`changeGroup`, `selectGroup`, `focusSlotItem`, `focusSlotItemAt`, `changeRecipeTab`, `changeCreativeInventoryTab`, `narrateRecipeInfo`).
+  3. *Guard a Valle*: In entrambi gli overload di `moveToSlotItem(slotItem)`, inserito `if (slotItem == null || !isActiveContainerScreen()) return;`.
+  4. *Sincronizzazione Ciclo di Vita*: In `tick()`, se `!isActiveContainerScreen()`, invocato immediatamente `clearNavigationState()` prima del debounce dell'intervallo.
+  5. *Decoupling Configurazione*: Inizializzazione del campo `interval` con `Interval.ms(150)` costante di fallback, con aggiornamento dinamico in `loadConfig()`.
+  6. *Suite di Test*: 6 test unitari dedicati in `InventoryControlsLifecycleTest.java` superati al 100%.
+
+---
+
+### Record 36 — Soppressione Shift Sneak Hijack nelle GUI, Ownership Token di Sicurezza e Flag Gradle `--no-watch-fs` (Rev MC-26.10)
+- **Data**: 2026-09-04
+- **Moduli Coinvolti**: `SafetyMovementGuard.java`, `FallDetector.java`, `RawCrouchIntentProvider.java`, `SafetyMovementGuardTest.java`
+- **Sintomi**: All'interno di qualsiasi interfaccia grafica (inventario, banco di lavoro, fornace), la pressione del tasto `Shift` per combinazioni di tasti (`Shift+C`, `Shift+K`, quick-move `Shift+È`) provocava l'attivazione dell'accovacciamento nel mondo di gioco con emissione ripetuta del rintocco audio della pala (`SHOVEL_FLATTEN`). Inoltre, in fase di compilazione e test, Gradle falliva su OneDrive con `IOException: Cannot snapshot ... not a regular file`.
+- **Causa Radice**:
+  1. Durante la presenza di una GUI a schermo, `FallDetector` eseguiva il reset ordinario revocando il controllo, ma `SafetyMovementGuard` continuava a campionare il probe hardware GLFW di Shift ad ogni tick, interpretando la pressione del tasto per l'interfaccia come intenzione di accovacciarsi nel mondo.
+  2. Un tentativo ingenuo di resettare `applyEffectiveCrouch(false)` basato su `lastAppliedCrouch == true` avrebbe soppresso anche lo Shift manuale legittimo del giocatore iniziato prima di aprire il menu.
+  3. Su Windows con OneDrive, la scansione del filesystem di Gradle si bloccava sui metadati dei reparse point cloud.
+- **Soluzione Definitiva**:
+  1. *Preservazione Single Responsibility del Probe*: `RawCrouchIntentProvider` resta un lettore hardware puro e non viene inquinato con controlli GUI.
+  2. *Ownership Token di Sicurezza*: In `SafetyMovementGuard`, introdotto `suspendForGui()` che verifica `systemOverrideActive`. Rilascia la postura del giocatore (`applyIfChanged(false)`) **esclusivamente** se l'accovacciamento era stato imposto dal sistema di sicurezza; se l'accovacciamento appartiene alla volontà manuale dell'utente, non viene toccato.
+  3. *Routing Esplicito GUI in FallDetector*: In testa a `FallDetector.tick()`, se `client.gui.screen() != null`, viene invocato `resetSafetyStateForGui()` (che chiama `suspendForGui()`) e si esce immediatamente con `return`, revocando anche `currentAllowedDescentId`.
+  4. *Resilienza Gradle Cloud*: Adozione del flag obbligatorio `.\gradlew.bat --no-daemon --no-watch-fs test`, eliminando qualsiasi crash con i file system cloud.
+  5. *Suite di Test*: 6 nuovi test unitari in `SafetyMovementGuardTest.java` per verificare ownership, trasparenza GLFW, idempotenza e ripresa manuale al 100%.
+
+---
+
+### Record 37 — Cortocircuito di Priorità tra AutoWalk Human Takeover e Sneak Salvavita Sintetico (Rev MC-26.11 / 5D.7-R3)
+- **Data**: 2026-09-05
+- **Moduli Coinvolti**: `AutoWalkMotor.java`, `CrouchIntentProbe.java`, `RawCrouchIntentProvider.java`, `AutoWalkMotorTest.java`
+- **Sintomi**: Durante la marcia automatica (AutoWalk), l'arrivo su pianerottoli intermedi stretti con tromba delle scale adiacente o curve a gomito provocava l'annullamento improvviso della navigazione con la notifica vocale *"Navigazione automatica annullata"* e due suoni di accovacciamento (`crouch`). Raddrizzando lo sguardo e premendo di nuovo `Alt+W`, la navigazione riprendeva senza problemi.
+- **Causa Radice**:
+  1. Nelle curve a gomito, `shouldBrakeForTurn` disattivava temporaneamente l'avanzamento per orientare lo Yaw. Da fermo, il `FallDetector` rilevava il dislivello della tromba scale laterale e attivava legittimamente l'auto-sneak di salvataggio via `SafetyMovementGuard.engageFallProtection()`.
+  2. `MinecraftSneakOverridePort` scriveva `client.options.keyShift.setDown(true)`.
+  3. Nel tick di `AutoWalkMotor`, il controllo di `Human Takeover` risiedeva al Passo 1 (prima di watchdog e correzione rotta) e verificava `client.options.keyShift.isDown()`.
+  4. Poiché Minecraft riporta `true` anche per lo sneak sintetico del sistema di sicurezza, il motore interpretava l'intervento salvavita come una pressione manuale del tasto Shift da parte dell'utente, annullando la marcia.
+- **Soluzione Definitiva**:
+  1. *Iniezione CrouchIntentProbe in AutoWalkMotor*: Adozione dell'interfaccia `CrouchIntentProbe` con implementazione predefinita `RawCrouchIntentProvider`.
+  2. *Disaccoppiamento HW/SW*: Riformulazione di `isManualMovementKeyPressed`: il controllo dello Shift interroga unicamente il probe hardware GLFW (`crouchIntent.pressed()`), che legge i tasti fisici reali della tastiera.
+  3. *Immunità dallo Sneak Sintetico*: L'accovacciamento di sicurezza generato da `SafetyMovementGuard` viene ignorato dal takeover, consentendo all'AutoWalk di superare i cigli a velocità protetta senza annullare la navigazione.
+  4. *Suite di Test*: 4 nuovi test unitari in `AutoWalkMotorTest.java` superati al 100%.
+
+---
+
+### Record 38 — Clearance Volumetrica Occhi in FallDetector e Topologia LadderBlock a 4 Pilastri (Rev MC-26.11 / 5D.7-R3)
+- **Data**: 2026-09-05
+- **Moduli Coinvolti**: `FallDetector.java`, `AutoWalkPathfinder.java`, `FallDetectorTraversalIntegrationTest.java`, `AutoWalkPathfinderTest.java`
+- **Sintomi**:
+  1. Il pathfinder falliva sistematicamente con `Nessun percorso sicuro` (`NO_PATH`) nel superare rampe di scale a gomito a L con presenza di scale a pioli a parete (`LadderBlock`) sull'angolo esterno.
+  2. Il `FallDetector` innescava allarmi e frenate ingiustificate in corrispondenza di trombe scale o corridoi dove il dislivello inferiore era sormontato da pareti o soffitti bassi.
+- **Causa Radice**:
+  1. In Minecraft 1.21.x / Fabric, `LadderBlock` ha una bounding box di 3 pixel aderente al muro. `AutoWalkPathfinder` controllava se la collision shape era vuota; non essendolo, trattava la scala a parete come un blocco di pietra compatto da 1 metro pieno, spezzando la connettività del grafo A*.
+  2. `FallDetector` controllava unicamente la profondità di caduta sul piano dei piedi ($Y$ e $Y-1$), senza verificare se il passaggio fosse dimensionalmente pervio ad altezza testa per la hitbox del giocatore ($1.80\text{ m}$).
+- **Soluzione Definitiva**:
+  1. *Modello Voxel LadderBlock a 4 Pilastri*: In `AutoWalkPathfinder`, `LadderBlock` è reso passabile (`isPassable = true`), con spazio testa libero (`isClearHeadroom = true`), non calpestabile (`isStandable = false`) e trasparente per discese verticali (`isSolid = false`).
+  2. *Clearance Volumetrica Occhi in FallDetector*: In `isStandingOnDangerousEdge` e `findDangerAhead`, aggiunta la verifica su `stepPos.above()`. Se il blocco a quota occhi è solido o un ostacolo, la caduta orizzontale è fisicamente impossibile e la cella viene scartata a monte.
+  3. *Suite di Test*: 4 test D6 in `AutoWalkPathfinderTest` e 2 test D8 in `FallDetectorTraversalIntegrationTest` superati al 100%.
+
+

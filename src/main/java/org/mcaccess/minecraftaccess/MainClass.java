@@ -171,6 +171,7 @@ public final class MainClass {
         registrars.registerModule(new org.mcaccess.minecraftaccess.features.help.QuickHelpKey());
         registrars.registerModule(survivalResourceTracker = new org.mcaccess.minecraftaccess.features.survival_tracker.SurvivalResourceTracker());
         registrars.registerModule(directionalPathScanner = new org.mcaccess.minecraftaccess.features.directional_path_scanner.DirectionalPathScanner());
+        registrars.registerModule(new org.mcaccess.minecraftaccess.features.cognitive.CognitiveCoordinator());
     }
 
 

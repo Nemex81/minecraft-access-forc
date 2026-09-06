@@ -86,3 +86,10 @@ Per scambiare dati tecnici, specifiche di codice e coordinamento senza ingombrar
 - **Mittente**: ChatGPT.
 - **Contenuto**: Specifiche logiche, indicazioni per nuovi moduli o istruzioni per Antigravity.
 - **Azione di Antigravity**: Consultare sempre l'ultimo record di questo file all'inizio di una sessione.
+
+### C. Linee Guida Operative per la Sinergia Luca - ChatGPT - Antigravity (Peer-Review Cross-AI)
+Quando Luca condivide valutazioni, analisi o piani redatti da ChatGPT:
+1. **Accoglienza Costruttiva e Spirito Critico**: Antigravity analizza le considerazioni di ChatGPT senza pregiudizi, valutandone il rigore logico e verificando l'assenza di allucinazioni rispetto alle API reali di Minecraft 26.2.
+2. **Integrazione delle Invarianti**: Se ChatGPT evidenzia falle sottili (es. confusione tra ownership di sistema e input manuale dell'utente), Antigravity adotta tempestivamente la correzione concettuale aggiornando il piano o il codice.
+3. **Complementarità Funzionale**: ChatGPT eccelle nella modellazione astratta, formulazione di invarianti formali e revisione logica; Antigravity eccelle nella conoscenza viva del repository, generazione di test unitari concreti, compilazione, deploy e telemetria live nei log.
+

@@ -32,14 +32,35 @@ Poiché lo sviluppo e il collaudo avvengono con uno sviluppatore e giocatore tot
    - Un piano tecnico NON viene archiviato automaticamente dopo la compilazione o il deploy di prova.
    - Viene spostato nella sottocartella `docs\piani\completati\` **esclusivamente dopo che Luca ha effettuato il test manuale in-game di persona aprendo il gioco e confermato formalmente il superamento del collaudo**.
 4. **Organizzazione Documentale in `docs/`**:
-   - `docs\piani\attivi\`: Piani tecnici attivi.
-   - `docs\piani\completati\`: Piani tecnici collaudati e integrati.
-   - `docs\strategie\`: Documenti di strategia, architettura e metodologie.
-   - `docs\report\`: Relazioni diagnostiche, audit e collaudi.
+   - `docs\strategie\attive\`: Strategie logico-cognitive in elaborazione o discussione (Fase 0).
+   - `docs\strategie\archiviate\`: Strategie convalidate, convertite in piani tecnici o assimilate.
+   - `docs\piani\attivi\`: Piani tecnici attivi in stesura o lavorazione (Fase 1).
+   - `docs\piani\completati\`: Piani tecnici collaudati con successo e integrati.
+   - `docs\report\`: Registro Revisioni attivo (`REGISTRO_REVISIONI.md`) e storico (`ARCHIVIO_REVISIONI.md`).
+   - `docs\report\archivio\`: Report di sessione e telemetria storici normalizzati URCP.
    - `docs\idee\`: Promemoria, spunti futuri e meccaniche da esplorare.
    - `docs\manuali\`: Manuali d'uso e guide comandi in-game.
 
+5. **I 7 Archetipi dei Piani Tecnici ASTRALIS (v2.7.1)**:
+   - Ogni piano tecnico appartiene a uno dei 7 archetipi deterministici:
+     * **Implementativo** *(Feature & New Modules)*: nuove funzionalità, architettura a layer, contratti denominati (D0..DN, S1..SN) e localizzazione I18N ordinata;
+     * **Correttivo** *(Bug Fix & PRAPI Mirato)*: evidenza empirica, Root Cause Analysis (RCA) senza pezze euristiche (Cancello 1), test di riproduzione e patch chirurgica;
+     * **Refactoring** *(Architectural Grooming)*: pulizia debito tecnico, disaccoppiamento interfacce/DIP e garanzia di **invarianza assoluta del comportamento esterno**;
+     * **Bonifica & Pulizia** *(Dead Code Purge)*: eliminazione codice/asset morti con la Strategia a 5 Barriere di Sicurezza (Protocollo 11);
+     * **Migrazione & Aggiornamento Stack** *(Runtime Upgrade)*: avanzamento versione runtime/motore (Java, Minecraft, Fabric, Python), breaking changes e compatibilità binaria;
+     * **Convalida, Hardening & Suite Test** *(QA Engineering)*: test seams headless a 0 ms (Cancello 5), eliminazione `Thread.sleep` e matrici di stress-test;
+     * **Esplorativo & Fattibilità** *(Spike & PoC)*: benchmark preventivi su incertezze complesse (es. analisi chunk MCA) e dossier decisionale per il piano implementativo.
+
+6. **Intestazione a 8 Campi & Sommario Operativo con Gating di Convalida**:
+   - *Intestazione Standard*: Titolo con ID, Tipologia, Autore, Revisori, Data e Ora, Stato Operativo (`[IN STESURA 1A]`, `[APPROVATO 1B]`, `[COMPLETATO]`), Target Version AVF, Documenti Correlati e Audit dei 5 Cancelli (Protocollo 12);
+   - *Sommario Operativo & Registro di Avanzamento (Checklist)*: collocato subito in cima come Sezione 0 per consentire l'atterraggio istantaneo con tasto `H` in NVDA;
+   - *La Matrice a 3 Stati per NVDA*:
+     * `- [ ] [DA AVVIARE]`: Attività pianificata ma non iniziata;
+     * `- [/] [IMPLEMENTATO — IN ATTESA DI CONVALIDA]`: Spunta parziale. Codice scritto e compilato, ma **NON ancora convalidato**;
+     * `- [x] [CONVALIDATO CON SUCCESSO]`: Spunta definitiva concessa **esclusivamente POST-CONVALIDA formale** (approvazione di Luca per la 1A, test suite 100% verde per la 1B, collaudo empirico in-game di Luca per la Fase 2).
+
 ---
+
 
 ## 3. Protocollo di Analisi Preliminare & Prevenzione Falsi Positivi
 
@@ -115,7 +136,7 @@ La conclusione di ogni sessione implementativa segue tassativamente una sequenza
    - Aggiornamento di `README.md`, `keybindings.md` e `features.md` (se introdotti nuovi comandi/tasti).
 7. **Aggiornamento Backup PC Portatile**: Solo dopo il collaudo manuale positivo di Luca, promozione del JAR stabile nella cartella di backup:
    `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft archivio backup\minecraft backup\Minecraft 26.2 Access 1.12.0 pc portatile\minecraft\mods\`
-8. **Archiviazione del Piano Tecnico**: Spostamento del file del piano nella cartella `docs\piani\completati\` con marcatura `[COMPLETATO, COLLAUDATO E INTEGRATO]`.
+8. **Archiviazione del Piano Tecnico & Report di Sessione**: Spostamento del file del piano nella cartella `docs\piani\completati\` con marcatura `[COMPLETATO, COLLAUDATO E INTEGRATO]`, migrazione automatica del Report di Sessione in `docs/report/archivio/` e aggiornamento deterministico dei link in `docs/report/ARCHIVIO_REVISIONI.md`.
 9. **Commit & Push su `origin/mymaster`**.
 10. **Chiusura con Domanda Ponte Obbligatoria**:
     > *"Vuoi che avviamo ora la sessione formale di Auto-Apprendimento (Fase 4) per elaborare la bozza dettagliata delle regole e aggiornare le schede di conoscenza e governance?"*
@@ -137,3 +158,119 @@ Quando durante la Fase 2 (Collaudo manuale in-game di Luca) emergono micro-anoma
    - Richiesta formale di conferma a Luca prima di applicare modifiche ai sorgenti;
 4. **Implementazione Chirurgica, Build & Re-Deploy (Sotto-Fase 1B)**:
    - Applicazione modifiche, esecuzione test JUnit, compilazione con `--no-daemon` su JDK 25 e deploy automatico nelle istanze attive prima del nuovo collaudo.
+
+---
+
+## 9. Protocollo di Convalida Empirica a Tre Fonti (Triangolazione Test - Telemetria - Persistenza)
+
+Nelle verifiche e nei rapporti di chiusura di fase (Fase 2 / Fase 3), la convalida di un sistema percettivo e motorio complesso non può basarsi unicamente su test automatici o su resoconti orali generici. Si applica la **Triangolazione a Tre Fonti Indipendenti**:
+
+1. **Fonte 1: Test Automatici Headless Deterministiche (Verifica di Coerenza Logica)**:
+   - Suite completa JUnit a 0 ms con mock e clock simulato;
+   - Certificazione dei contratti API, scadenze TTL, code di priorità e assenza di eccezioni.
+2. **Fonte 2: Telemetria Live & Log di Runtime (`latest.log`) (Verifica di Percezione Sensoriale)**:
+   - Monitoraggio delle stringhe effettivamente inviate al driver Tolk/SAPI e narrate a schermo;
+   - Verifica di `interrupt: true` vs `interrupt: false`, assenza di soppressioni indebite, timing tra eventi e verifica di coesistenza armonica tra domini (Sicurezza vs Esplorazione vs Movimento).
+3. **Fonte 3: Persistenza su Disco del Mondo di Gioco (Verifica degli Effetti Reali)**:
+   - Ispezione dei file di salvataggio (`level.dat`, `region/*.mca`, `players/stats/<uuid>.json`);
+   - Riscontro incrociato tra ciò che è stato vocalizzato ed eseguito (es. mob agganciato e abbattuto, danni inflitti, drop raccolti nell'inventario e blocchi estratti) e i dati registrati deterministicamente dall'engine di Minecraft.
+
+Solo la convergenza simultanea e coerente di tutte e tre le fonti sancisce il **superamento definitivo della Fase 2** e autorizza il passaggio alla Fase 3 (Chiusura Tecnica).
+
+
+---
+
+## 10. Audit Avversariale Preventivo sui 5 Cancelli Inviolabili (Protocollo 12 — Inner Codex Pattern)
+
+In ogni Piano Tecnico Formale (Sotto-Fase 1A), prima di richiedere la convalida a Luca, Antigravity include obbligatoriamente la sezione di **Audit Avversariale Preventivo**, valutando la soluzione contro il "peggior scenario possibile" secondo i 5 Cancelli Inviolabili:
+
+1. **Cancello 1 — Rifiuto Patching Euristico (Invariante Voxel vs Sintomo Numerico)**:
+   - *Verifica*: La proposta affronta la causa radice topologica (arco mancante nel grafo, calpestabilità errata di gradini/scale a pioli, orientamento voxel) o tenta di mascherare il problema aumentando budget di espansione A*, allungando delay di tick o iniettando mosse di fuga fisse?
+2. **Cancello 2 — Purezza dell'Intento Fisico nei Sistemi Ibridi (Hardware Grounding)**:
+   - *Verifica*: Nei sistemi cooperativi human-in-the-loop, la logica di takeover o decisione utente interroga direttamente l'hardware reale (GLFW probe raw input) o legge stati logici simulati (`isSneaking()`, `isDown()`) alterati da guardie concorrenti?
+3. **Cancello 3 — Integrità Hitbox e Volumetria Continua**:
+   - *Verifica*: L'algoritmo tratta il giocatore come prisma 3D continuo ($0.6 \times 1.8\text{ m}$) verificando clearance continua ad altezza occhi/testa (`stepPos.above()`) e collision shapes reali dei blocchi sottili (scale a pioli, porte, lastre), evitando semplificazioni a punti discreti?
+4. **Cancello 4 — Disciplina dei Contratti Denominati e Chiusi (Named Contract Pattern)**:
+   - *Verifica*: L'intervento è suddiviso in contratti formali atomici e numerati ($D_0 \dots D_N$, $S_1 \dots S_N$) con precondizioni, postcondizioni, complessità e invarianti anti-regressione esplicite?
+5. **Cancello 5 — Determinismo Headless e Time-Seams a 0 ms**:
+   - *Verifica*: Tutti i comportamenti dipendenti dal tempo (finestre di soppressione, debouncing vocale, cooldown, TTL) espongono package-private time seams per consentire test unitari JUnit istantanei a 0 ms senza `Thread.sleep`?
+
+---
+
+## 11. Standard Ufficiale del Report di Sessione & Telemetria (Pointer Hub & Cronologia Inversa)
+
+Quando durante la Fase 2 (Deploy e Collaudo) o il Protocollo 5 (PRAPI) si apre o si aggiorna la sessione di lavoro, Antigravity redige e mantiene il file `docs/report/REPORT_SESSIONE_[NOME_TASK].md` secondo le seguenti regole vincolanti:
+
+1. **Intestazione Rigida a 7 Campi**:
+   - Subito sotto il titolo del file, il report deve obbligatoriamente contenere:
+     * `- **Autore**: [Chi ha redatto il rapporto: Antigravity / Luca / GPT Codex]`
+     * `- **Revisori**: [Chi partecipa alla revisione/collaudo: Luca, GPT Codex, Antigravity]`
+     * `- **Data e Ora**: YYYY-MM-DD HH:mm`
+     * `- **Stato dell'Implementazione**: [IN PIANIFICAZIONE] | [IN TELEMETRIA / ATTIVO] | [IN REVISIONE PRAPI] | [COMPLETATO E COLLAUDATO]`
+     * `- **Obiettivo/i**: [Elenco sintetico obiettivi]`
+     * `- **Piani & Strategie Correlate**: [Link ai piani in docs/piani/ e strategie]`
+     * `- **Breve Descrizione**: [2-3 righe dense di contesto]`
+2. **Flusso Decisionale a Cronologia Inversa (Newest First per NVDA)**:
+   - Ogni nuovo aggiornamento, messaggio, osservazione di collaudo o proposta di ChatGPT/Codex deve essere inserito **tassativamente in cima alla sezione messaggi** (subito sotto l'intestazione `## 💬 Flusso Decisioni & Revisioni`).
+   - Questo garantisce che all'apertura del file con screen reader NVDA, premendo una sola volta il tasto rapido intestazione (`H`), il cursore atterri all'istante sull'ultimo stato e decisione presa, eliminando lo scrolling verso il fondo.
+3. **Standard Atomico del Messaggio ad Alto Segnale (4 Campi Obbligatori)**:
+   - Ciascuna voce di messaggio si struttura su 4 campi:
+     * `Contesto / Sintomo`: massimo 2 righe su cosa accade in-game o nel test;
+     * `Causa Radice Concettuale`: il perché geometrico o architetturale;
+     * `Approccio & Strategia Risolutiva`: la soluzione formulata ad elenchi compatti "Se... Allora", zero codice prolisso;
+     * `Puntatori & Riferimenti Estesi`: elenco link `file:///...` a classi, righe di `latest.log`, test seams e ID di revisione `Rev XX.Y`.
+   - **Divieto Assoluto di File Bloat**: vietato incollare dump grezzi di log o metodi di codice interi (> 3 righe).
+4. **Sinergia a Puntatore Diretto RRU -> Report (DRY Pattern)**:
+   - Le singole note nel `REGISTRO_REVISIONI.md` mantengono una sintesi estrema e puntano direttamente al Report di Sessione (`Report di Sessione & File Correlati`).
+   - Il Report è l'**unica fonte di verità (Single Source of Truth)** per l'elenco dei file, delle righe modificate e dei log coinvolti, evitando doppie registrazioni disallineate.
+5. **Archiviazione Automatica a Zero Residui (Fase 3 - Protocollo 6)**:
+   - A collaudo manuale positivo di Luca, durante la Chiusura Tecnica (Fase 3), il file `docs/report/REPORT_SESSIONE_[TASK].md` viene **spostato automaticamente** in `docs/report/archivio/REPORT_SESSIONE_[TASK].md`.
+   - Contestualmente, nella voce migrata in `ARCHIVIO_REVISIONI.md`, il link viene aggiornato automaticamente per puntare al percorso di archivio del report, garantendo zero link rotti e memoria storica perenne.
+
+6. **Procedura di Ingestione In-Flight & Archiviazione Report (Standard URCP — ASTRALIS v2.7.1)**:
+   - *Finalità*: Garantire che ogni report (proveniente dall'esterno come ChatGPT/Codex, tester, o note di collaudo) sia uniformato allo standard ASTRALIS v2.7.1 sia durante la fase attiva (post-analisi) sia prima dell'archiviazione finale.
+   - *Ingestione In-Flight Post-Analisi (Protocollo 4)*:
+     * Non appena un documento o report esterno viene sottoposto ad analisi/valutazione, Antigravity formula le proprie osservazioni e contestualmente propone a Luca la conversione URCP;
+     * Con il via libera di Luca (*"procedi"*), il file viene subito convertito ed è pronto per essere fruito linearmente con NVDA e collegato al `REGISTRO_REVISIONI.md`.
+   - *Procedura a 4 Passi (URCP)*:
+     1. **Normalizzazione Intestazione a 7 Campi**: Estrazione e popolamento dei campi obbligatori (`Autore`, `Revisori`, `Data e Ora`, `Stato dell'Implementazione`, `Obiettivo/i`, `Piani & Strategie Correlate`, `Breve Descrizione`);
+     2. **Inversione Cronologica per NVDA**: Posizionamento dell'esito/stato conclusivo in alto e delle sezioni storiche in basso per fruizione vocale immediata;
+     3. **Denoising & Puntatori Intelligenti (DRY Pattern)**: Condensazione dei dump di log estesi con puntamento a `latest.log`, mantenendo intatta la conoscenza geometrica, le coordinate e le disamine architetturali;
+     4. **Bonifica Tecnica**: Rimozione del BOM UTF-8 (`\ufeff`), formattazione corretta dei link markdown `file:///` e normalizzazione dei marcatori.
+
+---
+
+## 12. Standard Ufficiale delle Strategie Logico-Cognitive (UPCS — ASTRALIS v2.7.2)
+
+Le **Strategie Logico-Cognitive** costituiscono il **quarto pilastro fondamentale** dell'ecosistema ASTRALIS. Si collocano nella **Fase 0 (Pre-Pianificazione)** e governano il *modello mentale*, la *dialettica ingegneristica* e il *congelamento delle invarianti logico-geometriche ed acustiche* prima della stesura del Piano Tecnico Formale.
+
+1. **Disaccoppiamento Epistemologico dei 4 Pilastri**:
+   - *Strategia Cognitiva (Fase 0)*: **Proattiva e Deliberativa** (*Il Perché e il Modello Mentale*). Esplora lo spazio delle soluzioni e congela le invarianti;
+   - *Piano Tecnico (Fase 1)*: **Esecutivo e Deterministico** (*Il Cosa e il Dove*). Dettaglia contratti D0..DN, classi, metodi, test seams e checklist a 3 stati;
+   - *Report di Sessione & Telemetria (Fase 2)*: **Retrospettivo ed Empirico** (*L'Evidenza sul Campo*). Registra i log in-game, i dialoghi operativi a cronologia inversa e il collaudo di Luca;
+   - *Registro Revisioni RRU (Fase 3)*: **Sintesi Forense e Memoria Perenne** (*La Tracciabilità nel Tempo*). Mantiene lo stato aperto/chiuso delle anomalie e punta bi-direzionalmente a Strategie, Piani e Report.
+
+2. **I 7 Archetipi Strategici Formali**:
+   - *Concettuale-Implementativa (Ideazione & Feature Design)*: traduce esigenze o idee in modelli concettuali stabili;
+   - *Diagnostico-Correttiva (Anomalie Ostiche & Root-Cause Discovery)*: analizza bug sistemici concorrenti smentendo ipotesi e isolando l'invariante infranta;
+   - *Refactoring Strutturale & Disaccoppiamento (Architectural Restructuring)*: separa layer accoppiati ed elimina God Objects preservando l'invarianza del comportamento;
+   - *Euristico-Cognitiva per Screen Reader & Audio 3D (UX Audio & NVDA)*: progetta la gerarchia vocale, anti-chatter, ducking sonoro e volumi di sicurezza (0.7f - 0.8f);
+   - *Dialettica Avversariale & Convergenza Multi-AI (Inner Codex Pattern)*: dirime divergenze tra copiloti AI sui 5 Cancelli Inviolabili;
+   - *Integrazione & Interoperabilità di Runtime*: isola librerie terze (Cloth Config, Loom, Fabric API) e gestisce fallback difensivi;
+   - *Bonifica, Migrazione & Deprecazione (Zero-Debt Clean-up)*: governa la rimozione sicura di codice morto o formati dati con strategia a 5 barriere.
+
+3. **Intestazione Istituzionale & Checklist di Convergenza di Fase 0**:
+   - Ogni strategia adotta il template `STRATEGIA_COGNITIVA_TEMPLATE.md` con intestazione formale e Registro di Convergenza con checklist a 3 stati:
+     * `- [ ] [DA DISCUTERE / APERTO]`: Tesi in esplorazione;
+     * `- [/] [CONVERGENZA PRELIMINARE — IN ATTESA DI CONVALIDA]`: Modello logico delineato, in attesa di decisione sovrana di Luca;
+     * `- [x] [CONVALIDATO — INVARIANTE CONGELATA]`: Principio approvato, pronto per la conversione in Piano Tecnico.
+
+4. **La Formula di Conversione (Da Strategia a Piano Tecnico)**:
+   - Quando Luca convalida la Strategia (*"approvo la strategia, convertiamola in piano"*):
+     * Le *Invarianti Inviolabili* della Strategia diventano i *Named Contracts D0..DN* del Piano Tecnico;
+     * Le *Classi e i Layer* individuati diventano i target di modifica della Sotto-Fase 1B;
+     * Gli *Scenari di Stress* discussi diventano la *Matrice di Simulazione a 3 Livelli* del Piano;
+     * Lo stato della strategia passa a `[CONVERTITA IN PIANO TECNICO]`.
+
+5. **Archiviazione Automatica a Zero Residui (Protocollo 6)**:
+   - A collaudo positivo di Luca, la strategia migra simultaneamente da `docs/strategie/attive/` a `docs/strategie/archiviate/` con stato `[ARCHIVIATA CON SUCCESSO]`, aggiornando tutti i puntatori incrociati nel Piano e nel Registro Revisioni.

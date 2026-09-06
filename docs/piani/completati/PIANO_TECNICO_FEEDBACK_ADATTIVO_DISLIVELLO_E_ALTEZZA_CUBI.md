@@ -1,12 +1,28 @@
-﻿# Piano Tecnico Formale: Dispacciamento Diretto Ostacoli (onObstacleDetected), Micro-Voxel Raymarch (0.05m) & Armonizzazione XZ (Rev MC-29.0 - Rev MC-29.6)
-# Autore: Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA) & Antigravity
-# Data: 2026-09-02
-# Ambito: Repository `minecraft-access`
-# Incremento Versione Target (AVF): Minor Revision (v26.2-1.18.0)
-# Stato: In Fase di Validazione Preventiva (Gating Semantico Sotto-Fase 1A)
+# # Piano Tecnico Formale: Dispacciamento Diretto Ostacoli (onObstacleDetected), Micro-Voxel Raymarch (0.05m) & Armonizzazione XZ (Rev MC-29.0 - Rev MC-29.6)
+- **Tipologia:** IMPLEMENTATIVO
+- **Autore:** Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA) & Antigravity
+- **Revisori:** Luca / Antigravity / GPT Codex
+- **Data e Ora:** 2026-09-03
+- **Stato Operativo:** [COMPLETATO E ARCHIVIATO — CONVALIDATO AL 100% DA LUCA IN-GAME]
+- **Incremento Versione Target (AVF):** [Tracciato nel Diario Modifiche Fork]
+- **Piani & Documenti Correlati:**
+  * [`docs/report/REGISTRO_REVISIONI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/REGISTRO_REVISIONI.md)
+- **Conformità ai 5 Cancelli (Protocollo 12):** Conforme al 100% (Rifiuto patching euristico, Hardware grounding, Hitbox continua, Contratti denominati, Determinismo headless a 0 ms)
 
 ---
+## 🗺️ Sommario Operativo & Registro di Avanzamento (Checklist con Gating di Convalida)
 
+> **Regola Aurea di Avanzamento (Matrice a 3 Stati)**:
+> - `- [ ] [DA AVVIARE]`: Attività pianificata ma non ancora iniziata.
+> - `- [/] [IMPLEMENTATO — IN ATTESA DI CONVALIDA]`: Codice scritto o intervento completato, ma in attesa di test o collaudo formale (spunta parziale).
+> - `- [x] [CONVALIDATO CON SUCCESSO]`: Spunta definitiva concessa **esclusivamente POST-CONVALIDA** (approvazione di Luca per la 1A, test suite 100% verde per la 1B, collaudo pratico in-game di Luca per la Fase 2).
+
+- [x] **📌 1. Quadro di Riferimento & Sintesi Funzionale** [CONVALIDATO CON SUCCESSO]
+- [x] **🏛️ 2. Dettagli Architetturali della Sezione Aggiornata (Rev MC-29.6)** [CONVALIDATO CON SUCCESSO]
+- [x] **🛡️ 3. Protocollo di Validazione Preventiva (7 Assi di Qualità)** [CONVALIDATO CON SUCCESSO]
+- [x] **🧪 4. Matrice di Simulazione a 3 Livelli (Rev MC-29.6)** [CONVALIDATO CON SUCCESSO]
+
+---
 ## 📌 1. Quadro di Riferimento & Sintesi Funzionale
 
 Il presente Piano Tecnico consolida l'architettura sensoriale di `minecraft-access` rendendo l'emissione vocale degli ostacoli autonoma e istantanea:

@@ -72,7 +72,7 @@ Il ciclo di vita di ogni modifica o nuova funzionalità segue tassativamente que
   - **Pre-Flight Environment Check**: Verifica preliminare dell'ambiente (JDK 25, `$env:JAVA_HOME` e flag `--no-daemon` per prevenire blocchi di OneDrive).
   - **Modifiche al Codice**: Editing chirurgico e conformità I18N con JSON ordinati.
   - **Verifica Compilazione**: Esecuzione di `.\gradlew.bat --no-daemon compileJava compileTestJava`.
-  - **Esecuzione Test Unitari**: Esecuzione della suite JUnit (`.\gradlew.bat --no-daemon test`).
+  - **Esecuzione Test Unitari**: Esecuzione della suite JUnit (`.\gradlew.bat --no-daemon --no-watch-fs test`).
   - **Confezionamento Pacchetto**: Creazione del JAR (`.\gradlew.bat --no-daemon shadowJar`).
 
 ### Fase 2: Deploy Provvisorio & Collaudo Manuale In-Game di Luca
@@ -89,8 +89,10 @@ Il ciclo di vita di ogni modifica o nuova funzionalità segue tassativamente que
      - Aggiornamento di `README.md`, `keybindings.md` e `features.md` se sono stati aggiunti tasti o comandi.
   3. **Promozione Backup JAR Stabile**:
      - Copia del JAR stabile in: `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft archivio backup\minecraft backup\Minecraft 26.2 Access 1.12.0 pc portatile\minecraft\mods\`
-  4. **Archiviazione Piano Tecnico**:
+  4. **Archiviazione Piano Tecnico & Report di Sessione**:
      - Spostamento del piano in `docs/piani/completati/` con marcatura `[COMPLETATO E COLLAUDATO]`.
+     - Spostamento del Report di Sessione da `docs/report/REPORT_SESSIONE_[TASK].md` a `docs/report/archivio/REPORT_SESSIONE_[TASK].md`.
+     - Migrazione delle revisioni collaudate in `docs/report/ARCHIVIO_REVISIONI.md` con aggiornamento deterministico del link di archivio.
   5. **Commit & Push su `origin/mymaster`**.
 
 ### Fase 4: Auto-Apprendimento Continuo a 3 Dimensioni & Protocollo della Domanda Ponte
@@ -135,3 +137,106 @@ Nei sistemi operativi Windows, molti comandi nativi di PowerShell (come `Set-Con
    ```powershell
    [System.IO.File]::WriteAllText($filePath, $content, (New-Object System.Text.UTF8Encoding($false)))
    ```
+
+---
+
+## 7. Checkpoint di Auto-Apprendimento Inter-Fase nei Grandi Refactor Multi-Fase
+
+Nelle epiche architetturali di grandi dimensioni o nei refactoring sistemici complessi suddivisi in molteplici fasi sequenziali (es. Fase 1, Fase 2, Fase 3A, Fase 3B...):
+
+1. **Il Principio di Consolidamento Frattale**:
+   - Attendere il completamento dell'intera epica rischia di diluire o dimenticare scoperte tecniche fondamentali e impedisce alle fasi successive di beneficiare immediatamente delle lezioni apprese.
+2. **Trigger di Attivazione Proattivo**:
+   - *Se* una fase intermedia viene verificata, corretta e convalidata con successo (con relativo commit di checkpoint);
+   - *E* durante tale fase sono emersi imprevisti significativi, standard di framework, pattern di test o lezioni metodologiche ad alto valore formativo;
+   - *Allora* Antigravity propone esplicitamente a Luca un **Checkpoint di Auto-Apprendimento Inter-Fase** prima di passare alla pianificazione della sotto-fase successiva.
+3. **Effetto Operativo**:
+   - La conoscenza viene immediatamente formalizzata nelle schede `knowledge/` e nel Master Hub, rendendola attiva e vincolante per proteggere l'esecuzione delle fasi immediatamente successive della medesima epica.
+
+---
+
+## 8. Il Triangolo Virtuoso di Pair Programming Multi-AI (Luca - ChatGPT - Antigravity)
+
+Nelle sfide di refactoring complesse, diagnosi ostiche o revisioni post-collaudo, l'ambiente adotta il modello del **Triangolo Virtuoso Multi-AI**:
+
+1. **Ruolo Sovrano di Luca (Lead Architect & Product Owner)**:
+   - Definisce le priorità, descrive la percezione sensoriale e funzionale con screen reader NVDA, e mantiene l'autorità decisionale assoluta su ogni linea di codice.
+2. **Ruolo di ChatGPT (Senior Reviewer & Architectural Analyst)**:
+   - Fornisce analisi strategiche ad alto livello, identifica falle logiche sottili, redige o rifinisce bozze di piani tecnici, e sfida le assunzioni di Antigravity per prevenire regressioni.
+3. **Ruolo di Antigravity (Resident Pair Programmer & Esecutore Locale)**:
+   - Custode del contesto reale della macchina di Luca, del filesystem e della storia Git.
+   - Traduce i piani in codice chirurgico, implementa test unitari a 0 ms con mock headless, esegue compilazione/deploy, e monitora la telemetria dal vivo nei log di gioco (`latest.log`).
+4. **Sinergia Costruttiva**:
+   - Antigravity e ChatGPT non entrano mai in competizione: Antigravity accoglie e integra le osservazioni di ChatGPT con spirito critico ingegneristico, verificandone la compatibilità con le API reali di Minecraft 26.2 e Fabric.
+
+---
+
+## 9. Delimitazione Negativa Esplicita ("Cosa NON Toccare") & Invarianti nei Piani
+
+Per evitare scope creep e refactoring collaterali dannosi, ogni Piano Tecnico ASTRALIS (Sotto-Fase 1A) deve obbligatoriamente includere:
+
+1. **Sezione di Delimitazione Negativa**:
+   - Elenco esplicito e tassativo dei file, classi, contratti o package che **è fatto assoluto divieto di toccare** durante l'implementazione (es. driver di basso livello o moduli appena convalidati).
+2. **Matrice delle Invarianti Anti-Regressione**:
+   - Dichiarazione formale delle proprietà di sistema che devono rimanere rigorosamente invariate prima, durante e dopo la modifica (es. inviolabilità della postura manuale dell'utente).
+
+---
+
+## 10. Resilienza ai File System Virtuali Cloud (OneDrive Reparse Points)
+
+Sui sistemi Windows dove i repository risiedono all'interno di cartelle sincronizzate con OneDrive o servizi cloud affini:
+
+1. **Problematica**:
+   - I meccanismi di file-system watching continuo dei build tool (es. daemon o watcher di Gradle) possono generare eccezioni di tipo `IOException: Cannot snapshot ... not a regular file` causate dai metadati dei reparse point cloud.
+2. **Soluzione Obbligatoria**:
+   - Eseguire i comandi Gradle associando tassativamente il flag `--no-watch-fs` oltre a `--no-daemon`:
+   ```powershell
+   .\gradlew.bat --no-daemon --no-watch-fs test
+   ```
+
+---
+
+## 11. Gestione a Buffer delle Revisioni Intermedie (Buffer Pre-Release)
+
+Nelle roadmap strutturate a fasi sequenziali (per epiche architetturali e grandi refactor):
+1. **Rischio di Frammentazione Inter-Fase**:
+   - Se durante il completamento o il collaudo di una fase intermedia emergono revisioni di supporto, richieste di interruttori diagnostici o micro-affinamenti non bloccanti, forzarne l'implementazione immediata come "casello obbligatorio" prima del modulo successivo spezza il ritmo operativo e ritarda la migrazione delle feature core.
+2. **Standard di Resequencing a Buffer**:
+   - Tutte le voci aperte nel Registro Revisioni che non costituiscono bug bloccanti per i moduli immediatamente successivi vengono accodate e differite formalmente **a valle del completamento delle feature strutturali core**, aggregandosi in un **buffer di rifinitura preparatorio posizionato tra la conclusione dell'implementazione e l'avvio del collaudo globale finale**.
+   - Questo garantisce continuità concettuale tra le fasi di sviluppo dei moduli principali e concentra le rifiniture ergonomiche e gli strumenti diagnostici in una sessione organica e mirata prima della chiusura definitiva dell'epica e del merge.
+
+---
+
+## 12. Principio del Rasoio Funzionale Anti-Sovraingegnerizzazione (Verifica Empirica Pre-Refactor)
+
+Prima di proporre refactoring architetturali, nuove factory o macchine a stati su moduli complessi:
+1. **La Supremazia del Comportamento Empirico Reale**:
+   - L'eleganza teorica del codice non deve mai prevaricare un comportamento in-game già collaudato e funzionante con screen reader NVDA.
+   - *Se* un'anomalia storica (es. lo sticky-sneak sulle scale a pioli) risulta già risolta nella pratica, con attraversamento fluido e avviso corretto (*"discesa sicura"*);
+   - *Allora* è fatto divieto assoluto di riaprire refactoring speculativi sul modulo coinvolto (`FallDetector`, `TraversalSafetyAnalyzer`, `SafetyMovementGuard`).
+2. **Isolamento dell'Ambito Minimo Efficace**:
+   - L'intervento tecnico deve circoscriversi rigorosamente al solo requisito minimo necessario (es. l'interruttore diagnostico volatile), congelando i componenti funzionanti ed evitando sovraingegnerizzazioni che introducono regressioni silenziose. Eventuali micro-imprecisioni di contorno (es. taratura soglie) vanno registrate come revisioni differite a bassa priorità.
+
+---
+
+## 13. Protocollo 12 — Dialettica Ingegneristica & Auto-Revisione Avversariale (L'Inner Codex Pattern)
+
+Quando Antigravity analizza, progetta o implementa soluzioni complesse nel dominio di Minecraft Access (sia in tandem con ChatGPT/Codex che in sessioni di lavoro solitarie):
+
+1. **L'Interiorizzazione del Senior Reviewer (Inner Codex Pattern)**:
+   - Antigravity non si limita ad accettare la prima soluzione tecnicamente valida o a proporre patch contingenti.
+   - Prima di considerare conclusa la Sotto-Fase 1A (Pianificazione) o la Sotto-Fase 1B (Esecuzione), attiva internamente il proprio ruolo avversariale, ponendosi come il più severo revisore della propria architettura.
+2. **I 5 Cancelli Inviolabili di Minecraft Access**:
+   - **Cancello 1 — Rifiuto del Patching Euristico (Invariante Voxel vs Sintomo Numerico)**:
+     * Divieto assoluto di ritoccare parametri arbitrari (budget di nodi in A*, ritardi nei tick di sblocco, pesi euristici, mosse di fuga fisse a coordinate relative) quando un percorso fallisce o il giocatore si incastra.
+     * *Se* una ricerca o un automatismo fallisce prematuramente -> *Allora* la causa è una disconnessione topologica (arco mancante, calpestabilità errata di gradini/scale, o blocco solidale non gestito) che va risolta strutturalmente nel grafo.
+   - **Cancello 2 — Purezza dell'Intento Fisico (Hardware Grounding)**:
+     * Nei sistemi cooperativi in cui convivono automatismi di salvataggio (es. `FallDetector` / `SafetyMovementGuard` con sneak forzato) e comandi del giocatore, il takeover o l'intento umano non deve mai essere desunto da stati logici simulati (`isSneaking()`, `keySneak.isDown()`).
+     * *Se* si deve determinare se il giocatore vuole prendere il controllo -> *Allora* si interroga il probe hardware puro (polling GLFW per il tasto fisico `keySneak`), preservando la purezza dell'intento motorio dell'utente.
+   - **Cancello 3 — Integrità della Hitbox e Volumetria Continua**:
+     * Il giocatore è un prisma 3D continuo ($0.6 \times 1.8\text{ m}$), non un punto discreto $1 \times 1$.
+     * *Se* si valuta la transitabilità o il rischio caduta -> *Allora* si verifica obbligatoriamente la clearance verticale continua (altezza occhi/testa `stepPos.above()`) e l'ingombro reale delle forme di collisione sottili (scale a pioli $0.1875\text{ m}$, porte $0.1875\text{ m}$, staccionate).
+   - **Cancello 4 — Disciplina dei Contratti Denominati e Chiusi (Named Contract Pattern)**:
+     * Ogni piano o revisione si struttura in contratti numerati atomici (D0..DN per le decisioni di design, S1..SN per i moduli software), ciascuno con precondizioni, postcondizioni, budget di complessità e invarianti anti-regressione.
+   - **Cancello 5 — Determinismo Headless e Time-Seam a 0 ms**:
+     * Logiche temporali (finestre di soppressione, debouncing vocale, TTL) devono esporre delegate o time-seam package-private per consentire suite di test JUnit deterministiche, istantanee a 0 ms e prive di `Thread.sleep`.

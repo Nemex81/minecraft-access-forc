@@ -2,7 +2,6 @@ package org.mcaccess.minecraftaccess.features.autowalk;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import lombok.Getter;
-import net.blay09.mods.balm.client.platform.event.callback.ClientLifecycleCallback;
 import net.blay09.mods.balm.client.platform.module.BalmClientModule;
 import net.blay09.mods.kuma.api.InputBinding;
 import net.blay09.mods.kuma.api.KeyModifier;
@@ -20,7 +19,10 @@ import org.mcaccess.minecraftaccess.utils.events.ClientPlayingTick;
 
 public class AutoWalkManager implements BalmClientModule {
     @Getter
-    private final AutoWalkController controller = new AutoWalkController();
+    private final MovementCoordinator movementCoordinator = new MovementCoordinator();
+
+    @Getter
+    private final AutoWalkController controller = new AutoWalkController(movementCoordinator);
 
     @Override
     public @NotNull Identifier getId() {
@@ -29,13 +31,13 @@ public class AutoWalkManager implements BalmClientModule {
 
     @Override
     public void initialize() {
+        MovementCoordinator.registerLifecycleHooks(movementCoordinator.getMotor(), movementCoordinator.getNavigator());
+
         ClientPlayingTick.AFTER.register((client, player, level) -> {
             if (player instanceof LocalPlayer localPlayer) {
-                controller.tick(client, localPlayer, level);
+                movementCoordinator.tick(client, localPlayer, level);
             }
         });
-
-        ClientLifecycleCallback.ConnectedToServer.EVENT.register(_ -> controller.cancel(false, null));
 
         Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "other.auto_walk"))
                 .withDefault(InputBinding.key(InputConstants.KEY_W, KeyModifiers.of(KeyModifier.ALT)))
@@ -57,12 +59,12 @@ public class AutoWalkManager implements BalmClientModule {
     }
 
     public void toggleSprint() {
-        controller.toggleSprint();
+        movementCoordinator.toggleSprint();
     }
 
     public void toggleAutoWalk() {
-        if (controller.isActive()) {
-            controller.cancel(true, null);
+        if (movementCoordinator.isActive()) {
+            movementCoordinator.cancel(true, null);
         } else {
             if (!Config.getInstance().autoWalk.enabled) {
                 MainClass.narrate(I18n.get("minecraft_access.autowalk.disabled"), true);
@@ -80,7 +82,7 @@ public class AutoWalkManager implements BalmClientModule {
                 return;
             }
 
-            controller.start(target);
+            movementCoordinator.start(target);
         }
     }
 }

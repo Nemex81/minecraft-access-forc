@@ -106,3 +106,55 @@ In conformità al nostro standard architetturale:
    - **Riposizionamento Mouse a Coordinate di Sicurezza**: Il cursore del mouse viene istantaneamente spostato a $(10, 10)$ per non interferire visivamente o acusticamente con gli hover.
    - **Iniezione Auto-Focus Logico (`ensureInitialFocus`)**: Se `screen.getFocused() == null`, il focus viene immediatamente agganciato al primo `AbstractWidget` attivo ("Torna al gioco").
    - **Accessibilità Istantanea**: NVDA vocalizza all'istante il primo pulsante e le frecce Su/Giù e Sinistra/Destra sono immediatamente attive al primo tocco senza dover mai premere `Tab`.
+
+---
+
+## 8. Onestà Percettiva delle Impostazioni Cloth Config & Divieto di Controlli Decorativi
+
+1. **Il Canone dell'Onestà Percettiva**:
+   - Per un utente vedente, un'opzione grigia o decorativa può essere interpretata visivamente come non implementata; per un utente non vedente che naviga con lo screen reader NVDA, ogni controllo focalizzabile viene annunciato con pari dignità e autorevolezza (nome, stato, valore).
+   - L'esposizione in Cloth Config di controlli prematuri (es. densità vocale o ducking audio prima che il codice li supporti) genera false aspettative e confusione sensoriale, spingendo il giocatore a chiedersi perché la modifica di un parametro non produca alcun effetto in-game.
+2. **Standard Operativo Vincolante**:
+   - **Zero Opzioni Decorative**: Una nuova categoria o opzione Cloth Config può essere esposta all'utente **esclusivamente se** il motore logico sottostante è già in grado di interpretarla e produrre un effetto misurabile a runtime.
+   - **Rinvio Trasparente**: Le opzioni pianificate per fasi future (es. `ambientSpeechDensity` o `criticalModAudioDucking`) rimangono confinate nel design document e vengono inserite in `Config.java` e nelle traduzioni I18N solo contestualmente all'attivazione del loro codice reale.
+
+---
+
+## 9. Arbitraggio di Narrazione Concorrente & Pattern "Silent Commit" in Movimento
+
+1. **Il Problema dell'Annuncio Posticipato Fuori Tempo (Lag Mutation Alert)**:
+   - Quando due sottosistemi di feedback automatico operano in contemporanea (es. `ObstacleDetector` ad alta priorità e `CrosshairFeedbackManager` a monitoraggio continuo del blocco puntato), la soppressione temporanea del canale secondario tramite semplice `return` o mute causa una deriva di stato.
+   - Durante il cammino verso un ostacolo, il mirino continua a campionare blocchi diversi; se la voce viene soppressa per $100\text{ ms}$ senza aggiornare i campi di memoria, al primo tick utile dopo la riattivazione il modulo rileva la discrepanza tra lo stato precedente (vecchio blocco) e l'attuale, interpretandola erroneamente come una nuova mutazione fresca e annunciando un blocco già superato a fermata avvenuta.
+2. **Il Pattern "Silent Commit" (`absorbAutomaticMovementFeedbackIfSuppressed`)**:
+   - Se il canale secondario si trova all'interno della finestra di soppressione e il giocatore è in movimento attivo, il modulo **non deve solo tacere**: deve aggiornare internamente lo stato corrente (`currentTarget`, `currentNarration`, `currentDistance`) prima di scartare l'annuncio vocale.
+   - In questo modo, alla scadenza della soppressione non esiste alcun differenziale di stato obsoleto: la voce resta pulita e interviene solo se si verifica una reale nuova variazione successiva.
+3. **Finestra di Soppressione Monotona**:
+   - L'estensione della soppressione temporale deve essere monotona crescente:
+     $$\text{suppressedUntil} = \max(\text{suppressedUntil}, \text{clock} + \text{duration})$$
+     impedendo che chiamate concorrenti ravvicinate possano inavvertitamente abbreviare o resettare una finestra di silenzio ancora attiva.
+4. **Bypass Assoluto per Comandi Espliciti**:
+   - I comandi espliciti da tastiera dell'utente (`Alt+V` per l'orientamento, tasto `B` per il mirino manuale) ignorano totalmente le finestre di soppressione automatica, garantendo latenza $0\text{ ms}$ e risposta reattiva immediata.
+
+---
+
+## 10. Architettura a Doppio Guard e Protezione Ciclo di Vita nelle GUI
+
+Durante la navigazione delle interfacce grafiche (inventari, forzieri, tavoli di lavoro) e nelle transizioni rapide di apertura/chiusura:
+
+1. **Il Pericolo delle Ghost Narrations e Dereferenziazioni Asincrone**:
+   - Se l'utente chiude rapidamente una schermata con `Esc` o se si verifica una transizione mentre viene premuta una scorciatoia da tastiera (es. tasti Kuma per navigazione griglia o `Shift`), l'evento di input può raggiungere i gestori di navigazione quando l'interfaccia non è più attiva o `currentScreen` è già stato posto a `null`.
+   - Ciò scatena crash per `NullPointerException` (es. accessor di posizione slot) e/o narrazioni residue di oggetti non più a schermo (*ghost narrations*).
+2. **Lo Standard del Doppio Guard**:
+   - *Guard a Monte (Routing & Handlers)*: Ogni metodo di navigazione, cambio gruppo, focus o handler tasti deve verificare preventivamente:
+     ```java
+     if (!isActiveContainerScreen()) return;
+     ```
+     dove `isActiveContainerScreen()` controlla sia il tipo di schermata (`AbstractContainerScreen`), sia l'identità dell'istanza attiva rispetto a quella referenziata dal controller (`activeScreen == currentScreen`).
+   - *Guard a Valle (Esecuzione Fisica)*: I metodi che comandano fisicamente il puntatore o la selezione (`moveToSlotItem`) devono contenere una guardia difensiva indipendente:
+     ```java
+     if (slotItem == null || !isActiveContainerScreen()) return;
+     ```
+3. **Sincronizzazione Atomica nel `tick()` di Lifecycle**:
+   - Il metodo `tick()` del gestore interfacce deve monitorare lo stato dello schermo ad ogni ciclo. Se lo schermo non è valido o è cambiato, deve invocare immediatamente `clearNavigationState()` **prima ancora** di verificare o aggiornare i timer o i debouncer dell'intervallo.
+4. **Inviolabilità dell'Input Manuale nei Menu**:
+   - L'uso di tasti modificatori (`Shift`, `Ctrl`, `Alt`) all'interno delle schermate non deve mai propagarsi come comando di movimento o postura nel mondo di gioco (es. divieto assoluto di sneak sintetico o suoni di pala).

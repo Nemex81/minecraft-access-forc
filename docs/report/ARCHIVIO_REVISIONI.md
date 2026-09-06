@@ -1,15 +1,93 @@
 # Archivio Storico delle Revisioni & Collaudi Conclusi (RRU)
-# Progetto: Minecraft Access (Fork 26.2 / 1.21.x)
-# Autore: Luca (Sviluppatore & Collaudatore) & Antigravity (AI Pair Programmer)
-# Percorso: docs/report/ARCHIVIO_REVISIONI.md
-# Registro Attivo: docs/report/REGISTRO_REVISIONI.md
-# Fonte Originale: docs/report/REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md
+- **Framework di Riferimento:** ASTRALIS Framework v2.7.1 (Protocollo 6 & RRU Disaccoppiato)
+- **Progetto:** Minecraft Access (Fork 26.2 / 1.21.x)
+- **Autore:** Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA) & Antigravity
+- **Revisori:** Luca / Antigravity / GPT Codex / ChatGPT
+- **Data Ultimo Aggiornamento:** 2026-09-06
+- **Stato:** [ARCHIVIO STORICO PERENNE — 23 REVISIONI COLLAUDATE CON SUCCESSO]
+- **Registro Attivo Correlato:** [`docs/report/REGISTRO_REVISIONI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/REGISTRO_REVISIONI.md)
 
-Questo documento raccoglie la memoria storica di tutte le anomalie, correzioni e rifiniture collaudate e chiuse con successo nel ciclo di vita di Minecraft Access.
+Questo documento costituisce la memoria storica e forense perenne di tutte le anomalie, correzioni e rifiniture collaudate e chiuse con successo nel ciclo di vita di Minecraft Access. Ciascuna voce archiviata mantiene la sintesi del problema, la causa radice, la soluzione adottata e i collegamenti diretti ai relativi Piani Tecnici e Report di Sessione archiviati.
 
 ---
 
 ## 🏛️ STORICO REVISIONI COLLAUDATE CON SUCCESSO (CICLO 26.2)
+
+### 🟢 Rev MC-26.11 — Revisione 5D.7 (R1, R2, R3): Geometria LadderBlock, Disaccoppiamento Shift Umano, Clearance Volumetrica FallDetector e Convergenza Totale Torre Belvedere
+- **Stato**: `[COLLAUDATA CON SUCCESSO AL 100% IN-GAME DA LUCA]`
+- **Versione Chiusura**: 26.2-1.19.0-dev (Data 2026-09-05)
+- **Problemi Riscontrati (Esperienza Luca)**:
+  1. *Falso Blocco Torre Belvedere*: Il navigatore vocale restituiva `Nessun percorso sicuro` (`NO_PATH`) nel tentativo di raggiungere o scendere dalla torre Belvedere, bloccandosi sulla curva stretta a L tra le due rampe a quota 79.
+  2. *Falso Annullamento AutoWalk da Sneak di Sicurezza*: Durante l'avanzamento verso la scala a pioli, l'arresto per la rotazione vicino al ciglio della tromba scale faceva attivare l'accovacciamento protettivo di `SafetyMovementGuard`; `AutoWalkMotor` interpretava lo sneak sintetico di Minecraft come una pressione manuale del tasto Shift da parte dell'utente, revocando la navigazione con *"Navigazione automatica annullata"*.
+  3. *Falsi Allarmi di Caduta con Soffitto Basso o Muro Sopra*: `FallDetector` allarmava dislivelli anche se il varco superiore era bloccato da blocchi solidi ad altezza occhi.
+- **Evidenza Telemetrica / Log**:
+  - Salita Belvedere: `Pass1: NO_PATH (192 nodes)`. Scavalcata la scala a pioli: `Pass1: FOUND (4 nodes)`.
+  - Tromba scale: `SafetyMovementGuard.engageFallProtection()` -> `client.options.keyShift.setDown(true)` -> `AutoWalkMotor.isManualMovementKeyPressed` = `true` -> `cancel()`.
+- **Soluzioni Applicate (PRAPI)**:
+  1. *Contratto D6 (Geometria Voxel LadderBlock a 4 Pilastri)*:
+     - `AutoWalkPathfinder.isPassable`: restituisce `true` per `LadderBlock`.
+     - `AutoWalkPathfinder.isClearHeadroom`: restituisce `true` per `LadderBlock`.
+     - `AutoWalkPathfinder.isStandable`: restituisce categoricamente `false` per `belowState instanceof LadderBlock`, impedendo cadute nel vuoto o salite spurie verso botole e tetti.
+     - `AutoWalkPathfinder.isSolid`: restituisce `false` per `LadderBlock`, garantendo la trasparenza nelle discese verticali e linea di vista.
+  2. *Contratto D7 (Disaccoppiamento Shift Umano in AutoWalkMotor)*:
+     - Iniezione di `CrouchIntentProbe` con implementazione `RawCrouchIntentProvider` (lettura GLFW hardware puro).
+     - Riforma di `isManualMovementKeyPressed`: solo i tasti Shift fisici reali attivano il Takeover manuale. Lo sneak di emergenza sintetico non interrompe la navigazione.
+  3. *Contratto D8 (Clearance Volumetrica Occhi/Testa in FallDetector)*:
+     - In `isStandingOnDangerousEdge` e `findDangerAhead`: verifica clearance su `stepPos.above()`. Se il blocco a quota occhi è solido/non calpestabile, la cella viene scartata perché il giocatore non può fisicamente cadervi attraverso.
+- **Piani Tecnici e Rapporti di Riferimento**:
+  - [`PIANO_CORRETTIVO_FASE5D7_BUDGET_PORTE_GOAL_WAYPOINT_E_CONVERGENZA.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/completati/PIANO_CORRETTIVO_FASE5D7_BUDGET_PORTE_GOAL_WAYPOINT_E_CONVERGENZA.md)
+  - [`RAPPORTO_REVISIONE_5D7_R3_LADDER_BLOCK_DISACCOPPIAMENTO_SHIFT_E_TORRE_BELVEDERE.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/RAPPORTO_REVISIONE_5D7_R3_LADDER_BLOCK_DISACCOPPIAMENTO_SHIFT_E_TORRE_BELVEDERE.md)
+- **Report di Sessione & File Correlati**: [`RAPPORTO_REVISIONE_5D7_R3_LADDER_BLOCK_DISACCOPPIAMENTO_SHIFT_E_TORRE_BELVEDERE.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/RAPPORTO_REVISIONE_5D7_R3_LADDER_BLOCK_DISACCOPPIAMENTO_SHIFT_E_TORRE_BELVEDERE.md), [`RAPPORTO_TELEMETRIA_E_ANALISI_PORTE_LOOKAT_FASE5D.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/RAPPORTO_TELEMETRIA_E_ANALISI_PORTE_LOOKAT_FASE5D.md)
+- **Esito Collaudo**: Collaudata con successo empirico al 100% da Luca in-game il 05/09/2026: percorsi lunghi (stalla cava 90m in 27s, granaio, corte) e scalata ininterrotta alla torre Belvedere (81m in 21s) senza alcuna interruzione. 299/299 test automatici verdi.
+
+---
+
+### 🟢 Rev MC-26.9 — NullPointer Guard su currentScreen e Anti-Ghost in InventoryControls
+- **Stato**: `[COLLAUDATA CON SUCCESSO]`
+- **Versione Chiusura**: 26.2-1.19.0-dev (Data 2026-09-04)
+- **Problema Riscontrato (Esperienza Luca)**: Durante la transizione o chiusura rapida dell'inventario verso il menu di gioco, la pressione di un tasto di navigazione slot poteva generare NPE su `currentScreen`, muovere il mouse senza contesto o produrre narrazioni residue dello slot.
+- **Evidenza Telemetrica / Log**:
+  ```text
+  Caused by: java.lang.NullPointerException: Cannot invoke "org.mcaccess.minecraftaccess.mixin.AbstractContainerScreenAccessor.getLeftPos()" because "this.currentScreen" is null
+      at knot//org.mcaccess.minecraftaccess.features.inventory_controls.InventoryControls.moveToSlotItem(InventoryControls.java:1022)
+  ```
+- **Soluzione Applicata (PRAPI)**:
+  1. Predicato centrale `isActiveContainerScreen()` con verifica rigorosa dell'identità d'istanza (`activeScreen instanceof AbstractContainerScreen && activeScreen == currentScreen`);
+  2. Sincronizzazione ciclo lifecycle in `tick()` prima del debounce dell'intervallo con `clearNavigationState()`;
+  3. Guard a monte su tutti i 18 handler Kuma e su tutti i metodi di navigazione/focus (`changeGroup`, `selectGroup`, `focusSlotItemAt`, `focusSlotItem`, `changeRecipeTab`, `changeCreativeInventoryTab`, `narrateRecipeInfo`);
+  4. Guard a valle in entrambi gli overload di `moveToSlotItem` (`if (slotItem == null || !isActiveContainerScreen()) return;`);
+  5. Inizializzazione difensiva di `interval` con `Interval.ms(150)` e null-check su `Config.getInstance()`.
+- **Piano Tecnico di Riferimento**: [`PIANO_TECNICO_CORRETTIVO_REV_MC-26.9_MC-26.10_GUI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/completati/PIANO_TECNICO_CORRETTIVO_REV_MC-26.9_MC-26.10_GUI.md)
+- **Report di Sessione & File Correlati**: [`REPORT_STATO_SISTEMA_E_HANDOFF_ANOMALIE_GUI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_STATO_SISTEMA_E_HANDOFF_ANOMALIE_GUI.md)
+- **Esito Collaudo**: Collaudata con successo sul campo in-game; zero eccezioni nei log (`latest.log`) e navigazione da tastiera solida e priva di ghost narration.
+
+---
+
+### 🟢 Rev MC-26.10 — Soppressione Accovacciamento Non Intenzionale (Shift Sneak Hijack) all'Interno delle Schermate GUI
+- **Stato**: `[COLLAUDATA CON SUCCESSO]`
+- **Versione Chiusura**: 26.2-1.19.0-dev (Data 2026-09-04)
+- **Problema Riscontrato (Esperienza Luca)**: All'interno di qualsiasi interfaccia GUI (inventario, banco di lavoro, fornace, cassa), la pressione del tasto `Shift` per combinazioni di tasti o quick-move attivava contemporaneamente l'accovacciamento nel mondo con rintocchi audio `SHOVEL_FLATTEN`.
+- **Soluzione Applicata (PRAPI)**:
+  1. `RawCrouchIntentProvider` preservato puro al 100% come fedele lettore hardware GLFW (Single Responsibility);
+  2. Metodo `suspendForGui()` in `SafetyMovementGuard` con ownership token rigoroso: rilascia il crouch con `applyIfChanged(false)` solo se `systemOverrideActive` era vero, senza toccare la postura manuale né interrogare il probe hardware;
+  3. Routing esplicito in `FallDetector.tick`: se `client.gui.screen() != null`, esecuzione prioritaria di `resetSafetyStateForGui()` (che chiama `suspendForGui()`), separata dal reset ordinario nel mondo (`resetSafetyState()`);
+  4. Revoca immediata di `currentAllowedDescentId` e ripresa trasparente dello Shift manuale una volta chiusa la schermata.
+- **Piano Tecnico di Riferimento**: [`PIANO_TECNICO_CORRETTIVO_REV_MC-26.9_MC-26.10_GUI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/completati/PIANO_TECNICO_CORRETTIVO_REV_MC-26.9_MC-26.10_GUI.md)
+- **Report di Sessione & File Correlati**: [`REPORT_STATO_SISTEMA_E_HANDOFF_ANOMALIE_GUI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_STATO_SISTEMA_E_HANDOFF_ANOMALIE_GUI.md)
+- **Esito Collaudo**: Collaudata con successo sul campo in-game; nessun accovacciamento o suono di pala durante l'uso di Shift nelle schermate GUI e ripresa immediata nel mondo.
+
+---
+
+### 🟢 Rev MC-26.8 — Discesa Sicura su Scale a Pioli ed Elementi Arrampicabili (Climbable Bypass in FallDetector)
+- **Stato**: `[COLLAUDATA CON SUCCESSO]`
+- **Versione Chiusura**: 26.2-1.19.0-dev (Data 2026-09-03)
+- **Problema Riscontrato**: In presenza di scale a pioli a bordo piattaforma, l'auto-sneak bloccava l'accesso alla discesa considerandola un burrone/caduta.
+- **Soluzione Applicata (PRAPI)**:
+  1. Integrazione eccezione elementi arrampicabili (`BlockTags.CLIMBABLE`, `LadderBlock`, `VineBlock`, `ScaffoldingBlock`) nella scansione verticale di `FallDetector`;
+  2. Riconoscimento della discesa intenzionale con bypass sicuro (`depth = 0`) e notifica vocale `Discesa sicura`.
+- **Piano Tecnico di Riferimento**: [`PIANO_TECNICO_REV_MC-26.8_TRAVERSAL_SAFETY_E_ARRAMPICATA.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/attivi/PIANO_TECNICO_REV_MC-26.8_TRAVERSAL_SAFETY_E_ARRAMPICATA.md)
+- **Report di Sessione & File Correlati**: [`RAPPORTO_STRATEGIA_SISTEMICA_DISCESA_LATCHING_E_CENTRATURA.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/RAPPORTO_STRATEGIA_SISTEMICA_DISCESA_LATCHING_E_CENTRATURA.md), [`RAPPORTO_CONVALIDA_STRATEGIA_SISTEMICA_CHATGPT_TRAVERSAL.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/RAPPORTO_CONVALIDA_STRATEGIA_SISTEMICA_CHATGPT_TRAVERSAL.md), [`RAPPORTO_RIAPERTURA_REV_MC_26_8_E_PROTOCOLLO_ESECUZIONE_ANTIGRAVITY.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/RAPPORTO_RIAPERTURA_REV_MC_26_8_E_PROTOCOLLO_ESECUZIONE_ANTIGRAVITY.md), [`RAPPORTO_VALUTAZIONE_E_CONVERGENZA_REVISIONE_CHATGPT_TRAVERSAL.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/RAPPORTO_VALUTAZIONE_E_CONVERGENZA_REVISIONE_CHATGPT_TRAVERSAL.md)
+- **Esito Collaudo**: Collaudata con successo sul campo in entrambe le istanze.
 
 ---
 
@@ -22,7 +100,8 @@ Questo documento raccoglie la memoria storica di tutte le anomalie, correzioni e
   2. Introdotte 3 modalità di verbosità vocale (`DESCRIPTIVE`, `COMPACT`, `DELTA_ONLY`);
   3. Aggiunto toggle `narrateSameLevel` per escludere facoltativamente gli annunci a quota zero;
   4. Implementato calcolo matematico deterministico di $\Delta Y = Y_{\text{target}} - Y_{\text{player\_feet}}$.
-- **Piano Tecnico di Riferimento**: `docs/piani/completati/PIANO_TECNICO_FEEDBACK_ADATTIVO_DISLIVELLO_E_ALTEZZA_CUBI.md`
+- **Piano Tecnico di Riferimento**: [`PIANO_TECNICO_FEEDBACK_ADATTIVO_DISLIVELLO_E_ALTEZZA_CUBI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/completati/PIANO_TECNICO_FEEDBACK_ADATTIVO_DISLIVELLO_E_ALTEZZA_CUBI.md)
+- **Report di Sessione & File Correlati**: [`RAPPORTO_STRATEGICO_CROSSHAIR_FEEDBACK_MANAGER_PUNTO_15.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/RAPPORTO_STRATEGICO_CROSSHAIR_FEEDBACK_MANAGER_PUNTO_15.md), [`REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md)
 - **Esito Collaudo**: Collaudato con pieno successo in-game.
 
 ---
@@ -34,7 +113,8 @@ Questo documento raccoglie la memoria storica di tutte le anomalie, correzioni e
 - **Soluzione Applicata (PRAPI)**:
   1. Aggiunte 4 modalità di verbosità in `Config.java` (`DESCRIPTIVE`, `TOP_BOTTOM_ONLY`, `COMPACT`, `OFF`);
   2. Integrazione con `BlockFace` e localizzazioni IT/EN.
-- **Piano Tecnico di Riferimento**: `docs/piani/completati/PIANO_TECNICO_FEEDBACK_ADATTIVO_DISLIVELLO_E_ALTEZZA_CUBI.md`
+- **Piano Tecnico di Riferimento**: [`PIANO_TECNICO_FEEDBACK_ADATTIVO_DISLIVELLO_E_ALTEZZA_CUBI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/completati/PIANO_TECNICO_FEEDBACK_ADATTIVO_DISLIVELLO_E_ALTEZZA_CUBI.md)
+- **Report di Sessione & File Correlati**: [`RAPPORTO_STRATEGICO_CROSSHAIR_FEEDBACK_MANAGER_PUNTO_15.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/RAPPORTO_STRATEGICO_CROSSHAIR_FEEDBACK_MANAGER_PUNTO_15.md), [`REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md)
 - **Esito Collaudo**: Collaudato con pieno successo in-game.
 
 ---
@@ -47,7 +127,8 @@ Questo documento raccoglie la memoria storica di tutte le anomalie, correzioni e
   1. Creato `CrosshairFeedbackManager.java` come Presentation Coordinator e Single Source of Truth;
   2. Disaccoppiati e coordinati i canali: Canale A (Tick/Movimento), Canale B (Centramento `onCameraCentered`), Canale C (Lettura Manuale `B`);
   3. Stato atomico unico e debouncing temporale unificato.
-- **Piano Tecnico di Riferimento**: `docs/piani/completati/PIANO_TECNICO_FEEDBACK_ADATTIVO_DISLIVELLO_E_ALTEZZA_CUBI.md`
+- **Piano Tecnico di Riferimento**: [`PIANO_TECNICO_FEEDBACK_ADATTIVO_DISLIVELLO_E_ALTEZZA_CUBI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/completati/PIANO_TECNICO_FEEDBACK_ADATTIVO_DISLIVELLO_E_ALTEZZA_CUBI.md)
+- **Report di Sessione & File Correlati**: [`RAPPORTO_STRATEGICO_CROSSHAIR_FEEDBACK_MANAGER_PUNTO_15.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/RAPPORTO_STRATEGICO_CROSSHAIR_FEEDBACK_MANAGER_PUNTO_15.md), [`REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md)
 - **Esito Collaudo**: Collaudato con pieno successo in-game.
 
 ---
@@ -60,7 +141,8 @@ Questo documento raccoglie la memoria storica di tutte le anomalie, correzioni e
   1. Bonifica a 5 barriere: eliminati metodi e campi orfani;
   2. `MinecraftAccess.narrate` sfrutta direttamente il raycast passato in ingresso senza rieseguirlo;
   3. Raggio di interazione allineato a `Math.max(blockRange, entityRange)` (4.5m).
-- **Piano Tecnico di Riferimento**: `docs/piani/completati/PIANO_TECNICO_FEEDBACK_ADATTIVO_DISLIVELLO_E_ALTEZZA_CUBI.md`
+- **Piano Tecnico di Riferimento**: [`PIANO_TECNICO_FEEDBACK_ADATTIVO_DISLIVELLO_E_ALTEZZA_CUBI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/completati/PIANO_TECNICO_FEEDBACK_ADATTIVO_DISLIVELLO_E_ALTEZZA_CUBI.md)
+- **Report di Sessione & File Correlati**: [`RAPPORTO_STRATEGICO_CROSSHAIR_FEEDBACK_MANAGER_PUNTO_15.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/RAPPORTO_STRATEGICO_CROSSHAIR_FEEDBACK_MANAGER_PUNTO_15.md), [`REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md)
 - **Esito Collaudo**: Collaudato con pieno successo in-game.
 
 ---
@@ -72,7 +154,8 @@ Questo documento raccoglie la memoria storica di tutte le anomalie, correzioni e
 - **Soluzione Applicata (PRAPI)**:
   1. Rimossa la ripetizione forzata da fermi quando la posizione e lo stato dell'ostacolo non variano;
   2. Preservata la reattività istantanea sui cambi di blocco e all'avvicinamento.
-- **Piano Tecnico di Riferimento**: `docs/piani/completati/PIANO_TECNICO_FEEDBACK_ADATTIVO_DISLIVELLO_E_ALTEZZA_CUBI.md`
+- **Piano Tecnico di Riferimento**: [`PIANO_TECNICO_FEEDBACK_ADATTIVO_DISLIVELLO_E_ALTEZZA_CUBI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/completati/PIANO_TECNICO_FEEDBACK_ADATTIVO_DISLIVELLO_E_ALTEZZA_CUBI.md)
+- **Report di Sessione & File Correlati**: [`RAPPORTO_STRATEGICO_CROSSHAIR_FEEDBACK_MANAGER_PUNTO_15.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/RAPPORTO_STRATEGICO_CROSSHAIR_FEEDBACK_MANAGER_PUNTO_15.md), [`REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md)
 - **Esito Collaudo**: Collaudato con pieno successo in-game.
 
 ---
@@ -86,7 +169,8 @@ Questo documento raccoglie la memoria storica di tutte le anomalie, correzioni e
 - **Soluzione Applicata (PRAPI)**:
   1. Rimossa la soppressione silenziosa in `CrosshairFeedbackManager.java`: ogni coordinata voxel attraversata emette il feedback compatto ritmico (*"Assi di quercia, a 1 blocco"*);
   2. Campionamento volumetrico continuo lungo la linea di vista in `PlayerUtils.crosshairTarget` per `DoorBlock`, `CrossCollisionBlock`, `FenceBlock`, `IronBarsBlock`, `FenceGateBlock`, `TrapDoorBlock`.
-- **Piano Tecnico di Riferimento**: `docs/piani/completati/PIANO_TECNICO_FEEDBACK_ADATTIVO_DISLIVELLO_E_ALTEZZA_CUBI.md`
+- **Piano Tecnico di Riferimento**: [`PIANO_TECNICO_FEEDBACK_ADATTIVO_DISLIVELLO_E_ALTEZZA_CUBI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/completati/PIANO_TECNICO_FEEDBACK_ADATTIVO_DISLIVELLO_E_ALTEZZA_CUBI.md)
+- **Report di Sessione & File Correlati**: [`RAPPORTO_STRATEGICO_CROSSHAIR_FEEDBACK_MANAGER_PUNTO_15.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/RAPPORTO_STRATEGICO_CROSSHAIR_FEEDBACK_MANAGER_PUNTO_15.md), [`REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md)
 - **Esito Collaudo**: Collaudato con pieno successo in-game.
 
 ---
@@ -103,7 +187,8 @@ Questo documento raccoglie la memoria storica di tutte le anomalie, correzioni e
      > *"Davanti: Ostacolo di Pannello di vetro, a 3 blocchi"*;
   2. **Armonizzazione Colonna Unica ($XZ$)**: Se piedi e sguardo puntano alla stessa barriera/colonna frontale, eroga un unico messaggio pulito senza ridondanze; per movimenti laterali o retro, compone fluidamente (*"A destra: Salita su Fornace. Davanti: Assi di quercia, a 2 blocchi"*);
   3. **Micro-Voxel Raymarch Continuo ($0.05\text{m}$)**: Avvio del campionamento a $d = 0.05\text{m}$ con passo $0.10\text{m}$ in `PlayerUtils.crosshairTarget`.
-- **Piano Tecnico di Riferimento**: `docs/piani/completati/PIANO_TECNICO_FEEDBACK_ADATTIVO_DISLIVELLO_E_ALTEZZA_CUBI.md`
+- **Piano Tecnico di Riferimento**: [`PIANO_TECNICO_FEEDBACK_ADATTIVO_DISLIVELLO_E_ALTEZZA_CUBI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/completati/PIANO_TECNICO_FEEDBACK_ADATTIVO_DISLIVELLO_E_ALTEZZA_CUBI.md)
+- **Report di Sessione & File Correlati**: [`RAPPORTO_STRATEGICO_CROSSHAIR_FEEDBACK_MANAGER_PUNTO_15.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/RAPPORTO_STRATEGICO_CROSSHAIR_FEEDBACK_MANAGER_PUNTO_15.md), [`REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md)
 - **Esito Collaudo**: Collaudato con pieno successo in-game e confermato da telemetria live.
 
 ---
@@ -118,7 +203,8 @@ Questo documento raccoglie la memoria storica di tutte le anomalie, correzioni e
   1. Ricalibrata la condizione di salto automatico: $\text{distH} \le 1.25\text{ m}$ oppure `player.horizontalCollision == true`, con dislivello saltabile $0.30 < \Delta Y \le 1.25$ e appoggio al suolo `onGround == true`;
   2. Spinta verticale estesa a `jumpHoldingTicks = 4` (200ms) per garantire il superamento del blocco;
   3. Tutela assoluta della guardia `config.autoJump`: se disattivato in Cloth Config, il pilota non salta e si arresta per il controllo manuale.
-- **Piano Tecnico di Riferimento**: `docs/piani/completati/PIANO_TECNICO_SALTO_AUTOMATICO_PILOTA_E_CALIBRAZIONE_HITBOX.md`
+- **Piano Tecnico di Riferimento**: [`PIANO_TECNICO_SALTO_AUTOMATICO_PILOTA_E_CALIBRAZIONE_HITBOX.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/completati/PIANO_TECNICO_SALTO_AUTOMATICO_PILOTA_E_CALIBRAZIONE_HITBOX.md)
+- **Report di Sessione & File Correlati**: [`REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md)
 - **Esito Collaudo**: Superato con successo al 100% in telemetria live su rotte da 16 e 53 metri.
 
 ---
@@ -133,7 +219,8 @@ Questo documento raccoglie la memoria storica di tutte le anomalie, correzioni e
   1. Aggiunto `PauseScreen.class` in `MENUS_NEED_FIX` in `MenuFix.java`;
   2. Implementato `ensureInitialFocus(screen)` per focalizzare all'istante il primo pulsante attivo ("Torna al gioco");
   3. Spostamento preventivo del mouse a coordinate (10, 10) per non interferire.
-- **Piano Tecnico di Riferimento**: `docs/piani/completati/PIANO_TECNICO_SALTO_AUTOMATICO_PILOTA_E_CALIBRAZIONE_HITBOX.md`
+- **Piano Tecnico di Riferimento**: [`PIANO_TECNICO_SALTO_AUTOMATICO_PILOTA_E_CALIBRAZIONE_HITBOX.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/completati/PIANO_TECNICO_SALTO_AUTOMATICO_PILOTA_E_CALIBRAZIONE_HITBOX.md)
+- **Report di Sessione & File Correlati**: [`REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md)
 - **Esito Collaudo**: Superato con successo in telemetria live: `[17:39:55] Pulsante Riprendi la partita. Elemento a schermo 1 di 9` annunciato all'istante all'apertura del menu.
 
 ---
@@ -149,7 +236,8 @@ Questo documento raccoglie la memoria storica di tutte le anomalie, correzioni e
   2. Risoluzione dei tasti a runtime (*Keybinding Introspection*) per Salto (`keyJump` -> *"Spazio"*) e Ispezione Ostacolo ([`ObstacleDetector`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/src/main/java/org/mcaccess/minecraftaccess/features/ObstacleDetector.java#L66) -> *"Alt + V"*);
   3. Passaggio diretto degli argomenti a `I18n.get(key, args)` eliminando il prefisso spurio *"Format error:"*;
   4. Frase finale erogata: *"Hai un ostacolo a sinistra. Premi Spazio per saltare se è basso, oppure premi Alt + V per ispezionarlo."*.
-- **Piano Tecnico di Riferimento**: `docs/piani/completati/PIANO_TECNICO_FEED_MIRINO_IN_MOVIMENTO_E_LETTURA_MANUALE.md`
+- **Piano Tecnico di Riferimento**: [`PIANO_TECNICO_FEED_MIRINO_IN_MOVIMENTO_E_LETTURA_MANUALE.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/completati/PIANO_TECNICO_FEED_MIRINO_IN_MOVIMENTO_E_LETTURA_MANUALE.md)
+- **Report di Sessione & File Correlati**: [`REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md)
 - **Esito Collaudo**: Superato con pieno successo in telemetria live e convalidato da Luca.
 
 ---
@@ -161,6 +249,7 @@ Questo documento raccoglie la memoria storica di tutte le anomalie, correzioni e
 - **Evidenza Telemetrica / Log**: `java.lang.ClassCastException: class RecipeBookCategory cannot be cast to SearchRecipeBookCategory` in `InventoryControls.java:836-838`.
 - **Causa Radice**: `recipeBookComponentAccessor.getSelectedTab().getCategory()` in 26.2 non implementa `SearchRecipeBookCategory`.
 - **Soluzione Applicata (PRAPI)**: Rimosso il cast forzato e inserita lettura sicura della categoria con guardia difensiva.
+- **Report di Sessione & File Correlati**: [`REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md)
 - **Esito Collaudo**: Risolto e collaudato con successo in-game.
 
 ---
@@ -172,6 +261,7 @@ Questo documento raccoglie la memoria storica di tutte le anomalie, correzioni e
 - **Evidenza Telemetrica / Log**: `No GUI provider registered for field 'private static Config instance'`.
 - **Causa Radice**: AutoConfig di Cloth Config analizza per riflessione tutti i campi non esclusi.
 - **Soluzione Applicata (PRAPI)**: Aggiunta l'annotazione `@ConfigEntry.Gui.Excluded` sopra il singleton `instance` in `Config.java`.
+- **Report di Sessione & File Correlati**: [`REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md)
 - **Esito Collaudo**: Nessun warning o errore nei log di avvio e configurazione.
 
 ---
@@ -187,6 +277,7 @@ Questo documento raccoglie la memoria storica di tutte le anomalie, correzioni e
   2. Risoluzione dinamica del nome localizzato in italiano (*"Costruzione"*, *"Attrezzatura"*, *"Varie"*, *"Meccanismi e Redstone"*);
   3. Selezione automatica del gruppo ricette e posizionamento cursore sul primo elemento;
   4. Annuncio coordinato *"Categoria: [Nome]. [Statistiche ricette]"*.
+- **Report di Sessione & File Correlati**: [`REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md)
 - **Esito Collaudo**: Superato con successo in-game.
 
 ---
@@ -201,6 +292,7 @@ Questo documento raccoglie la memoria storica di tutte le anomalie, correzioni e
   1. Accessor Mixin `RecipeBookPageAccessor` per estrarre `currentPage` e `totalPages`;
   2. Suono click e spostamento cursore sulla prima ricetta della nuova pagina;
   3. Annunci dedicati per limiti (*"Prima pagina"*, *"Ultima pagina"*, *"Unica pagina"*).
+- **Report di Sessione & File Correlati**: [`REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md)
 - **Esito Collaudo**: Superato con successo in-game.
 
 ---
@@ -215,6 +307,7 @@ Questo documento raccoglie la memoria storica di tutte le anomalie, correzioni e
   1. Mappatura universale delle 4 Frecce in `InventoryControls.java`;
   2. Piena compatibilità con tutte le schermate contenitore (casse, forni, banchi, villici);
   3. Disaccoppiamento con le caselle di testo `EditBox` (le frecce muovono il testo se a fuoco, navigano gli slot se non a fuoco).
+- **Report di Sessione & File Correlati**: [`REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md)
 - **Esito Collaudo**: Superato con successo in-game.
 
 ---
@@ -228,6 +321,7 @@ Questo documento raccoglie la memoria storica di tutte le anomalie, correzioni e
 - **Soluzione Applicata (PRAPI)**:
   1. Calcolo ricette realizzabili ($R$) e non realizzabili ($N$) sulla pagina corrente;
   2. Annuncio atomico sincronizzato: `"[T] ricette: [R] realizzabili, [N] non realizzabili"`, `"[T] ricette realizzabili"` o `"[T] ricette non realizzabili"`.
+- **Report di Sessione & File Correlati**: [`REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md)
 - **Esito Collaudo**: Superato con precisione 100% in-game.
 
 ---
@@ -241,6 +335,7 @@ Questo documento raccoglie la memoria storica di tutte le anomalie, correzioni e
 - **Soluzione Applicata (PRAPI)**:
   1. Introdotte chiavi I18N differenziate singolare/plurale in `it_it.json` ed `en_us.json`;
   2. Flessione dinamica: $1 \rightarrow$ *"1 ricetta realizzabile"*, $>1 \rightarrow$ *"%d ricette realizzabili"*.
+- **Report di Sessione & File Correlati**: [`REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md)
 - **Esito Collaudo**: Superato con successo in-game.
 
 ---
@@ -255,5 +350,24 @@ Questo documento raccoglie la memoria storica di tutte le anomalie, correzioni e
   1. *Tagliapietre (`StonecutterScreen`)*: Vocalizzazione forme disponibili e posizionamento automatico del focus sul primo taglio con `selectGroupByKey("recipes", false)`;
   2. *Telaio (`LoomScreen`)*: Tracciamento dinamico e annuncio motivi disponibili all'inserimento di stendardo e tintura con focus sul selettore motivi;
   3. *Fornaci & Alambicco*: Notifiche vocali discrete (*"Cottura completata"*, *"Distillazione completata"*) al termine della cottura o della distillazione.
-- **Piano Tecnico di Riferimento**: `docs/piani/completati/PIANO_TECNICO_REV_MC_26_4_FEEDBACK_SCHERMATE_SPECIALISTICHE.md`
+- **Piano Tecnico di Riferimento**: [`PIANO_TECNICO_REV_MC_26_4_FEEDBACK_SCHERMATE_SPECIALISTICHE.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/completati/PIANO_TECNICO_REV_MC_26_4_FEEDBACK_SCHERMATE_SPECIALISTICHE.md)
+- **Report di Sessione & File Correlati**: [`REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md)
 - **Esito Collaudo**: Superato con pieno successo in telemetria live e confermato da Luca.
+
+### 🟢 Rev MC-26.8-FaseA (Bozza Storica Preliminare) — Discesa Sicura su Scale a Pioli ed Elementi Arrampicabili
+- **Stato**: `[SUPERATA DA REV MC-26.8B / COLLAUDATA CON SUCCESSO]`
+- **Data Rilevamento**: 2026-09-03
+- **Data Chiusura**: 2026-09-03
+- **Problema Riscontrato (Esperienza Luca)**: Salendo sul tetto tramite scala a pioli, l'utente non riesce più a scendere: `FallDetector` classifica il vuoto attorno alla scala come burrone letale (`profondità 4 blocchi`), attiva lo sticky‑sneak sul ciglio e l'auto‑sneak forzato, bloccando fisicamente il giocatore e costringendolo a disattivare la protezione anticaduta (`Ctrl + Alt + F`) per poter scendere la scala.
+- **Evidenza Telemetrica / Log**: `[15:43:35] Narrating(interrupt:true)= Sul ciglio: burrone 1 blocchi in basso , profondità 4 blocchi`, `[15:44:33] Narrating(interrupt:true)= Attenzione: burrone 1 blocchi avanti 1 blocchi in basso , profondità 3 blocchi`.
+- **Causa Radice**:
+  1. `isStandingOnDangerousEdge` campiona radialmente 8 punti attorno alla hitbox, i campioni laterali/diagonali rilevano aria e vuoto oltre il perimetro del tetto, forzando lo sticky‑sneak anche se davanti c'è una colonna di discesa sicura;
+  2. Il motore fisico nativo di Minecraft impedisce a un giocatore accovacciato (Shift attivo) di scendere da un blocco solido;
+  3. Il raycast di look‑ahead non riconosce la scala a pioli attaccata alla parete o a quota piedi/sottostante quando la traiettoria punta deliberatamente alla scala.
+- **Soluzione Proposta (PRAPI / Protocollo 5)**:
+  1. Estendere il riconoscimento degli elementi di discesa sicura a tutti i blocchi arrampicabili (scale a pioli, liane, impalcature, botole sopra scale, tag `#minecraft:climbable`).
+  2. Quando il giocatore si muove deliberatamente verso una colonna discendente sicura, sospendere temporaneamente l'auto‑sneak forzato (`keyShift.setDown(false)`).
+  3. Escludere la colonna della scala dalla segnalazione di burrone e fornire riscontro acustico/vocale positivo di discesa sicura.
+- **Piano Tecnico di Riferimento**: In fase di consultazione e pianificazione.
+- **Report di Sessione & File Correlati**: [`REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_SESSIONE_TELEMETRIA_E_ANOMALIE_2026-09-01.md)
+- **Esito Collaudo**: Concluso con successo nella Fase A.
