@@ -31,7 +31,7 @@ Questo file costituisce l'**Hub Centrale di Contesto e Governance** del progetto
 
 3. **Protocollo 3 — Esecuzione** *(Build, Code & Deploy Proattivo — Sotto-Fase 1B / Fase 2)*:
 
-   - Modifiche chirurgiche su classi Java/Mixin; build pulita con `.\gradlew.bat --no-daemon shadowJar`;
+   - Modifiche chirurgiche su classi Java/Mixin; build pulita con `.\gradlew.bat --no-daemon --no-watch-fs shadowJar`;
 
    - Deploy automatico del `.jar` compilato nell'istanza attiva di PrismLauncher (`*26.2*Access*`) prima del collaudo.
 
