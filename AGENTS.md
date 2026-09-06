@@ -1,7 +1,7 @@
-# Minecraft Access — Direttive di Progetto per Codex / ChatGPT (ASTRALIS v3.0.0)
+# Minecraft Access — Direttive di Progetto per Codex / ChatGPT (ASTRALIS v3.0.1)
 # Autore: Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA)
 # Target AI: Codex / ChatGPT (Copilota Ausiliario e Peer Programmer)
-# Framework: ASTRALIS v3.0.0
+# Framework: ASTRALIS v3.0.1
 # Eredita da: C:\Users\nemex\.codex\AGENTS.md (Direttive Globali)
 # Hub di Contesto Master: GEMINI.md
 
