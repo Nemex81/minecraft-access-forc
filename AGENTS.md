@@ -1,7 +1,7 @@
-# Minecraft Access — Direttive di Progetto per Codex / ChatGPT (ASTRALIS v2.6.3)
+# Minecraft Access — Direttive di Progetto per Codex / ChatGPT (ASTRALIS v2.8.0)
 # Autore: Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA)
 # Target AI: Codex / ChatGPT (Copilota Ausiliario e Peer Programmer)
-# Framework: ASTRALIS v2.6.3
+# Framework: ASTRALIS v2.8.0
 # Eredita da: C:\Users\nemex\.codex\AGENTS.md (Direttive Globali)
 # Hub di Contesto Master: GEMINI.md
 
@@ -24,6 +24,7 @@ Per garantire la massima velocità di risposta e preservare la finestra di conte
 Quando il compito richiede pianificazione, implementazione, diagnosi o test approfonditi (secondo la Regola di Ingaggio sopra), consulta i seguenti file di riferimento:
 - `GEMINI.md`: Hub centrale di contesto con le regole fondamentali del dominio voxel e i protocolli operativi.
 - `knowledge/`: Base di conoscenza modulare (architettura, audio 3D, voxel raycasting, controlli tastiera, diario modifiche).
+- `docs/strategie/attive/`: Strategie logico-cognitive UPCS di Fase 0 in corso di elaborazione.
 - `docs/piani/attivi/`: Piani tecnici formali delle attività correnti.
 - `docs/report/REGISTRO_REVISIONI.md`: Registro aperto delle anomalie e revisioni emerse dai collaudi.
 
@@ -45,4 +46,8 @@ Quando il compito richiede pianificazione, implementazione, diagnosi o test appr
    - Target: Minecraft 26.2 (1.21.x), Fabric + NeoForge (Architectury Loom), SpongePowered Mixin, Java 25.
    - Build comando: `.\gradlew.bat --no-daemon shadowJar`
    - Test comando: `.\gradlew.bat --no-daemon test`
-   - Non avviare mai demoni Gradle persistenti (usare sempre `--no-daemon` per evitare file lock su cloud/OneDrive).
+   - Non avviare mai demoni Gradle persistenti (usare sempre `--no-daemon` per evitare file lock su cloud/OneDrive).
+5. **Meta-Governance & Budget Token**:
+   - Conformità ai 6 Canoni: questo router resta snello (<= 250 righe); le modifiche al codice sono gestite dall'AI Primaria (Antigravity), mentre Codex opera in consultazione critica e review.
+
+
