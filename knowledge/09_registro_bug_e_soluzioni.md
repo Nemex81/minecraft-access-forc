@@ -538,4 +538,21 @@ Questo registro documenta i problemi tecnici complessi risolti nel tempo, preser
   2. *Pulizia Configurazioni Istanza*: In `kuma.json`, rimossa la voce collisione `minecraft_access:auto_walk` e registrate le entry corrette per `other.auto_walk` e `other.auto_walk_toggle_sprint`. In `options.txt`, reimpostata l'azione dell'Access Menu su `key.keyboard.unknown`.
   3. *Verifica e Collaudo*: Test suite a 308/308 verde e verifica in-game positiva con immediata commutazione vocale.
 
+---
+
+### Record 41 — Discrepanza tra Mirino Accessibile e Raycast Fisico nella Chiusura Porte Aperte (Rev MC-26.12)
+- **Data**: 2026-09-07
+- **Versione di Riferimento**: Minecraft 1.26.2 (Fabric / Java 25)
+- **Moduli Coinvolti**: `DoorInteractionHelper.java`, `MinecraftMixin.java`, `DoorInteractionHelperTest.java`, `PlayerUtils.java`
+- **Sintomi**: Con una porta o cancelletto aperto, il mirino accessibile pronunciava regolarmente *"Porta aperta di abete"*, ma premendo il tasto interazione (tasto destro del mouse, tasto `]` o tasto `Invio` del Numpad) la porta non si chiudeva, interagendo invece con il pavimento o il muro distante dietro la porta. L'utente non vedente era costretto a continui tentativi per centrare la lamina millimetrica dello stipite aperto.
+- **Causa Radice**: Paradosso geometrico tra `PlayerUtils.crosshairTarget` (che usa il Micro-Voxel Raymarch Snap sull'intero volume cubico del blocco porta $1 \times 2 \times 1\text{ m}$) e `client.hitResult` nativo di Minecraft Vanilla (che usa la `VoxelShape` fisica reale di soli 3 pixel aderente allo stipite, considerando aria pura il restante $81\%$ del blocco). Il raycast di Vanilla attraversava l'aria vuota senza colpire la porta.
+- **Soluzione Definitiva**:
+  1. *Helper Headless Puro (`DoorInteractionHelper.java`)*:
+     - Metodo testabile `isInteractableOpenDoorOrGate(BlockState)`: riconosce porte in legno/bambù/rame, cancelletti e botole aperte, escludendo porte e botole di ferro (`Blocks.IRON_DOOR`, `Blocks.IRON_TRAPDOOR`);
+     - Metodo `resolvePermissiveDoorHit(Minecraft)`: se il raycast Vanilla non sta puntando a un'entità (mob/NPC) e non colpisce già direttamente la porta, interroga `PlayerUtils.crosshairTarget(reach)`; se il mirino intercetta una porta aperta entro il raggio lecite di reach (`blockInteractionRange`), restituisce il `BlockHitResult` del blocco porta.
+  2. *Iniezione Vanilla Mixin Unificata (`MinecraftMixin.java`)*:
+     - In `@Inject(method = "startUseItem", at = @At("HEAD"))`, se è presente un hit permissivo, assegna temporaneamente `this.hitResult = permissiveHit`. Minecraft Vanilla esegue `gameMode.useItemOn` chiudendo la porta al primo colpo da mouse fisico, tasto `]` e Numpad Enter.
+  3. *Suite di Test & Collaudo*: 7 nuovi test headless in `DoorInteractionHelperTest.java` (totale suite 315/315 test verdi) e collaudo in-game confermato con successo al 100% da Luca.
+
+
 

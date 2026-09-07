@@ -260,3 +260,27 @@ Per prevenire qualsiasi falso allarme vocale e garantire la massima precisione n
 - Per qualsiasi richiesta utente riguardante la ricerca o l'utilizzo di comandi da chat (`/give`, `/tp`, `/fill`, `/setblock`, `/time`, `/tick`, `/gamerule`, `/effect`, `/spawnpoint`), consultare primariamente l'indice dedicato:
   📁 [`docs/manuali/PRONTUARIO_COMANDI_CHAT.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/manuali/PRONTUARIO_COMANDI_CHAT.md)
 - Questo documento contiene le formule e i comandi pronti per il copia-incolla diretto, evitando ricerche a tappeto nel codebase e azzerando il consumo ridondante di token.
+
+---
+
+## 11. Magnetismo Voxel d'Interazione & Risoluzione Permissiva Varchi Aperti in Minecraft 1.26.2 (Rev MC-26.12)
+
+1. **Il Problema della Chiusura Porte e Varchi Aperti su Minecraft 1.26.2**:
+   - In Minecraft 1.26.2, il modulo mirino di accessibilità esegue un campionamento volumetrico *Micro-Voxel Raymarch Snap* (`PlayerUtils.java:L121-L145`) con passo di $0.10\text{ m}$ e punto d'avvio a $0.05\text{ m}$;
+   - Quando una porta è aperta, il raymarch accessibile intercetta l'intero volume geometrico del blocco cubico ($1 \times 2 \times 1\text{ m}$) e lo screen reader NVDA vocalizza regolarmente: *"Porta aperta di abete"*;
+   - Al momento dell'interazione con click destro, Minecraft Vanilla attiva `Minecraft.startUseItem()` basandosi sul campo nativo `client.hitResult`;
+   - La `VoxelShape` fisica del blocco porta aperta ha il battente ruotato adeso allo stipite e spesso soli 3 pixel ($0.1875\text{ m}$), mentre il restante $81\%$ del blocco è considerata aria pura;
+   - Il raycast di Vanilla attraversa l'aria vuota intercettando il pavimento o il muro posteriore, o genera un `MISS`. Il click destro non sortiva alcun effetto sulla porta, imponendo all'utente non vedente una frustrante e innaturale caccia millimetrica dello stipite.
+
+2. **L'Architettura di Risoluzione a Due Livelli (`DoorInteractionHelper` + Mixin)**:
+   - **Helper Puro e Testabile Headless (`DoorInteractionHelper.java`)**:
+     * `isInteractableOpenDoorOrGate(BlockState)`: riconosce `DoorBlock`, `FenceGateBlock` e `TrapDoorBlock` in stato aperto (`OPEN == true`), escludendo categoricamente porte e botole di ferro (`Blocks.IRON_DOOR`, `Blocks.IRON_TRAPDOOR`);
+     * `resolvePermissiveDoorHit(Minecraft)`: se `client.hitResult` Vanilla non sta puntando a un'entità e non ha già colpito la porta fisica, interroga `PlayerUtils.crosshairTarget(reach)`; se il mirino accessibile ha agganciato la porta aperta entro la portata massima del giocatore (`blockInteractionRange`), restituisce il `BlockHitResult` permissivo;
+   - **Iniezione Vanilla Unificata su `startUseItem()` (`MinecraftMixin.java`)**:
+     * L'iniezione `@Inject(method = "startUseItem", at = @At("HEAD"))` assegna atomicamente `this.hitResult = permissiveHit` per la durata dell'interazione;
+     * Unifica in un unico collo di bottiglia trasparente:
+       1. Il click destro del mouse fisico;
+       2. La pressione del tasto `]` (simulazione mouse `MouseSimulation`);
+       3. La pressione del tasto `Invio` del Numpad (`NumpadControls`);
+     * Minecraft Vanilla esegue `gameMode.useItemOn(...)` sulla porta chiudendola istantaneamente al primo tocco senza sporcare lo stato dei tick successivi.
+
