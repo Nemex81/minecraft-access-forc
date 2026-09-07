@@ -8,7 +8,7 @@
 Questo documento costituisce il **Diario Ufficiale delle Modifiche del Fork Personale in lingua Italiana**.
 Poiché il `README.md` pubblico e la documentazione del repository upstream rimangono in lingua Inglese per la community internazionale con la sola sezione `## [Unreleased]`, tutte le novità, i refactoring e i miglioramenti sviluppati sui nostri rami (`mymaster`, `dev`) vengono tracciati qui secondo la disciplina AVF (`V.A.R[.M]`).
 
-## 🚀 [v26.2-1.19.0-dev] — 2026-09-05 (Refactor Architetturale Cognitive Coordinator & Navigatore — Fasi 1, 2, 3, 4, 5 — Branch feat/cognitive-orchestrator)
+## 🚀 [v26.2-1.19.0] — 2026-09-07 (Release Ufficiale: Cognitive Coordinator, Gestione Porte & Navigatore AutoWalk)
 
 ### 🌐 Governance & Multi-AI: Allineamento Ecosistema ASTRALIS v2.8.0 (Commit bac2c87b)
 - **Allineamento Rete a 4 Nodi & Profilo di Resilienza**:
