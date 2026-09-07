@@ -240,3 +240,16 @@ Quando Antigravity analizza, progetta o implementa soluzioni complesse nel domin
      * Ogni piano o revisione si struttura in contratti numerati atomici (D0..DN per le decisioni di design, S1..SN per i moduli software), ciascuno con precondizioni, postcondizioni, budget di complessità e invarianti anti-regressione.
    - **Cancello 5 — Determinismo Headless e Time-Seam a 0 ms**:
      * Logiche temporali (finestre di soppressione, debouncing vocale, TTL) devono esporre delegate o time-seam package-private per consentire suite di test JUnit deterministiche, istantanee a 0 ms e prive di `Thread.sleep`.
+
+---
+
+## 14. Prassi di Clean Sweep Preventivo come Contratto D0 nei Refactoring
+
+1. **Il Principio di Non-Proliferazione del Codice Morto**:
+   - Quando si sostituisce un'architettura o un meccanismo con uno nuovo, è fatto divieto categorico di lasciare in vita residui del vecchio sistema (campi di stato, contatori di manovra, getter/setter, reset in `start()`/`stop()`, blocchi commentati o morti).
+2. **Il Contratto D0 Obbligatorio**:
+   - Nei piani tecnici di refactoring o evoluzione, il primo contratto (`D0 — Clean Sweep`) deve essere interamente dedicato alla bonifica sistematica del vecchio codice.
+   - Prima di dichiarare conclusa la bonifica e procedere con l'innesto del nuovo sistema:
+     1. Eseguire una scansione completa (`grep_search`) per ciascun identificatore da dismettere;
+     2. Verificare che non restino riferimenti orfani in nessun metodo, classe o test;
+     3. Compilare con successo (`./gradlew test --no-daemon`) per certificare che la rimozione non abbia rotto dipendenze inaspettate.

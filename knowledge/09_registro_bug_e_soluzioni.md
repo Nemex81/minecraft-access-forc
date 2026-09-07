@@ -509,4 +509,50 @@ Questo registro documenta i problemi tecnici complessi risolti nel tempo, preser
   2. *Clearance Volumetrica Occhi in FallDetector*: In `isStandingOnDangerousEdge` e `findDangerAhead`, aggiunta la verifica su `stepPos.above()`. Se il blocco a quota occhi è solido o un ostacolo, la caduta orizzontale è fisicamente impossibile e la cella viene scartata a monte.
   3. *Suite di Test*: 4 test D6 in `AutoWalkPathfinderTest` e 2 test D8 in `FallDetectorTraversalIntegrationTest` superati al 100%.
 
+---
+
+### Record 39 — Silenziamento Sensoriale Selettivo durante la Marcia AutoWalk (Denoising Vocale)
+- **Data**: 2026-09-07
+- **Moduli Coinvolti**: `Config.java`, `MovementCoordinator.java`, `CrosshairFeedbackManager.java`, `ObstacleDetector.java`, `FallDetector.java`, `AutoWalkSensoryQuietingTest.java`
+- **Sintomi**: Durante la marcia in AutoWalk, la rotazione automatica dello sguardo e il passaggio accanto a pareti o dislivelli sicuri producevano un sovraccarico acustico continuo (spam vocale del mirino su ogni blocco, annunci di ostacoli già superati con l'auto-jump e vocalizzazioni di cigli non letali). L'opzione `voiceFeedback` in Config controllava solo la frase all'arrivo alla meta.
+- **Causa Radice**: Assenza di un meccanismo di coordinamento a monte tra il cinetismo autonomo di navigazione e i sensori di campionamento ambientale passivi.
+- **Soluzione Definitiva**:
+  1. *Estensione Config*: Aggiunti in `Config.AutoWalk` 3 interruttori booleani (`silenceCrosshairDuringWalk`, `silenceObstaclesDuringWalk`, `silenceFallWarningsDuringWalk`) tutti con default `true`.
+  2. *Query di Stato Pura*: Esposto `MovementCoordinator.isAutoWalkActive()` con seam headless a 0 ms (`setTestAutoWalkActive`).
+  3. *Soppressione a Monte del Mirino*: In `CrosshairFeedbackManager`, se l'AutoWalk è attivo e la config lo richiede, il tick passivo aggiorna lo stato interno ed esce prima della sintesi. Tutela assoluta per i comandi manuali (`B`, `M`/`5`, `X`) tramite `DirectInteractionShield`.
+  4. *Soppressione Ostacoli Ordinari*: In `ObstacleDetector`, silenziamento degli ostacoli transitabili o saltabili durante la marcia.
+  5. *Preservazione Incondizionata Sicurezza*: In `FallDetector`, silenziamento delle notifiche vocali descrittive di ciglio/discesa sicura; auto-sneak fisico (`SafetyMovementGuard`) e allarmi letali `CRITICAL` (lava/fuoco/vuoto) attivi al 100% a latenza zero.
+  6. *Suite di Test*: 7 test unitari in `AutoWalkSensoryQuietingTest.java` superati al 100%.
+
+---
+
+### Record 40 — Conflitto di Keybinding Multi-Layer su Tasti Condivisi e Guardie Esclusive `ModifierUtils` (`Ctrl+Alt+W`)
+- **Data**: 2026-09-07
+- **Moduli Coinvolti**: `AutoWalkManager.java`, `ModifierUtils.java`, Kuma API, `kuma.json`, `options.txt`
+- **Sintomi**: Premendo `Ctrl+Alt+W` in-game, il sistema non alternava tra corsa e camminata (nessun annuncio vocale *"Navigazione: corsa abilitata"*).
+- **Causa Radice**:
+  1. *Collisione di Identificatori*: In `kuma.json` dell'istanza era presente la voce `"minecraft_access:auto_walk"` (dall'Access Menu) configurata con i modificatori `[CONTROL, ALT]`, sovrapposta sia a `other.auto_walk` (`Alt+W`) che a `other.auto_walk_toggle_sprint` (`Ctrl+Alt+W`), tutti mappati sul tasto `W` in `options.txt`. Kuma intercettava per prima l'azione dell'Access Menu, il cui handler rifiutava l'input rilevando modificatori non previsti nel default (`ModifierUtils.hasAnyModifier() == true`).
+  2. *Mancanza di Guardie Esclusive*: In `AutoWalkManager.java`, i callback di Kuma per `other.auto_walk` e `other.auto_walk_toggle_sprint` non verificavano esplicitamente i modificatori fisici attivi.
+- **Soluzione Definitiva**:
+  1. *Guardie Esclusive nel Codice*: In `AutoWalkManager.java`, inserito `if (!ModifierUtils.hasAltOnly()) return false;` sul comando di marcia base, e `if (!ModifierUtils.hasControlAndAlt()) return false;` sul comando di toggle sprint.
+  2. *Pulizia Configurazioni Istanza*: In `kuma.json`, rimossa la voce collisione `minecraft_access:auto_walk` e registrate le entry corrette per `other.auto_walk` e `other.auto_walk_toggle_sprint`. In `options.txt`, reimpostata l'azione dell'Access Menu su `key.keyboard.unknown`.
+  3. *Verifica e Collaudo*: Test suite a 308/308 verde e verifica in-game positiva con immediata commutazione vocale.
+
+---
+
+### Record 41 — Discrepanza tra Mirino Accessibile e Raycast Fisico nella Chiusura Porte Aperte (Rev MC-26.12)
+- **Data**: 2026-09-07
+- **Versione di Riferimento**: Minecraft 1.26.2 (Fabric / Java 25)
+- **Moduli Coinvolti**: `DoorInteractionHelper.java`, `MinecraftMixin.java`, `DoorInteractionHelperTest.java`, `PlayerUtils.java`
+- **Sintomi**: Con una porta o cancelletto aperto, il mirino accessibile pronunciava regolarmente *"Porta aperta di abete"*, ma premendo il tasto interazione (tasto destro del mouse, tasto `]` o tasto `Invio` del Numpad) la porta non si chiudeva, interagendo invece con il pavimento o il muro distante dietro la porta. L'utente non vedente era costretto a continui tentativi per centrare la lamina millimetrica dello stipite aperto.
+- **Causa Radice**: Paradosso geometrico tra `PlayerUtils.crosshairTarget` (che usa il Micro-Voxel Raymarch Snap sull'intero volume cubico del blocco porta $1 \times 2 \times 1\text{ m}$) e `client.hitResult` nativo di Minecraft Vanilla (che usa la `VoxelShape` fisica reale di soli 3 pixel aderente allo stipite, considerando aria pura il restante $81\%$ del blocco). Il raycast di Vanilla attraversava l'aria vuota senza colpire la porta.
+- **Soluzione Definitiva**:
+  1. *Helper Headless Puro (`DoorInteractionHelper.java`)*:
+     - Metodo testabile `isInteractableOpenDoorOrGate(BlockState)`: riconosce porte in legno/bambù/rame, cancelletti e botole aperte, escludendo porte e botole di ferro (`Blocks.IRON_DOOR`, `Blocks.IRON_TRAPDOOR`);
+     - Metodo `resolvePermissiveDoorHit(Minecraft)`: se il raycast Vanilla non sta puntando a un'entità (mob/NPC) e non colpisce già direttamente la porta, interroga `PlayerUtils.crosshairTarget(reach)`; se il mirino intercetta una porta aperta entro il raggio lecite di reach (`blockInteractionRange`), restituisce il `BlockHitResult` del blocco porta.
+  2. *Iniezione Vanilla Mixin Unificata (`MinecraftMixin.java`)*:
+     - In `@Inject(method = "startUseItem", at = @At("HEAD"))`, se è presente un hit permissivo, assegna temporaneamente `this.hitResult = permissiveHit`. Minecraft Vanilla esegue `gameMode.useItemOn` chiudendo la porta al primo colpo da mouse fisico, tasto `]` e Numpad Enter.
+  3. *Suite di Test & Collaudo*: 7 nuovi test headless in `DoorInteractionHelperTest.java` (totale suite 315/315 test verdi) e collaudo in-game confermato con successo al 100% da Luca.
+
+
 

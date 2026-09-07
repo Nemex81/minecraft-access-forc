@@ -192,3 +192,11 @@ L'evoluzione dal modello a scudi sincroni sparsi verso il **Cognitive Coordinato
    - *Precedenza Assoluta a Latenza Zero*: L'annuncio del comando manuale viene emesso immediatamente con `interrupt: true` e canale diretto.
    - *Assorbimento Passivo Deterministo*: Durante la finestra dello scudo, i tick del mirino automatico o gli aggiornamenti passivi di sottofondo vengono assorbiti silenziosamente (`absorbIfActive()`), impedendo qualsiasi accodamento ritardato o troncamento vocale.
    - *Inviolabilità dei Critici*: Lo scudo differisce o assorbe unicamente eventi passivi e contestuali; gli eventi `CRITICAL` (burroni, cadute, lava) mantengono la facoltà di interrompere qualsiasi output in qualsiasi istante.
+
+8. **Principio di Quiete Sensoriale in Navigazione Automatica (AutoWalk Sensory Quieting)**:
+   - *Razionale Cognitivo*: Durante la navigazione automatica controllata dal motore cinetico (`AutoWalkMotor`), la telecamera ruota autonomamente e il personaggio avanza senza controllo manuale della tastiera. Il campionamento continuo dell'ambiente produce una raffica di parole passive (*"chatter"*) che distrugge l'attenzione dell'utente e impedisce di percepire chiaramente l'ambiente o i segnali di rotta.
+   - *Silenziamento Selettivo a Monte*: Tramite 3 interruttori di configurazione dedicati (`silenceCrosshairDuringWalk`, `silenceObstaclesDuringWalk`, `silenceFallWarningsDuringWalk` in `Config.AutoWalk`), il sistema sopprime a monte il mirino passivo, gli ostacoli ordinari superabili e gli avvisi vocali di ciglio/discesa sicura.
+   - *Invarianti Inviolabili*:
+     1. **Sicurezza Fisica Fail-Safe**: L'auto-sneak hardware (`SafetyMovementGuard`) rimane pienamente attivo ed esegue l'accovacciamento protettivo sui cigli anche durante l'AutoWalk.
+     2. **Fast-Path Critico**: I pericoli letali a priorità `CRITICAL` (lava, fuoco, caduta nel vuoto) continuano a interrompere all'istante qualsiasi stato a latenza zero.
+     3. **Tutela Interazione Manuale Esplicita**: Le interrogazioni manuali da tastiera (tasto `B` per il mirino, `M`/`5` per centramento orizzonte, `X` per lock POI) mantengono precedenza assoluta tramite `DirectInteractionShield`, parlando all'istante anche durante la marcia.

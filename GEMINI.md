@@ -1,4 +1,4 @@
-# Minecraft Access — Hub di Contesto Master (GEMINI.md — ASTRALIS v2.8.0)
+# Minecraft Access — Hub di Contesto Master (GEMINI.md — ASTRALIS v3.0.2)
 # Autore: Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA)
 # Target AI: Antigravity (Primario) & Codex/ChatGPT (Copilota Ausiliario)
 # Eredita da:
@@ -31,7 +31,7 @@ Questo file costituisce l'**Hub Centrale di Contesto e Governance** del progetto
 
 3. **Protocollo 3 — Esecuzione** *(Build, Code & Deploy Proattivo — Sotto-Fase 1B / Fase 2)*:
 
-   - Modifiche chirurgiche su classi Java/Mixin; build pulita con `.\gradlew.bat --no-daemon shadowJar`;
+   - Modifiche chirurgiche su classi Java/Mixin; build pulita con `.\gradlew.bat --no-daemon --no-watch-fs shadowJar`;
 
    - Deploy automatico del `.jar` compilato nell'istanza attiva di PrismLauncher (`*26.2*Access*`) prima del collaudo.
 
@@ -80,12 +80,13 @@ Questo file costituisce l'**Hub Centrale di Contesto e Governance** del progetto
     - Bonifica a 5 barriere: audit doppia chiave (codice + `sounds.json` + `lang/*.json` per identificatori dinamici protetti per default), dry-run lineare NVDA, quarantena, compilazione e rollback automatico a 1-click.
 
 12. **Protocollo 12 — Dialettica Ingegneristica & Auto-Revisione Avversariale (L'Inner Codex Pattern)**:
-    - Autonomia critica di Antigravity basata sui 5 Cancelli Inviolabili:
+    - Autonomia critica di Antigravity basata sui 6 Cancelli Inviolabili:
       * *Cancello 1 (Rifiuto Patching Euristico)*: Divieto di forzare budget A*, pesi o ritardi artificiali quando la navigazione fallisce per discontinuità voxel (es. calpestabilità su scale/ladders);
       * *Cancello 2 (Hardware Grounding)*: Probing GLFW puro per rilevare il takeover manuale del giocatore (`keySneak`), disaccoppiato dalle guardie reattive di salvataggio;
       * *Cancello 3 (Hitbox & Clearance Continua)*: Verifica clearance occhi/testa ($0.6 \times 1.8\text{ m}$) per prevenire falsi allarmi caduta su pareti verticali e calcolo forme di collisione sottili ($0.1875\text{ m}$ per scale a pioli);
       * *Cancello 4 (Named Contracts D0..DN / S1..SN)*: Scomposizione atomica delle modifiche complesse in contratti formali numerati;
-      * *Cancello 5 (Determinismo Headless)*: Test seams package-private per test unitari a 0 ms senza `Thread.sleep`.
+      * *Cancello 5 (Determinismo Headless)*: Test seams package-private per test unitari a 0 ms senza `Thread.sleep`;
+      * *Cancello 6 (Budget Token & Anti-Bloat Normativo)*: Rispetto dei canoni di token budget (file router $\le 250$ righe, zero duplicazioni di codice o testo nei prompt).
 
 ---
 
@@ -134,6 +135,18 @@ Questo file costituisce l'**Hub Centrale di Contesto e Governance** del progetto
    - `docs/report/REGISTRO_REVISIONI.md`: Registro snello per le sole voci aperte o in lavorazione;
 
    - `docs/report/ARCHIVIO_REVISIONI.md`: Memoria perenne di tutte le revisioni collaudate e chiuse.
+
+6. **Guardie Esclusive nei Keybinding Multi-Layer (`ModifierUtils`)**:
+
+   - Quando un tasto fisico ospita combinazioni su più livelli (es. `W`, `Alt+W`, `Ctrl+Alt+W`), i callback `handleWorldInput` devono implementare tassativamente le guardie esclusive di `ModifierUtils` (`hasAltOnly()`, `hasControlAndAlt()`) per prevenire conflitti ed esclusioni di input.
+
+   - Disaccoppiare sempre gli identificatori delle funzioni di Access Menu rispetto ai comandi diretti di gameplay per prevenire sovrapposizioni in `kuma.json` e `options.txt`.
+
+7. **Quiete Sensoriale in Navigazione Automatica (AutoWalk Sensory Quieting)**:
+
+   - Durante la marcia AutoWalk, sopprimere a monte il chatter passivo (mirino continuo, ostacoli ordinari superati, avvisi di ciglio non letali) tramite interruttori in `Config.AutoWalk`.
+
+   - Preservare incondizionatamente l'auto-sneak fisico, gli allarmi `CRITICAL` (lava/vuoto) e le interrogazioni manuali esplicite da tastiera (`DirectInteractionShield` su `B`, `M`/`5`, `X`).
 
 ---
 

@@ -82,6 +82,9 @@ public final class Config implements ConfigData {
     @ConfigEntry.Category("cognitiveCoordinator")
     @ConfigEntry.Gui.TransitiveObject
     public CognitiveSettings cognitiveCoordinator = new CognitiveSettings();
+    @ConfigEntry.Category("doorInteraction")
+    @ConfigEntry.Gui.TransitiveObject
+    public DoorInteraction doorInteraction = new DoorInteraction();
 
     private Config() {
     }
@@ -625,6 +628,9 @@ public final class Config implements ConfigData {
         public float audioCueVolume = 0.25f;
 
         public boolean lookAtTargetOnArrival = true;
+        public boolean silenceCrosshairDuringWalk = true;
+        public boolean silenceObstaclesDuringWalk = true;
+        public boolean silenceFallWarningsDuringWalk = true;
 
         public AutoWalk() {
         }
@@ -737,5 +743,16 @@ public final class Config implements ConfigData {
         }
     }
 
+    public static final class DoorInteraction {
+        public boolean autoOpenDoors = true;
+        public boolean autoCloseDoors = true;
+        public boolean includeGatesAndTrapdoors = true;
+        public boolean doorNarration = true;
+
+        public DoorInteraction() {
+        }
+    }
+
 }
+
 

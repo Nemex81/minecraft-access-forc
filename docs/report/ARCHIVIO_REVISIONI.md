@@ -3,8 +3,8 @@
 - **Progetto:** Minecraft Access (Fork 26.2 / 1.21.x)
 - **Autore:** Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA) & Antigravity
 - **Revisori:** Luca / Antigravity / GPT Codex / ChatGPT
-- **Data Ultimo Aggiornamento:** 2026-09-06
-- **Stato:** [ARCHIVIO STORICO PERENNE — 23 REVISIONI COLLAUDATE CON SUCCESSO]
+- **Data Ultimo Aggiornamento:** 2026-09-07
+- **Stato:** [ARCHIVIO STORICO PERENNE — 25 REVISIONI COLLAUDATE CON SUCCESSO]
 - **Registro Attivo Correlato:** [`docs/report/REGISTRO_REVISIONI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/REGISTRO_REVISIONI.md)
 
 Questo documento costituisce la memoria storica e forense perenne di tutte le anomalie, correzioni e rifiniture collaudate e chiuse con successo nel ciclo di vita di Minecraft Access. Ciascuna voce archiviata mantiene la sintesi del problema, la causa radice, la soluzione adottata e i collegamenti diretti ai relativi Piani Tecnici e Report di Sessione archiviati.
@@ -12,6 +12,46 @@ Questo documento costituisce la memoria storica e forense perenne di tutte le an
 ---
 
 ## 🏛️ STORICO REVISIONI COLLAUDATE CON SUCCESSO (CICLO 26.2)
+
+### 🟢 Rev MC-26.13 — Unificazione Architetturale AutoClose a Visuale Fissa & Clean Sweep (AutoOpen & AutoClose Doors)
+- **Stato**: `[COLLAUDATA CON SUCCESSO AL 100% IN-GAME DA LUCA]`
+- **Versione Chiusura**: 26.2-1.12.0-SNAPSHOT (Data 2026-09-07)
+- **Problema Riscontrato (Esperienza Luca)**:
+  1. *Movimento Manuale*: Rischio costante di infiltrazione mob dopo l'ingresso nella propria base, richiedendo lente e disorientanti rotazioni per richiudere la porta alle spalle;
+  2. *AutoWalk*: La manovra cinetica a 180° inserita in `AutoWalkMotor` soffriva di intermittenze e scatti legati al framerate e al clock della CPU, con perdita occasionale del comando di chiusura.
+- **Causa Radice**: Disallineamento tra i 20 TPS logici e il framerate grafico nella macchina a stati cinetica a 3 tick, unito all'assenza di un gestore unificato per la chiusura automatica.
+- **Soluzioni Applicate (PRAPI)**:
+  1. *Hub Centralizzato (`DoorInteractionManager`)*: Gestore FSM su tick client con soglia calibrata a $0.90\text{ m}$ dal centro varco normalizzato `LOWER`, supporto *Passage Renewal* nel vano porta ($d \le 0.65\text{ m}$) e Watchdog timeout di $6000\text{ ms}$;
+  2. *Zero Disorientamento della Visuale*: Chiusura programmatica alle spalle sia a piedi sia in AutoWalk con Yaw e Pitch 100% immutati, emissione suono 3D alle spalle (volume calibrato $0.75\text{f}$) e annuncio vocale univoco *"Porta chiusa alle spalle"*;
+  3. *ASTRALIS Clean Sweep*: Eliminazione integrale di `doorToClosePos`, `doorCloseManeuverTicks` e dell'intero blocco di rotazione a 180° da `AutoWalkMotor`, delegando l'apertura e la registrazione a `DoorInteractionManager`;
+  4. *Configurazione & Test*: Nuova categoria Cloth Config `doorInteraction`, localizzazioni bilingue ordinate alfabeticamente e suite di test JUnit 5 headless a 0 ms (323/323 test passati).
+- **Piani Tecnici e Rapporti di Riferimento**:
+  - [`PIANO_TECNICO_REV_MC-26.13_AUTO_DOORS.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/completati/PIANO_TECNICO_REV_MC-26.13_AUTO_DOORS.md)
+  - [`REPORT_SESSIONE_REV_MC-26.13_AUTO_DOORS.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_SESSIONE_REV_MC-26.13_AUTO_DOORS.md)
+  - [`STRATEGIA_COGNITIVA_GESTIONE_PORTE_E_VARCHI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/strategie/archiviate/STRATEGIA_COGNITIVA_GESTIONE_PORTE_E_VARCHI.md)
+- **Esito Collaudo**: Collaudata con successo al 100% da Luca in-game il 07/09/2026 sia in manuale sia su rotte multi-porta AutoWalk ("ingresso est tenuta", "casa porta primo piano"): fluidità assoluta, zero sobbalzi, chiusura perfetta alle spalle. 323/323 test automatici verdi.
+
+---
+
+### 🟢 Rev MC-26.12 — Assist di Interazione Varchi e Magnetismo Voxel per Porte Aperte (Permissive Door Interaction)
+- **Stato**: `[COLLAUDATA CON SUCCESSO AL 100% IN-GAME DA LUCA]`
+- **Versione Chiusura**: 26.2-1.12.0-SNAPSHOT (Data 2026-09-07)
+- **Problema Riscontrato (Esperienza Luca)**: Quando una porta o cancelletto era aperto, la voce di NVDA annunciava regolarmente *"Porta aperta di abete"* (grazie al micro-voxel raymarch), ma premendo il tasto interazione (tasto destro, `]` o `Invio` del Numpad) la porta non si chiudeva perché il raycast fisico nativo di Vanilla Minecraft attraversava l'aria vuota del varco aperto mancando la lamina da 3 pixel ($0.1875\text{ m}$) dello stipite. Per chiudere la porta era necessaria una ricerca millimetrica dello stipite.
+- **Causa Radice**: Discrepanza geometrica tra `PlayerUtils.crosshairTarget` (micro-voxel snap su intero volume cubico) e `client.hitResult` nativo di Vanilla (collision box reale di 3 pixel a porta aperta).
+- **Soluzioni Applicate (PRAPI)**:
+  1. Helper puro `DoorInteractionHelper`:
+     - `isInteractableOpenDoorOrGate(BlockState)`: riconosce porte in legno/rame/bambù, cancelletti e botole aperte, escludendo tassativamente porte e botole di ferro (`IRON_DOOR`, `IRON_TRAPDOOR`);
+     - `resolvePermissiveDoorHit(Minecraft)`: se Vanilla non sta già mirando a un mob o direttamente allo stipite, interroga `PlayerUtils.crosshairTarget(reach)` e restituisce il `BlockHitResult` del blocco porta aperto;
+  2. Iniezione `MinecraftMixin`:
+     - In `@Inject(method = "startUseItem", at = @At("HEAD"))`: applica atomisticamente `this.hitResult = permissiveHit`; Vanilla procede con `useItemOn` chiudendo la porta al primo colpo da mouse fisico, tasto `]` o Numpad Enter;
+  3. Suite di 7 test headless mirati (`DoorInteractionHelperTest`) con 315/315 test passati.
+- **Piani Tecnici e Rapporti di Riferimento**:
+  - [`PIANO_TECNICO_REV_MC-26.12_MAGNETISMO_VOXEL_PORTE.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/completati/PIANO_TECNICO_REV_MC-26.12_MAGNETISMO_VOXEL_PORTE.md)
+  - [`REPORT_SESSIONE_REV_MC-26.12_MAGNETISMO_VOXEL_PORTE.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_SESSIONE_REV_MC-26.12_MAGNETISMO_VOXEL_PORTE.md)
+  - [`STRATEGIA_COGNITIVA_REV_MC-26.12_MAGNETISMO_VOXEL_PORTE.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/strategie/archiviate/STRATEGIA_COGNITIVA_REV_MC-26.12_MAGNETISMO_VOXEL_PORTE.md)
+- **Esito Collaudo**: Collaudata con successo al 100% da Luca in-game il 07/09/2026: chiusura immediata delle porte aperte al primo tocco puntando verso il varco. 315/315 test automatici verdi.
+
+---
 
 ### 🟢 Rev MC-26.11 — Revisione 5D.7 (R1, R2, R3): Geometria LadderBlock, Disaccoppiamento Shift Umano, Clearance Volumetrica FallDetector e Convergenza Totale Torre Belvedere
 - **Stato**: `[COLLAUDATA CON SUCCESSO AL 100% IN-GAME DA LUCA]`

@@ -43,6 +43,7 @@ public class AutoWalkManager implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_W, KeyModifiers.of(KeyModifier.ALT)))
                 .overrideCategory(KeyMappingCategories.OTHER)
                 .handleWorldInput(_ -> {
+                    if (!org.mcaccess.minecraftaccess.utils.ModifierUtils.hasAltOnly()) return false;
                     toggleAutoWalk();
                     return true;
                 })
@@ -52,6 +53,7 @@ public class AutoWalkManager implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_W, KeyModifiers.of(KeyModifier.CONTROL, KeyModifier.ALT)))
                 .overrideCategory(KeyMappingCategories.OTHER)
                 .handleWorldInput(_ -> {
+                    if (!org.mcaccess.minecraftaccess.utils.ModifierUtils.hasControlAndAlt()) return false;
                     toggleSprint();
                     return true;
                 })
