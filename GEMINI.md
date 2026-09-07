@@ -136,6 +136,18 @@ Questo file costituisce l'**Hub Centrale di Contesto e Governance** del progetto
 
    - `docs/report/ARCHIVIO_REVISIONI.md`: Memoria perenne di tutte le revisioni collaudate e chiuse.
 
+6. **Guardie Esclusive nei Keybinding Multi-Layer (`ModifierUtils`)**:
+
+   - Quando un tasto fisico ospita combinazioni su più livelli (es. `W`, `Alt+W`, `Ctrl+Alt+W`), i callback `handleWorldInput` devono implementare tassativamente le guardie esclusive di `ModifierUtils` (`hasAltOnly()`, `hasControlAndAlt()`) per prevenire conflitti ed esclusioni di input.
+
+   - Disaccoppiare sempre gli identificatori delle funzioni di Access Menu rispetto ai comandi diretti di gameplay per prevenire sovrapposizioni in `kuma.json` e `options.txt`.
+
+7. **Quiete Sensoriale in Navigazione Automatica (AutoWalk Sensory Quieting)**:
+
+   - Durante la marcia AutoWalk, sopprimere a monte il chatter passivo (mirino continuo, ostacoli ordinari superati, avvisi di ciglio non letali) tramite interruttori in `Config.AutoWalk`.
+
+   - Preservare incondizionatamente l'auto-sneak fisico, gli allarmi `CRITICAL` (lava/vuoto) e le interrogazioni manuali esplicite da tastiera (`DirectInteractionShield` su `B`, `M`/`5`, `X`).
+
 ---
 
 ## 🧭 3. INDICE RAGIONATO DELLA BASE DI CONOSCENZA (`knowledge/`)
