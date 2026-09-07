@@ -671,11 +671,17 @@ public class FallDetector implements BalmClientModule {
 
         boolean isNewDanger = (lastWarnedDangerPos == null || !lastWarnedDangerPos.equals(dangerPos));
         long now = clock.millis();
+
+        Config mainConfig = Config.getInstance();
+        boolean autoWalkActive = org.mcaccess.minecraftaccess.features.autowalk.MovementCoordinator.isAutoWalkActive();
+        boolean silenceFallWarnings = mainConfig != null && mainConfig.autoWalk != null && mainConfig.autoWalk.silenceFallWarningsDuringWalk;
+        boolean fallVoiceSilenced = shouldSilenceFallVoiceWarnings(autoWalkActive, silenceFallWarnings);
+
         if (isNewDanger) {
             lastWarnedDangerPos = dangerPos;
             lastEdgeBumpTime = now;
 
-            boolean voiceWanted = config.voiceWarning;
+            boolean voiceWanted = config.voiceWarning && !fallVoiceSilenced;
             boolean soundWanted = config.playAudioCues;
             if (voiceWanted || soundWanted) {
                 String relPos = NarrationUtils.narrateRelativePositionOfPlayerAnd(dangerPos);
@@ -688,7 +694,7 @@ public class FallDetector implements BalmClientModule {
             lastEdgeBumpTime = now;
             Config.FallDetector.EdgeBumpFeedbackMode bumpMode = config.edgeBumpFeedbackMode;
             boolean soundWanted = bumpMode == Config.FallDetector.EdgeBumpFeedbackMode.SOUND_AND_VOICE || bumpMode == Config.FallDetector.EdgeBumpFeedbackMode.SOUND_ONLY;
-            boolean voiceWanted = bumpMode == Config.FallDetector.EdgeBumpFeedbackMode.SOUND_AND_VOICE || bumpMode == Config.FallDetector.EdgeBumpFeedbackMode.VOICE_ONLY;
+            boolean voiceWanted = (bumpMode == Config.FallDetector.EdgeBumpFeedbackMode.SOUND_AND_VOICE || bumpMode == Config.FallDetector.EdgeBumpFeedbackMode.VOICE_ONLY) && !fallVoiceSilenced;
 
             if (voiceWanted || soundWanted) {
                 String relPos = NarrationUtils.narrateRelativePositionOfPlayerAnd(dangerPos);
@@ -708,21 +714,34 @@ public class FallDetector implements BalmClientModule {
             lastNotifiedDescentId = candidate.columnId();
             String msg = I18n.get("minecraft_access.fall_detector.safe_descent");
 
+            Config mainConfig = Config.getInstance();
+            boolean autoWalkActive = org.mcaccess.minecraftaccess.features.autowalk.MovementCoordinator.isAutoWalkActive();
+            boolean silenceFallWarnings = mainConfig != null && mainConfig.autoWalk != null && mainConfig.autoWalk.silenceFallWarningsDuringWalk;
+            boolean fallVoiceSilenced = shouldSilenceFallVoiceWarnings(autoWalkActive, silenceFallWarnings);
+
             SoundCue cue = SoundCue.of(SoundEvents.LADDER_STEP, SoundSource.PLAYERS, candidate.entryPos(), 0.7f, 1.2f);
-            CognitiveEvent event = CognitiveEvent.createOperational(
+            CognitiveEvent event = new CognitiveEvent(
                     SourceDomain.SAFETY,
+                    CognitivePriority.OPERATIONAL,
                     "safety.traversal.safe_descent",
                     StateSignature.of(0, 0, candidate.columnId()),
-                    msg,
+                    fallVoiceSilenced ? "" : msg,
                     candidate.entryPos(),
                     0.5,
-                    cue
+                    SpatialDirection.FORWARD,
+                    fallVoiceSilenced ? CognitiveEvent.OutputType.SOUND_ONLY : CognitiveEvent.OutputType.VOICE_AND_SOUND,
+                    cue,
+                    1500L,
+                    true,
+                    clock.millis()
             );
 
             if (CognitiveCoordinator.isCoordinatorEnabled()) {
                 cognitiveEventConsumer.accept(event);
             } else {
-                legacyNarrationConsumer.accept(msg, false);
+                if (!fallVoiceSilenced) {
+                    legacyNarrationConsumer.accept(msg, false);
+                }
                 legacyAudioConsumer.accept(cue);
             }
         }
@@ -885,6 +904,10 @@ public class FallDetector implements BalmClientModule {
         if (!(Minecraft.getInstance().level.getBlockState(blockPos).isAir())) return 0;
 
         return 1 + getDepth(blockPos.below(), maxDepth - 1);
+    }
+
+    public static boolean shouldSilenceFallVoiceWarnings(boolean isAutoWalkActive, boolean silenceConfig) {
+        return isAutoWalkActive && silenceConfig;
     }
 }
 

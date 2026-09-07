@@ -625,6 +625,9 @@ public final class Config implements ConfigData {
         public float audioCueVolume = 0.25f;
 
         public boolean lookAtTargetOnArrival = true;
+        public boolean silenceCrosshairDuringWalk = true;
+        public boolean silenceObstaclesDuringWalk = true;
+        public boolean silenceFallWarningsDuringWalk = true;
 
         public AutoWalk() {
         }

@@ -59,6 +59,11 @@ public class MovementCoordinator {
     @Getter
     private final AutoWalkMotor motor;
 
+    @Getter
+    @Setter
+    private static @Nullable MovementCoordinator activeInstance = null;
+    private static @Nullable Boolean testAutoWalkActive = null;
+
     public MovementCoordinator() {
         this(new RouteNavigator(), new AutoWalkMotor());
     }
@@ -66,10 +71,22 @@ public class MovementCoordinator {
     public MovementCoordinator(RouteNavigator navigator, AutoWalkMotor motor) {
         this.navigator = navigator;
         this.motor = motor;
+        activeInstance = this;
     }
 
     public boolean isActive() {
         return motor.isActive();
+    }
+
+    public static boolean isAutoWalkActive() {
+        if (testAutoWalkActive != null) {
+            return testAutoWalkActive;
+        }
+        return activeInstance != null && activeInstance.isActive();
+    }
+
+    public static void setTestAutoWalkActive(@Nullable Boolean active) {
+        testAutoWalkActive = active;
     }
 
     private static @Nullable ClientLevel lastLevel = null;
@@ -126,6 +143,7 @@ public class MovementCoordinator {
         lastNodeSoundTime = 0;
         testAutoWalkConfig = null;
         testNarrateHints = null;
+        testAutoWalkActive = null;
     }
 
     // ==========================================

@@ -131,6 +131,14 @@ public class ObstacleDetector implements BalmClientModule {
             return;
         }
 
+        Config mainConfig = Config.getInstance();
+        boolean autoWalkActive = org.mcaccess.minecraftaccess.features.autowalk.MovementCoordinator.isAutoWalkActive();
+        boolean silenceConfig = mainConfig != null && mainConfig.autoWalk != null && mainConfig.autoWalk.silenceObstaclesDuringWalk;
+        if (shouldSilenceObstacles(autoWalkActive, silenceConfig)) {
+            resetState();
+            return;
+        }
+
         Vec3 delta = player.getDeltaMovement();
         double speedSq = delta.x * delta.x + delta.z * delta.z;
         boolean isMoving = speedSq > 0.0001;
@@ -354,6 +362,10 @@ public class ObstacleDetector implements BalmClientModule {
         if (level != null && cue.soundEvent() != null) {
             level.playLocalSound(cue.position(), cue.soundEvent(), cue.soundSource(), cue.volume(), cue.pitch(), true);
         }
+    }
+
+    public static boolean shouldSilenceObstacles(boolean isAutoWalkActive, boolean silenceConfig) {
+        return isAutoWalkActive && silenceConfig;
     }
 
     private void resetState() {

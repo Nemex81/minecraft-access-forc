@@ -164,6 +164,17 @@ public final class CrosshairFeedbackManager {
             return;
         }
 
+        Config mainConfig = Config.getInstance();
+        boolean autoWalkActive = org.mcaccess.minecraftaccess.features.autowalk.MovementCoordinator.isAutoWalkActive();
+        boolean silenceConfig = mainConfig != null && mainConfig.autoWalk != null && mainConfig.autoWalk.silenceCrosshairDuringWalk;
+        if (shouldSilenceCrosshair(autoWalkActive, silenceConfig)) {
+            currentTarget = target;
+            currentNarration = targetName;
+            currentDistance = roundedDistance;
+            lastNarrationTime = now;
+            return;
+        }
+
         if (absorbAutomaticMovementFeedbackIfSuppressed(
                 inActiveMovement,
                 isTargetMutation,
@@ -804,6 +815,10 @@ public final class CrosshairFeedbackManager {
 
     public static void setClock(java.util.function.LongSupplier customClock) {
         clock = customClock;
+    }
+
+    public static boolean shouldSilenceCrosshair(boolean isAutoWalkActive, boolean silenceConfig) {
+        return isAutoWalkActive && silenceConfig;
     }
 
     /**
