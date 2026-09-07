@@ -61,6 +61,7 @@ public final class MainClass {
     public static org.mcaccess.minecraftaccess.features.autowalk.AutoWalkManager autoWalkManager = null;
     public static org.mcaccess.minecraftaccess.features.survival_tracker.SurvivalResourceTracker survivalResourceTracker = null;
     public static org.mcaccess.minecraftaccess.features.directional_path_scanner.DirectionalPathScanner directionalPathScanner = null;
+    public static org.mcaccess.minecraftaccess.features.door.DoorInteractionManager doorInteractionManager = null;
 
     private MainClass() {
     }
@@ -172,6 +173,7 @@ public final class MainClass {
         registrars.registerModule(survivalResourceTracker = new org.mcaccess.minecraftaccess.features.survival_tracker.SurvivalResourceTracker());
         registrars.registerModule(directionalPathScanner = new org.mcaccess.minecraftaccess.features.directional_path_scanner.DirectionalPathScanner());
         registrars.registerModule(new org.mcaccess.minecraftaccess.features.cognitive.CognitiveCoordinator());
+        registrars.registerModule(doorInteractionManager = new org.mcaccess.minecraftaccess.features.door.DoorInteractionManager());
     }
 
 

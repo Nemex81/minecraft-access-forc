@@ -7,7 +7,9 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DoorBlock;
@@ -20,7 +22,10 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import org.mcaccess.minecraftaccess.Config;
+import org.mcaccess.minecraftaccess.MainClass;
 import org.mcaccess.minecraftaccess.features.autowalk.AutoWalkPathfinder.PathResult;
+import org.mcaccess.minecraftaccess.features.door.DoorInteractionHelper;
+import org.mcaccess.minecraftaccess.features.door.DoorInteractionManager;
 import org.mcaccess.minecraftaccess.features.safety.traversal.CrouchIntent;
 import org.mcaccess.minecraftaccess.features.safety.traversal.CrouchIntentProbe;
 import org.mcaccess.minecraftaccess.features.safety.traversal.RawCrouchIntentProvider;
@@ -643,11 +648,56 @@ public class AutoWalkMotor {
                 if (stopMovement != null) {
                     stopMovement.run();
                 }
-                // Stato 1: Stessa porta ancora chiusa
+
+                BlockState state = level != null ? level.getBlockState(doorPos) : null;
+
+                // Contratto D4 (Corner Case 3.1): Porta o botola di ferro non azionabile a mano
+                if (DoorInteractionHelper.isIronDoorOrTrapdoor(state)) {
+                    if (waitingClosedDoorPos == null || !waitingClosedDoorPos.equals(doorPos)) {
+                        waitingClosedDoorPos = doorPos;
+                        if (lookAtAction != null) {
+                            lookAtAction.accept(doorPos);
+                        }
+                        if (narrateHints) {
+                            MainClass.narrate(I18n.get("minecraft_access.door.iron_door_requires_switch"), true);
+                        }
+                    }
+                    return true;
+                }
+
+                Config config = Config.getInstance();
+                boolean autoOpen = config != null && config.doorInteraction != null && config.doorInteraction.autoOpenDoors;
+                boolean autoClose = config != null && config.doorInteraction != null && config.doorInteraction.autoCloseDoors;
+                boolean includeGatesAndTrapdoors = config != null && config.doorInteraction != null && config.doorInteraction.includeGatesAndTrapdoors;
+                boolean narration = config != null && config.doorInteraction != null && config.doorInteraction.doorNarration;
+
+                // Contratto D4: Apertura automatica intelligente se abilitata e blocco interagibile
+                if (autoOpen && DoorInteractionHelper.isInteractableClosedDoorOrGate(state, includeGatesAndTrapdoors)) {
+                    if (waitingClosedDoorPos == null || !waitingClosedDoorPos.equals(doorPos)) {
+                        waitingClosedDoorPos = doorPos;
+                        if (lookAtAction != null) {
+                            lookAtAction.accept(doorPos);
+                        }
+                        if (narration) {
+                            MainClass.narrate(I18n.get("minecraft_access.door.auto_opening"), true);
+                        }
+                        Minecraft client = Minecraft.getInstance();
+                        DoorInteractionManager.interactWithDoor(client, doorPos);
+
+                        if (autoClose && client.player != null) {
+                            Direction facing = client.player.getDirection();
+                            BlockPos canonicalPos = level != null ? AutoWalkPathfinder.getCanonicalDoorPos(level, doorPos) : doorPos;
+                            DoorInteractionManager.registerSession(canonicalPos, client.player.position(), facing, System.currentTimeMillis());
+                        }
+                    }
+                    return true;
+                }
+
+                // Stato 1: Stessa porta ancora chiusa (quando autoOpen è disattivato o porta non apribile)
                 if (waitingClosedDoorPos != null && waitingClosedDoorPos.equals(doorPos)) {
                     return true;
                 }
-                // Stato 5: Nuova porta chiusa intercettata (o primo episodio)
+                // Stato 5: Nuova porta chiusa intercettata (senza autoOpen o fallback)
                 waitingClosedDoorPos = doorPos;
                 if (lookAtAction != null) {
                     lookAtAction.accept(doorPos);
