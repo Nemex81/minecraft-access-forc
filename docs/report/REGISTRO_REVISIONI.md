@@ -84,3 +84,14 @@ Questo documento costituisce il **Registro Attivo Snello** del progetto Minecraf
   3. Non intervenire in MC-26.8 per evitare regressioni o sovraingegnerizzazione su un comportamento funzionale già collaudato positivamente.
 - **Piano Tecnico di Riferimento**: Da redigere nella Fase 8 — Buffer RRU Post-Strategia.
 - **Report di Sessione & File Correlati**: Da associare all'avvio della sessione in Fase 8.
+
+---
+
+### 🚪 Rev MC-26.13 — Gestione Intelligente Auto-Apri e Auto-Chiudi Porte e Varchi (AutoOpen & AutoClose)
+- **Stato**: `[STRATEGIA SALVATA — PIANIFICATA PER LA PROSSIMA SESSIONE]`
+- **Data Apertura**: 2026-09-07
+- **Autori**: Luca & Antigravity
+- **Oggetto**: Automazione cinetica con transizioni trasparenti a "Zero Disorientamento" per aprire e richiudere le porte sia nel movimento manuale (WASD) sia durante la navigazione automatica (AutoWalk).
+- **Riferimento Strategico Master**: [`docs/strategie/attive/STRATEGIA_COGNITIVA_GESTIONE_PORTE_E_VARCHI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/strategie/attive/STRATEGIA_COGNITIVA_GESTIONE_PORTE_E_VARCHI.md)
+- **Pianificazione Operativa**: Sviluppo, redazione piano tecnico ed implementazione pianificati per la sessione successiva (domani), poggiando sulle fondamenta collaudate della Rev MC-26.12.
+- **Report di Sessione & File Correlati**: Da associare all'avvio dei lavori.
