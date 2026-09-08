@@ -148,6 +148,14 @@ Questo file costituisce l'**Hub Centrale di Contesto e Governance** del progetto
 
    - Preservare incondizionatamente l'auto-sneak fisico, gli allarmi `CRITICAL` (lava/vuoto) e le interrogazioni manuali esplicite da tastiera (`DirectInteractionShield` su `B`, `M`/`5`, `X`).
 
+8. **Architettura Duale Anticaduta & Potenziamento Pre-Freno (`features.safety.fall`)**:
+
+   - Scomposizione modulare in `CentralFallSafetyManager`, `ProximityFallDetector` ($1..6\text{ m}$) e `LongRangeFallDetector` ($7..24\text{ m}$).
+
+   - **Pre-Freno Zona 2A ($1.0..1.5\text{ m}$)**: emissione d'emergenza con incudine `SoundEvents.ANVIL_LAND` su bus `SoundSource.PLAYERS` (immunità da attenuazione blocchi) e mutua esclusione acustica dallo xilofono di Zona 1.
+
+   - **Radar Lungo Raggio**: campanella periodica 3.5s con curva di decadimento lenta ($50\%$) e clamping OpenAL $[2.5 .. 12.0]\text{ m}$.
+
 ---
 
 ## 🧭 3. INDICE RAGIONATO DELLA BASE DI CONOSCENZA (`knowledge/`)

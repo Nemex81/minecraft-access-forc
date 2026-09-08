@@ -200,3 +200,23 @@ Per prevenire qualsiasi falso allarme vocale e garantire la massima precisione n
 3. **Esclusioni di Dominio & Testabilità Headless**:
    - Esclusione tassativa di porte e botole di ferro (`Blocks.IRON_DOOR`, `Blocks.IRON_TRAPDOOR`);
    - Testabilità a 0 ms tramite fornitore di tempo iniettabile (`timeSupplier`) e suite unitaria dedicata (`DoorInteractionManagerTest.java`).
+
+---
+
+## 13. Architettura Modulare Anticaduta Duale: Prossimità & Radar Oro-geografico (Rev MC-26.18)
+
+1. **De-monolitizzazione nel Package `features.safety.fall`**:
+   - `CentralFallSafetyManager.java`: Gestore client statico su `ClientPlayingTick.AFTER`. Coordina il ciclo tick-by-tick delegando ai detector specializzati, gestisce la mutua esclusione e i trigger da tastiera (`Alt+F` ispezione, `Ctrl+Alt+F` toggle auto-sneak).
+   - `ProximityFallDetector.java`: Sottosistema per il corto raggio ($1..6\text{ m}$) basato su `TraversalSafetyAnalyzer`. Opera su una scala a tre zone discrete:
+     * *Zona 1* ($2.0..6.0\text{ m}$): Pre-allerta xilofono (`NOTE_BLOCK_IRON_XYLOPHONE`), slowdown cinetico e annuncio vocale descrittivo.
+     * *Zona 2A* ($1.0..1.5\text{ m}$): Pre-freno acustico d'emergenza con incudine `SoundEvents.ANVIL_LAND` su `SoundSource.PLAYERS`. Sopprime istantaneamente lo xilofono per mutua esclusione acustica e concede la finestra di reazione manuale eretta.
+     * *Zona 2B* ($\le 0.85\text{ m}$): Ingaggio meccanico forzato dell'auto-sneak via `SafetyMovementGuard`.
+   - `LongRangeFallDetector.java`: Radar orografico periodico ($7..24\text{ m}$) attivo ogni 3.5s. Scansiona un arco frontale di $\pm 45^\circ$, emettendo una campanella 3D attenuata (`NOTE_BLOCK_BELL`) con curva di decadimento lenta ($50\%$) e clamping vettoriale OpenAL $[2.5 .. 12.0]\text{ m}$.
+   - `FallDetector.java`: Facciata retrocompatibile (~140 righe) che delega al manager centrale preservando la compatibilità con i chiamanti legacy.
+
+2. **Escalation Dinamica dello Stato (`isStatusEscalation`)**:
+   - Per impedire che il debounce temporale blocchi il segnale sonoro d'emergenza mentre il giocatore si avvicina alla medesima buca, il detector implementa il confronto di stato:
+     * L'incudine suona sempre se la voragine passa da `OPERATIONAL` a `CRITICAL` o da Zona 1 a Zona 2A, indipendentemente dal debounce preesistente.
+
+3. **Quiete Sensoriale e Interazione con AutoWalk**:
+   - In marcia autonoma (`MovementCoordinator.isAutoWalkActive()`), il radar a lungo raggio è disattivato al $100\%$ e la prossimità sopprime xilofono, voce e rallentamento sprint, mantenendo solo l'auto-sneak salvavita estremo a $d \le 0.85\text{ m}$.
