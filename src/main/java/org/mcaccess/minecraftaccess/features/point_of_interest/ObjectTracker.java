@@ -441,6 +441,9 @@ public class ObjectTracker implements BalmClientModule {
     }
 
     public boolean isObjectValid(Object object) {
+        if (object == null) {
+            return false;
+        }
         return switch (object) {
             case Entity entity -> entity.isAlive();
             case BlockPos pos -> {

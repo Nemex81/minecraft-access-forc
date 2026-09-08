@@ -4,7 +4,7 @@
 - **Autore:** Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA) & Antigravity
 - **Revisori:** Luca / Antigravity / GPT Codex / ChatGPT
 - **Data Ultimo Aggiornamento:** 2026-09-09
-- **Stato:** [ARCHIVIO STORICO PERENNE — 27 REVISIONI COLLAUDATE CON SUCCESSO]
+- **Stato:** [ARCHIVIO STORICO PERENNE — 28 REVISIONI COLLAUDATE CON SUCCESSO]
 - **Registro Attivo Correlato:** [`docs/report/REGISTRO_REVISIONI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/REGISTRO_REVISIONI.md)
 
 Questo documento costituisce la memoria storica e forense perenne di tutte le anomalie, correzioni e rifiniture collaudate e chiuse con successo nel ciclo di vita di Minecraft Access. Ciascuna voce archiviata mantiene la sintesi del problema, la causa radice, la soluzione adottata e i collegamenti diretti ai relativi Piani Tecnici e Report di Sessione archiviati.
@@ -12,6 +12,31 @@ Questo documento costituisce la memoria storica e forense perenne di tutte le an
 ---
 
 ## 🏛️ STORICO REVISIONI COLLAUDATE CON SUCCESSO (CICLO 26.2)
+
+### 🟢 Rev MC-26.20 — Null Safety in ObjectTracker.isObjectValid() su Selezione Vuota
+- **Stato**: `[COLLAUDATA CON SUCCESSO AL 100% IN-GAME DA LUCA]`
+- **Versione Chiusura**: 26.2-1.19.4 (Data 2026-09-09)
+- **Problema Riscontrato (Esperienza Luca & Telemetria Live)**:
+  - Alla pressione del tasto per rivolgere la visuale al punto d'interesse selezionato (`ObjectTracker.lookAtCurrentObject()`), se nessun oggetto è attualmente selezionato (`currentObject == null`), il client catturava un errore non gestito: `java.lang.NullPointerException` scatenata da `isObjectValid()`.
+- **Evidenza Telemetrica (latest.log ore 00:50:19)**:
+  ```
+  [00:50:19] [Render thread/ERROR]: Error executing task on Client
+  java.lang.NullPointerException
+  	at java.base/java.util.Objects.requireNonNull(Objects.java:220)
+  	at knot//org.mcaccess.minecraftaccess.features.point_of_interest.ObjectTracker.isObjectValid(ObjectTracker.java:444)
+  	at knot//org.mcaccess.minecraftaccess.features.point_of_interest.ObjectTracker.lookAtCurrentObject(ObjectTracker.java:330)
+  ```
+- **Causa Radice**: In Java 21+, il costrutto pattern-matching `return switch (object)` presente in `isObjectValid(Object object)` (riga 444) compila implicitamente con un controllo `Objects.requireNonNull(object)` a monte. Poiché `lookAtCurrentObject()` chiama `if (!isObjectValid(currentObject))` passando `null`, lo switch lancia un'eccezione a runtime prima di poter intercettare la condizione di oggetto non selezionato.
+- **Soluzione Applicata (PRAPI)**:
+  1. Inserita guardia difensiva `if (object == null) return false;` all'inizio di `isObjectValid(Object object)`;
+  2. Consentito a `lookAtCurrentObject()` e `narrateCoordinatesOfCurrentObject()` di raggiungere regolarmente la notifica vocale NVDA: *"Nessun punto di interesse selezionato"*;
+  3. Creata la suite headless deterministica `ObjectTrackerTest.java` (4 test su 4 verdi a 0 ms; suite complessiva a 354/354 test verdi).
+- **Piani Tecnici e Rapporti di Riferimento**:
+  - [`PIANO_TECNICO_REV_MC-26.20_OBJECT_TRACKER_NULL_SAFETY.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/completati/PIANO_TECNICO_REV_MC-26.20_OBJECT_TRACKER_NULL_SAFETY.md)
+  - [`REPORT_SESSIONE_REV_MC-26.20_OBJECT_TRACKER_NULL_SAFETY.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_SESSIONE_REV_MC-26.20_OBJECT_TRACKER_NULL_SAFETY.md)
+- **Esito Collaudo**: Collaudata e validata al 100% in-game da Luca: azionamento dei tasti di puntamento su selezione vuota vocalizza regolarmente l'avviso vocale senza crash né eccezioni nei log.
+
+---
 
 ### 🟢 Rev MC-26.19 — Quiete Sensoriale AutoWalk & Navigatore, Verbosità di Progressione & Silenziamento Mirino e Incudine
 - **Stato**: `[COLLAUDATA CON SUCCESSO AL 100% IN-GAME DA LUCA]`

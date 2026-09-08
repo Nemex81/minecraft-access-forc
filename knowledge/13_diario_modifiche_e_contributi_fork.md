@@ -8,6 +8,23 @@
 Questo documento costituisce il **Diario Ufficiale delle Modifiche del Fork Personale in lingua Italiana**.
 Poiché il `README.md` pubblico e la documentazione del repository upstream rimangono in lingua Inglese per la community internazionale con la sola sezione `## [Unreleased]`, tutte le novità, i refactoring e i miglioramenti sviluppati sui nostri rami (`mymaster`, `dev`) vengono tracciati qui secondo la disciplina AVF (`V.A.R[.M]`).
 
+## 🚀 [v26.2-1.19.4] — 2026-09-09 (Rev. MC-26.20: Null Safety in ObjectTracker.isObjectValid() su Selezione Vuota)
+
+### 🎯 Rev MC-26.20: Null Safety in ObjectTracker.isObjectValid() su Selezione Vuota
+- **Risoluzione NullPointerException su Pattern Switch (Java 21+)**:
+  - Inserita guardia difensiva `if (object == null) return false;` in testa a `ObjectTracker.isObjectValid(Object object)`;
+  - Prevenuta l'eccezione implicita `Objects.requireNonNull(object)` generata dal compilatore Java sul pattern switch quando l'oggetto selezionato è nullo (`currentObject == null`).
+- **Integrità Flussi di Navigazione e Feedback Vocale NVDA**:
+  - Puntamento (`lookAtCurrentObject`) e lettura coordinate (`narrateCoordinatesOfCurrentObject`) pronunciano regolarmente l'avviso vocale: *"Nessun punto di interesse selezionato"*;
+  - Scarto pulito degli elementi nulli nei flussi `Stream` interni di filtraggio POI.
+- **Suite di Test Unitari Headless (0 ms)**:
+  - Creata la suite [`ObjectTrackerTest.java`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/src/test/java/org/mcaccess/minecraftaccess/features/point_of_interest/ObjectTrackerTest.java) con 4 test dedicati (null, stato iniziale, `Waypoint`, tipo sconosciuto);
+  - Suite complessiva portata a 354/354 test verdi a 0 ms senza dipendenze grafiche.
+- **Collaudo In-Game**:
+  - Testato e convalidato al 100% in-game da Luca: azionamento comandi a selezione vuota fluido, sintesi vocale immediata, zero errori nel log.
+
+---
+
 ## 🚀 [v26.2-1.19.3] — 2026-09-09 (Rev. MC-26.19: Quiete Sensoriale AutoWalk & Navigatore, Verbosità di Progressione & Silenziamento Mirino e Incudine)
 
 ### 🚶 Rev MC-26.19: Quiete Sensoriale AutoWalk & Navigatore, Verbosità di Progressione & Silenziamento Mirino e Incudine
