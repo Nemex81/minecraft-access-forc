@@ -1,4 +1,4 @@
-# Minecraft Access — Hub di Contesto Master (GEMINI.md — ASTRALIS v3.0.2)
+# Minecraft Access — Hub di Contesto Master (GEMINI.md — ASTRALIS v3.0.4)
 # Autore: Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA)
 # Target AI: Antigravity (Primario) & Codex/ChatGPT (Copilota Ausiliario)
 # Eredita da:
@@ -155,6 +155,14 @@ Questo file costituisce l'**Hub Centrale di Contesto e Governance** del progetto
    - **Pre-Freno Zona 2A ($1.0..1.5\text{ m}$)**: emissione d'emergenza con incudine `SoundEvents.ANVIL_LAND` su bus `SoundSource.PLAYERS` (immunità da attenuazione blocchi) e mutua esclusione acustica dallo xilofono di Zona 1.
 
    - **Radar Lungo Raggio**: campanella periodica 3.5s con curva di decadimento lenta ($50\%$) e clamping OpenAL $[2.5 .. 12.0]\text{ m}$.
+
+9. **Rilevamento Proattivo Aggiornamenti (Pattern Deferred Query & Update Prompt)**:
+
+   - All'avvio della prima interazione di una chat, l'assistente esegue silenziosamente lo script leggero `$env:OneDrive\progetti dei frati\antigravity master governance e jolly universali\scripts\verifica_aggiornamenti_remoti.ps1`.
+
+   - Se il sistema è aggiornato: silenzio assoluto (zero rumore per NVDA) e risposta immediata.
+
+   - Se è disponibile una nuova release di ASTRALIS: memorizza la richiesta appena formulata, presenta una sintesi chiara ("Obiettivo" e "Descrizione") e propone la scelta trasparente tra aggiornare ASTRALIS o procedere con la richiesta formulata.
 
 ---
 
