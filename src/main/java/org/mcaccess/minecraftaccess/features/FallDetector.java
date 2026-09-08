@@ -329,7 +329,8 @@ public class FallDetector implements BalmClientModule {
                 playerBaseY,
                 moveDir,
                 true,
-                config.depth,
+                config.getEffectiveWarningDepth(),
+                config.autoSneakDepth,
                 level
         );
         TraversalSafetyResult traversalResult = TraversalSafetyAnalyzer.analyzeTraversal(traversalContext);
@@ -400,7 +401,7 @@ public class FallDetector implements BalmClientModule {
 
             BlockPos groundUnderStep = stepPos.below();
             int drop = calculateDangerousDrop(level, groundUnderStep, playerBaseY);
-            if (drop >= config.depth) {
+            if (drop >= config.autoSneakDepth) {
                 lastWarnedDangerPos = groundUnderStep;
                 return true;
             }
@@ -500,7 +501,7 @@ public class FallDetector implements BalmClientModule {
 
             BlockPos groundUnderStep = stepPos.below();
             int drop = calculateDangerousDrop(level, groundUnderStep, playerBaseY);
-            if (drop >= config.depth) {
+            if (drop >= config.getEffectiveWarningDepth()) {
                 return new DangerInfo(groundUnderStep, drop, dist);
             }
 
@@ -663,7 +664,7 @@ public class FallDetector implements BalmClientModule {
         // ZONA 2 — Bordo fisico immediato / Ciglio  (d ≤ 0.85 m)
         // Solo qui si attiva l'accovacciamento forzato anti-caduta
         // ─────────────────────────────────────────────────────────────────
-        if (config.autoSneakOnEdge && distance <= EDGE_SNEAK_THRESHOLD) {
+        if (config.autoSneakOnEdge && distance <= EDGE_SNEAK_THRESHOLD && depth >= config.autoSneakDepth) {
             autoSneakActive = true;
             safetyInterventionActive = true;
             getMovementGuard().engageFallProtection();
@@ -809,7 +810,7 @@ public class FallDetector implements BalmClientModule {
                 }
 
                 int depth = calculateDangerousDrop(client.level, checkGround, playerBaseY);
-                if (depth >= config.depth) {
+                if (depth >= config.getEffectiveWarningDepth()) {
                     if (!isLineOfSightBlocked(client.level, center, checkFeet)) {
                         double distSq = center.distSqr(checkGround);
                         if (distSq < closestDistSq) {
@@ -887,7 +888,7 @@ public class FallDetector implements BalmClientModule {
         if (!Minecraft.getInstance().level.getFluidState(toCheck).isEmpty()) return;
         if (!Minecraft.getInstance().level.getBlockState(toCheck).isAir()) return;
 
-        if (getDepth(toCheck, config.depth) < config.depth) return;
+        if (getDepth(toCheck, config.getEffectiveWarningDepth()) < config.getEffectiveWarningDepth()) return;
 
         ++count;
         log.debug("{}) Found qualified fall position: x:{} y:{} z:{}", count, toCheck.getX(), toCheck.getY(), toCheck.getZ());

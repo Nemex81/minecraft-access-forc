@@ -12,7 +12,23 @@ public record TraversalSafetyContext(
         int playerBaseY,
         @Nullable Vec3 movementIntent,
         boolean hasMovementIntent,
-        int dangerDropThreshold,
+        int warningDepthThreshold,
+        int autoSneakDepthThreshold,
         @NotNull BlockGetter level
 ) {
+    public TraversalSafetyContext(
+            @NotNull Vec3 playerPos,
+            @NotNull AABB playerBoundingBox,
+            int playerBaseY,
+            @Nullable Vec3 movementIntent,
+            boolean hasMovementIntent,
+            int dangerDropThreshold,
+            @NotNull BlockGetter level
+    ) {
+        this(playerPos, playerBoundingBox, playerBaseY, movementIntent, hasMovementIntent, dangerDropThreshold, dangerDropThreshold, level);
+    }
+
+    public int dangerDropThreshold() {
+        return autoSneakDepthThreshold;
+    }
 }

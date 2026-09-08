@@ -3,8 +3,8 @@
 - **Progetto:** Minecraft Access (Fork 26.2 / 1.21.x)
 - **Autore:** Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA) & Antigravity
 - **Revisori:** Luca / Antigravity / GPT Codex / ChatGPT
-- **Data Ultimo Aggiornamento:** 2026-09-07
-- **Stato:** [ARCHIVIO STORICO PERENNE — 25 REVISIONI COLLAUDATE CON SUCCESSO]
+- **Data Ultimo Aggiornamento:** 2026-09-08
+- **Stato:** [ARCHIVIO STORICO PERENNE — 26 REVISIONI COLLAUDATE CON SUCCESSO]
 - **Registro Attivo Correlato:** [`docs/report/REGISTRO_REVISIONI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/REGISTRO_REVISIONI.md)
 
 Questo documento costituisce la memoria storica e forense perenne di tutte le anomalie, correzioni e rifiniture collaudate e chiuse con successo nel ciclo di vita di Minecraft Access. Ciascuna voce archiviata mantiene la sintesi del problema, la causa radice, la soluzione adottata e i collegamenti diretti ai relativi Piani Tecnici e Report di Sessione archiviati.
@@ -12,6 +12,25 @@ Questo documento costituisce la memoria storica e forense perenne di tutte le an
 ---
 
 ## 🏛️ STORICO REVISIONI COLLAUDATE CON SUCCESSO (CICLO 26.2)
+
+### 🟢 Rev MC-26.10 — Perfezionamento Soglia Dislivello Minimo, Disaccoppiamento Soglie Anticaduta & Pervietà Corridoio Discesa in Acqua
+- **Stato**: `[COLLAUDATA CON SUCCESSO AL 100% IN-GAME DA LUCA]`
+- **Versione Chiusura**: 26.2-1.19.1 (Data 2026-09-08)
+- **Problema Riscontrato (Esperienza Luca)**:
+  1. *Accoppiamento Monolitico*: L'uso di un'unica soglia (`depth = 4`) per l'avviso vocale e l'auto-sneak forzava a scegliere tra incollare il giocatore su dislivelli innocui di 3 blocchi (danno nullo) o perdere l'avviso preventivo su salti significativi.
+  2. *Falsi Positivi Discesa Sicura*: L'annuncio "Discesa sicura" scattava su gradini e rampe minime ($\le 2$ blocchi). Inoltre, allo spawn su sentiero di terra, la presenza di una falda acquifera sotterranea a $Y=59$ coperta da terra piena innescava una raffica di 21 annunci spuri di "Discesa sicura".
+- **Causa Radice**: Assenza di disaccoppiamento tra Zona 1 (Percezione) e Zona 2 (Intervento) in `FallDetector`, e scansione verticale verso il basso in `findDescentCandidate` cieca rispetto alla consistenza dei blocchi solidi intermedi tra il piano di cammino e l'acqua.
+- **Soluzioni Applicate (PRAPI)**:
+  1. *Disaccoppiamento Soglie (Contratto D1 & D3)*: Introdotto `warningDepth = 3` per pre-allerta vocale/sonora e `autoSneakDepth = 4` per accovacciamento meccanico sul ciglio; sui salti di 3 blocchi il giocatore sente l'avviso ma cammina e salta liberamente con `W`.
+  2. *Silenziamento Discese Minime (Contratto D2)*: Discese con $\Delta Y < warningDepthThreshold$ (1-2 blocchi) classificate come cammino calpestabile ordinario (`NOT_APPLICABLE`).
+  3. *Pervietà Corridoio Verticale Acqua (Contratto D2.1)*: Inserito controllo di pervietà continua: il ciclo di scansione della colonna d'acqua si interrompe all'istante (`break;`) se incontra un ostacolo solido con collision shape non vuota (`!probeState.getCollisionShape(level, waterProbe).isEmpty()`).
+  4. *Suite di Test (Contratto D4)*: 327 test JUnit eseguiti con successo (100% verdi).
+- **Piani Tecnici e Rapporti di Riferimento**:
+  - [`PIANO_TECNICO_REV_MC-26.10_DISACCOPPIAMENTO_SOGLIE_ANTICADUTA.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/completati/PIANO_TECNICO_REV_MC-26.10_DISACCOPPIAMENTO_SOGLIE_ANTICADUTA.md)
+  - [`REPORT_SESSIONE_REV_MC-26.10_DISACCOPPIAMENTO_SOGLIE_ANTICADUTA.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_SESSIONE_REV_MC-26.10_DISACCOPPIAMENTO_SOGLIE_ANTICADUTA.md)
+- **Esito Collaudo**: Convalidata empiricamente al 100% in-game da Luca: azzerati tutti i falsi allarmi allo spawn, perfetta fluidità sui dislivelli da 3 blocchi, protezione integra e salute a 20.0 cuori.
+
+---
 
 ### 🟢 Rev MC-26.13 — Unificazione Architetturale AutoClose a Visuale Fissa & Clean Sweep (AutoOpen & AutoClose Doors)
 - **Stato**: `[COLLAUDATA CON SUCCESSO AL 100% IN-GAME DA LUCA]`

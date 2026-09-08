@@ -1,4 +1,4 @@
-﻿# Registro Attivo delle Revisioni & Affinamenti Post-Collaudo (RRU)
+# Registro Attivo delle Revisioni & Affinamenti Post-Collaudo (RRU)
 # Progetto: Minecraft Access (Fork 26.2 / 1.21.x)
 # Autore: Luca (Sviluppatore & Collaudatore) & Antigravity (AI Pair Programmer)
 # Percorso: docs/report/REGISTRO_REVISIONI.md
@@ -72,26 +72,51 @@ Questo documento costituisce il **Registro Attivo Snello** del progetto Minecraf
 - **Piano Tecnico di Riferimento**: Da redigere nella sessione dedicata.
 - **Report di Sessione & File Correlati**: Da associare all'avvio della sessione in Fase 8.
 
----
 
-### âšª Rev MC-26.10 â€” Perfezionamento Soglia Dislivello Minimo per Annuncio Discesa Sicura
-- **Stato**: `[PIANIFICATA / DIFFERITA AL BUFFER RRU POST-STRATEGIA]`
-- **Data Rilevamento**: 2026-09-04
-- **Problema Riscontrato**: La vocalizzazione *"discesa sicura"* viene talvolta annunciata anche in presenza di dislivelli minimi e non significativi lungo il cammino.
-- **Azione di Affinamento Futura (PRAPI)**:
-  1. Riprodurre con precisione lo scenario in-game rilevando coordinate, dislivello $\Delta Y$ esatto e blocchi coinvolti;
-  2. Implementare una condizione/soglia mirata con test dedicato per silenziare l'annuncio superfluo senza intaccare in alcun modo l'attuale comportamento protettivo e l'attraversamento delle scale;
-  3. Non intervenire in MC-26.8 per evitare regressioni o sovraingegnerizzazione su un comportamento funzionale giÃ  collaudato positivamente.
-- **Piano Tecnico di Riferimento**: Da redigere nella Fase 8 â€” Buffer RRU Post-Strategia.
-- **Report di Sessione & File Correlati**: Da associare all'avvio della sessione in Fase 8.
 
 ---
 
-### ðŸšª Rev MC-26.13 â€” Gestione Intelligente Auto-Apri e Auto-Chiudi Porte e Varchi (AutoOpen & AutoClose)
-- **Stato**: `[STRATEGIA SALVATA â€” PIANIFICATA PER LA PROSSIMA SESSIONE]`
-- **Data Apertura**: 2026-09-07
+### ❤️ Rev MC-26.14 — Integrazione Cognitiva Dominio Vitalità e Stato Fisiologico
+- **Stato**: `[PIANIFICATA — STRATEGIA ATTIVA]`
+- **Data Apertura**: 2026-09-08
 - **Autori**: Luca & Antigravity
-- **Oggetto**: Automazione cinetica con transizioni trasparenti a "Zero Disorientamento" per aprire e richiudere le porte sia nel movimento manuale (WASD) sia durante la navigazione automatica (AutoWalk).
-- **Riferimento Strategico Master**: [`docs/strategie/attive/STRATEGIA_COGNITIVA_GESTIONE_PORTE_E_VARCHI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/strategie/attive/STRATEGIA_COGNITIVA_GESTIONE_PORTE_E_VARCHI.md)
-- **Pianificazione Operativa**: Implementazione completata, revisionata, collaudata e assimilata a livello globale (Fase 4).
-- **Report di Sessione & File Correlati**: Da associare all'avvio dei lavori.
+- **Oggetto**: Migrazione dei messaggi vitali (`PlayerStatus.java` e `HUDStatus.java`) verso il `CognitiveCoordinator` tramite `StatusCognitiveEventFactory`.
+- **Canali di Priorità**:
+  - `CRITICAL` (Fast-Path 0 ms): Annegamento imminente, soffocamento in blocchi, fuoco/lava;
+  - `OPERATIONAL` (Fine-Tick): Danni improvvisi da mob con provenienza spaziale;
+  - `CONTEXTUAL` (Accodabile): Fame a 3 cosciotti, fine effetti pozioni.
+- **Riferimento Strategico Master**: [`docs/strategie/attive/STRATEGIA_MIGRAZIONE_DOMINI_LEGACY_RESIDUI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/strategie/attive/STRATEGIA_MIGRAZIONE_DOMINI_LEGACY_RESIDUI.md)
+- **Piano Tecnico di Riferimento**: Da redigere in sessione dedicata.
+
+---
+
+### 🌲 Rev MC-26.15 — Integrazione Cognitiva Dominio Ambiente e Indicatori Spontanei
+- **Stato**: `[PIANIFICATA — STRATEGIA ATTIVA]`
+- **Data Apertura**: 2026-09-08
+- **Autori**: Luca & Antigravity
+- **Oggetto**: Migrazione delle notifiche ambientali spontanee (`BiomeIndicator`, `TimeIndicator`, `XPIndicator`, `Weather`, `LightLevel`, `FluidDetector`) verso eventi `CONTEXTUAL` o `PASSIVE`.
+- **Scopo & Beneficio**: Eliminazione del chatter e dei troncamenti vocali durante la marcia o il combattimento. L'annuncio del bioma o del meteo cede sempre il passo al movimento e alla sicurezza.
+- **Riferimento Strategico Master**: [`docs/strategie/attive/STRATEGIA_MIGRAZIONE_DOMINI_LEGACY_RESIDUI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/strategie/attive/STRATEGIA_MIGRAZIONE_DOMINI_LEGACY_RESIDUI.md)
+- **Piano Tecnico di Riferimento**: Da redigere in sessione dedicata.
+
+---
+
+### 🎓 Rev MC-26.16 — Integrazione Cognitiva Dominio Didattico & Mentore Contestuale (Fase 6)
+- **Stato**: `[PIANIFICATA — STRATEGIA ATTIVA]`
+- **Data Apertura**: 2026-09-08
+- **Autori**: Luca & Antigravity
+- **Oggetto**: Migrazione e coordinamento del `ContextualMentor`, di `Academy` e di `HelpNarrator` nel sistema cognitivo centrale.
+- **Scopo & Beneficio**: I consigli didattici e i tutorial vengono subordinati alla sicurezza e alla navigazione attiva. Se il mentore parla e sopraggiunge un ostacolo o un cambio rotta, la voce didattica cede il passo all'istante senza sovrapporsi.
+- **Riferimento Strategico Master**: [`docs/strategie/attive/STRATEGIA_MIGRAZIONE_DOMINI_LEGACY_RESIDUI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/strategie/attive/STRATEGIA_MIGRAZIONE_DOMINI_LEGACY_RESIDUI.md)
+- **Piano Tecnico di Riferimento**: Da redigere in sessione dedicata.
+
+---
+
+### 🎯 Rev MC-26.17 — Integrazione Cognitiva Dominio Radar Passivo Mob e POI Ambientali
+- **Stato**: `[PIANIFICATA — STRATEGIA ATTIVA]`
+- **Data Apertura**: 2026-09-08
+- **Autori**: Luca & Antigravity
+- **Oggetto**: Orchestrazione del rilevamento passivo di entità ostili e POI ambientali (`ObjectTracker`, `POIEntities`, `POIMarking`).
+- **Scopo & Beneficio**: Segnalazione discreta e non invasiva della presenza di mostri nel perimetro ($< 6$ metri con priorità `OPERATIONAL`) senza intralciare il feed del mirino.
+- **Riferimento Strategico Master**: [`docs/strategie/attive/STRATEGIA_MIGRAZIONE_DOMINI_LEGACY_RESIDUI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/strategie/attive/STRATEGIA_MIGRAZIONE_DOMINI_LEGACY_RESIDUI.md)
+- **Piano Tecnico di Riferimento**: Da redigere in sessione dedicata.

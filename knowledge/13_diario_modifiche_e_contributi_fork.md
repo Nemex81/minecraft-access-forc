@@ -8,6 +8,30 @@
 Questo documento costituisce il **Diario Ufficiale delle Modifiche del Fork Personale in lingua Italiana**.
 Poiché il `README.md` pubblico e la documentazione del repository upstream rimangono in lingua Inglese per la community internazionale con la sola sezione `## [Unreleased]`, tutte le novità, i refactoring e i miglioramenti sviluppati sui nostri rami (`mymaster`, `dev`) vengono tracciati qui secondo la disciplina AVF (`V.A.R[.M]`).
 
+## 🚀 [v26.2-1.19.1] — 2026-09-08 (Rev. MC-26.10: Disaccoppiamento Soglie Anticaduta & Pervietà Corridoi Verticali)
+
+### 🛡️ Rev MC-26.10: Disaccoppiamento Soglie Anticaduta (Zona 1 Percezione vs Zona 2 Intervento)
+- **Disaccoppiamento Soglie in Cloth Config**:
+  - Introdotto `warningDepth = 3` (default): dislivello minimo in blocchi per attivare la pre-allerta parlata (*"Attenzione: burrone"*) e il rallentamento cinetico (`autoSlowdown`), senza vincolo meccanico sui movimenti.
+  - Introdotto `autoSneakDepth = 4` (default): dislivello minimo per attivare l'accovacciamento protettivo forzato sul bordo (*"Sul ciglio: burrone"*), tarato esattamente sulla soglia di danno da caduta vanilla.
+  - Mantenuta retrocompatibilità con `depth = 4` (`@Deprecated`) e implementato getter difensivo `getEffectiveWarningDepth() = Math.min(warningDepth, autoSneakDepth)`.
+- **Comportamento nella Finestra $[3, 4)$ Blocchi**:
+  - Sui dislivelli da 3 blocchi (danno nullo): l'utente viene pre-allertato a voce ma può scendere o saltare liberamente con `W`, eliminando l'incollamento spiacevole sul ciglio.
+  - Sui baratri da $\ge 4$ blocchi: l'ancoraggio protettivo sul ciglio interviene al 100% bloccando la caduta letale.
+
+### 🌊 Contratto D2.1: Pervietà del Corridoio Verticale per Discesa in Acqua (Affinamento PRAPI)
+- **Risoluzione Caso Limite Falde Sotterranee Coperte**:
+  - Nel ciclo verticale verso il basso di `findDescentCandidate`, inserito il controllo di pervietà fisica continua (Cancello 3 Inner Codex): se prima di raggiungere il fluido si incontra un blocco solido impenetrabile (`!probeState.getCollisionShape(level, waterProbe).isEmpty()`), la scansione si arresta all'istante (`break;`).
+  - Azzerato al 100% il falso allarme di *"Discesa sicura"* generato da falde acquifere o caverne sotterranee sepolte sotto terreno solido.
+- **Silenziamento Discese Minime su Scale a Pioli**:
+  - Le discese con dislivello complessivo $\Delta Y < warningDepthThreshold$ (1-2 blocchi) vengono classificate come cammino calpestabile ordinario (`NOT_APPLICABLE`), azzerando l'inquinamento vocale durante il normale deambulare su rampe o cordoli.
+
+### 🧪 Suite di Test & Convalida Empirica
+- **Test Unitari Headless (0 ms)**: 327 test eseguiti con successo (0 fallimenti, 0 ignorati). Introdotti Test 10 (acqua sotterranea coperta da pietra) e Test 11 (tuffo in aria aperta).
+- **Collaudo Empirico In-Game (Luca)**: Convalidato sul campo su mondo `scuola di sopravvivenza mondo 2 (1)`: zero annunci spuri allo spawn sul sentiero di terra, perfetta fluidità sui dislivelli da 3 blocchi, protezione e salute intatta a 20.0 cuori.
+
+---
+
 ## 🚀 [v26.2-1.19.0] — 2026-09-07 (Release Ufficiale: Cognitive Coordinator, Gestione Porte & Navigatore AutoWalk)
 
 ### 🌐 Governance & Multi-AI: Allineamento Ecosistema ASTRALIS v2.8.0 (Commit bac2c87b)

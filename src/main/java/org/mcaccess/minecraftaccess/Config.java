@@ -390,7 +390,12 @@ public final class Config implements ConfigData {
     public static final class FallDetector {
         public boolean enabled = true;
         public int range = 6;
+        @Deprecated
         public int depth = 4;
+        @ConfigEntry.BoundedDiscrete(min = 2, max = 20)
+        public int warningDepth = 3;
+        @ConfigEntry.BoundedDiscrete(min = 2, max = 20)
+        public int autoSneakDepth = 4;
         public float volume = 0.25f;
         public int delay = 2500;
         public boolean autoSlowdown = true;
@@ -399,6 +404,10 @@ public final class Config implements ConfigData {
         public boolean autoSneakOnEdge = true;
         public boolean playAudioCues = true;
         public boolean voiceWarning = true;
+
+        public int getEffectiveWarningDepth() {
+            return Math.min(warningDepth, autoSneakDepth);
+        }
 
         @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
         public EdgeBumpFeedbackMode edgeBumpFeedbackMode = EdgeBumpFeedbackMode.SOUND_AND_VOICE;
