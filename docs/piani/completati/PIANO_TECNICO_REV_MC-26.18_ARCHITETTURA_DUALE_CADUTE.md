@@ -4,7 +4,7 @@
 - **Autori:** Luca (Lead Developer Non Vedente con Screen Reader NVDA) & Antigravity (AI Pair Programmer)
 - **Revisori:** Luca / Antigravity / Codex
 - **Data e Ora:** 2026-09-08
-- **Stato Operativo:** [SOTTO-FASE 1A — PIANO TECNICO FORMALE AGGIORNATO IN ATTESA DI CONVALIDA]
+- **Stato Operativo:** [SOTTO-FASE 1B COMPLETATA — DEPLOY EFFETTUATO — IN ATTESA DI COLLAUDO IN-GAME FASE 2]
 - **Incremento Versione Target (AVF):** Minore `v26.2-1.20.0` (Nuova feature architetturale duale e arricchimento sonoro)
 - **Documenti & Piani Correlati:**
   * [`docs/strategie/attive/STRATEGIA_SISTEMA_CADUTE_PROSSIMITA_E_LUNGO_RAGGIO.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/strategie/attive/STRATEGIA_SISTEMA_CADUTE_PROSSIMITA_E_LUNGO_RAGGIO.md)
@@ -36,17 +36,17 @@
 > - `- [/] [IMPLEMENTATO — IN ATTESA DI CONVALIDA]`: Codice scritto o intervento completato, ma in attesa di test o collaudo formale (spunta parziale).
 > - `- [x] [CONVALIDATO CON SUCCESSO]`: Spunta definitiva concessa **esclusivamente POST-CONVALIDA** (approvazione di Luca per la 1A, test suite 100% verde per la 1B, collaudo pratico in-game di Luca per la Fase 2).
 
-- [ ] **0. Decisione, motivazione e perimetro architetturale** [DA AVVIARE]
-- [ ] **1. Contratto D0: Package `features.safety.fall` e disaccoppiamento classi** [DA AVVIARE]
-- [ ] **2. Contratto D1: `CentralFallSafetyManager` (Lifecycle, Routing, Quiete Reciproca & AutoWalk)** [DA AVVIARE]
-- [ ] **3. Contratto D2: `ProximityFallDetector` (1..6 blocchi, Zona 1 Xilofono, Zona 2 Pre-freno Incudine & Freno Meccanico con Mutua Esclusione Acustica)** [DA AVVIARE]
-- [ ] **4. Contratto D3: `LongRangeFallDetector` (7..24 blocchi, Scansione Polare 16 Settori, Campanella 3D)** [DA AVVIARE]
-- [ ] **5. Contratto D4: Riconfigurazione `Config.FallDetector`, Clamping e Normalizzazione `validateAndNormalize()`** [DA AVVIARE]
-- [ ] **6. Contratto D5: Localizzazione I18N con ordinamento alfabetico crescente** [DA AVVIARE]
-- [ ] **7. Contratto D6: Seam di test deterministici a 0 ms e suite di test unitari** [DA AVVIARE]
-- [ ] **8. Inventario file (Nuovi, Modificati, Congelati)** [DA AVVIARE]
-- [ ] **9. Criteri di accettazione finali** [DA AVVIARE]
-- [ ] **10. Stop obbligatorio (Regola 0)** [DA AVVIARE]
+- [x] **0. Decisione, motivazione e perimetro architetturale** [CONVALIDATO CON SUCCESSO]
+- [x] **1. Contratto D0: Package `features.safety.fall` e disaccoppiamento classi** [CONVALIDATO CON SUCCESSO]
+- [x] **2. Contratto D1: `CentralFallSafetyManager` (Lifecycle, Routing, Quiete Reciproca & AutoWalk)** [CONVALIDATO CON SUCCESSO]
+- [x] **3. Contratto D2: `ProximityFallDetector` (1..6 blocchi, Zona 1 Xilofono, Zona 2 Pre-freno Incudine & Freno Meccanico con Mutua Esclusione Acustica)** [CONVALIDATO CON SUCCESSO]
+- [x] **4. Contratto D3: `LongRangeFallDetector` (7..24 blocchi, Scansione Polare 16 Settori, Campanella 3D)** [CONVALIDATO CON SUCCESSO]
+- [x] **5. Contratto D4: Riconfigurazione `Config.FallDetector`, Clamping e Normalizzazione `validateAndNormalize()`** [CONVALIDATO CON SUCCESSO]
+- [x] **6. Contratto D5: Localizzazione I18N con ordinamento alfabetico crescente** [CONVALIDATO CON SUCCESSO]
+- [x] **7. Contratto D6: Seam di test deterministici a 0 ms e suite di test unitari** [CONVALIDATO CON SUCCESSO]
+- [x] **8. Inventario file (Nuovi, Modificati, Congelati)** [CONVALIDATO CON SUCCESSO]
+- [/] **9. Criteri di accettazione finali** [IN COLLAUDO IN-GAME DA PARTE DI LUCA]
+- [/] **10. Deploy proattivo & Telemetria Live (Fase 2)** [DEPLOY COMPLETATO NELLE ISTANZE — PRONTO AL TEST]
 
 ---
 
@@ -256,7 +256,113 @@ I tre nuovi manager implementano seams package-private:
 
 ---
 
-## 10. Stop Obbligatorio (Gating Semantico Sotto-Fase 1A)
+## 10. Ciclo di Revisione & Affinamento PRAPI (Protocollo 5 — Resa Acustica & Risoluzione Bug Sonori)
 
-Questo piano tecnico formale conclude la **Sotto-Fase 1A**.
-**È fatto divieto assoluto di creare o modificare file sorgente Java o file di configurazione prima dell'esplicito comando di Luca ("procedi", "applica", "esegui").**
+A seguito del primo collaudo empirico in-game di Luca (ore 13:00-13:10), è emersa una carenza di percezione acustica dovuta a 4 fattori concomitanti. Il presente ciclo PRAPI integra la soluzione confermata:
+
+### 10.1 Contratto PRAPI-1: Transizione Dinamica di Stato (`lastWarnedStatus`) in `ProximityFallDetector`
+- **Diagnosi:** In avvicinamento continuo, `dangerPos` (la coordinata della buca) non cambia, per cui `isNewDanger` rimaneva falso e l'incudine in Zona 2A (1.0..1.5m) non scattava mai.
+- **Specifica Tecnica:**
+  * Introduzione del campo d'istanza `private ProximityStatus lastWarnedStatus = ProximityStatus.CLEAR;`;
+  * Calcolo di `boolean isStatusEscalation = (status != lastWarnedStatus);`;
+  * La notifica scatta su `(isNewDanger || isStatusEscalation)`;
+  * All'ingresso in `PRE_BRAKE_ZONE_2A`, l'incudine suona immediatamente azzerando lo xilofono;
+  * In `handleDangerCleared` e `resetSafetyState`, `lastWarnedStatus` viene reimpostato a `CLEAR`.
+
+### 10.2 Contratto PRAPI-2: Curva di Decadimento Lento Locale & Proiezione Vettoriale Anti-Cutoff in `LongRangeFallDetector`
+- **Diagnosi:** OpenAL taglia a volume zero qualsiasi suono oltre 16 blocchi. Un beacon a 2.0m fissi avrebbe però cancellato la percezione della distanza richiesta da Luca.
+- **Specifica Tecnica:**
+  * *Curva di Decadimento Lento:* Calcolo del volume su distanza reale:
+    $$V(d) = V_{base} - \left(\frac{d - d_{min}}{d_{max} - d_{min}}\right) \times (V_{base} - V_{floor})$$
+    con $V_{base} = 0.80f$ e $V_{floor} = 0.40f$. A 7m suona a 0.80f, a 24m suona a 0.40f (nitido e mai ammutolito);
+  * *Proiezione Vettoriale Sicura:* Coordinate del suono proiettate lungo il raggio direzionale verso il baratro, con distanza mappata nella finestra acustica sicura $[2.5 .. 12.0]$ metri dalla testa del giocatore:
+    `soundVec = eyePos.add(dir.normalize().scale(acousticDist));`
+  * *Isolamento Assoluto:* Nessuna alterazione delle impostazioni globali di OpenAL, listener o di altri suoni di gioco (passi, mob, blocchi).
+
+### 10.3 Contratto PRAPI-3: Calibrazione Volumi di Default a Standard ASTRALIS in `Config.java`
+- **Diagnosi:** Volume di default 0.4f sottodimensionato per l'udibilità con screen reader.
+- **Specifica Tecnica:**
+  * `public float volume = 0.80f;` (Standard aureo ASTRALIS 0.7f - 0.8f);
+  * `public float longRangeVolumeMultiplier = 0.80f;`;
+  * Clamping in `validateAndNormalize()` tra 0.1f e 1.0f.
+
+### 10.4 Contratto PRAPI-4: Canale Audio Diretto per il Radar in `LongRangeFallDetector`
+- **Diagnosi:** Il cue `PASSIVE` della campanella veniva scartato da `CognitiveCoordinator.flushTick` se c'erano eventi concorrenti del mirino o degli ostacoli.
+- **Specifica Tecnica:**
+  * Emissione del cue sonoro direttamente tramite `legacyAudioConsumer.accept(cue)` per garantire l'udibilità del rintocco ogni 3.5 secondi senza scarti verbali.
+
+---
+
+## 11. Checklist di Avanzamento PRAPI (Matrice a 3 Stati)
+
+- [x] **PRAPI-1: Transizione dinamica `lastWarnedStatus` in `ProximityFallDetector` (Scatto Incudine continuo)** [COMPLETATO]
+- [x] **PRAPI-2: Curva di decadimento lento del volume + Proiezione vettoriale sicura in `LongRangeFallDetector`** [COMPLETATO]
+- [x] **PRAPI-3: Calibrazione volume base a 0.80f (Standard ASTRALIS) in `Config.java`** [COMPLETATO]
+- [x] **PRAPI-4: Canale audio diretto per campanella Lungo Raggio (Zero scarto da eventi concorrenti)** [COMPLETATO]
+- [x] **PRAPI-5: Test unitari headless a 0 ms aggiornati e verifica 100% verde** [COMPLETATO]
+- [x] **PRAPI-6: Build shadowJar, re-deploy proattivo nelle istanze e secondo collaudo in-game di Luca** [COMPLETATO]
+
+---
+
+## 13. Ciclo PRAPI-B: Potenziamento Acustico Pre-Freno (`ANVIL_LAND` & `SoundSource.PLAYERS`)
+
+### 13.1 Diagnosi del Secondo Collaudo In-Game
+Dal secondo collaudo in-game (sessione delle 14:18-14:31) è emerso che:
+1. La cinematica, le distanze (escalation 4 -> 3 -> 2 -> 1 -> orlo), l'auto-sneak, la soppressione e la campanella a lungo raggio funzionano perfettamente;
+2. Tuttavia, il suono di pre-freno (Zona 2A a 1.0..1.5m) risulta quasi inudibile o sembra assente:
+   - `SoundEvents.ANVIL_HIT` è un "toc" sordo e smorzato di durata brevissima ($< 150\text{ ms}$) privo di armoniche squillanti;
+   - La contemporanea vocalizzazione ad alta priorità di NVDA (*"Attenzione: burrone..."*) produce mascheramento psicoacustico completo sul debole campione sonoro;
+   - La categoria `SoundSource.BLOCKS` è soggetta al cursore "Blocchi" delle opzioni audio, che viene spesso tenuto basso dai giocatori per non sentire rumori fastidiosi di scavo.
+
+### 13.2 Contratti Tecnici PRAPI-B
+
+#### Contratto PRAPI-B1: Sostituzione Campione Sonoro con `SoundEvents.ANVIL_LAND`
+- **File:** `ProximityFallDetector.java`, `FallDetector.java`
+- **Specifica:**
+  * Sostituire il supplier di default dell'incudine da `() -> SoundEvents.ANVIL_HIT` a `() -> SoundEvents.ANVIL_LAND`;
+  * In caso di supplier nullo, il fallback deterministico usa `SoundEvents.ANVIL_LAND`;
+  * In `FallDetector.java` (facade), aggiornare i riferimenti di fallback da `ANVIL_HIT` a `ANVIL_LAND`.
+  * *Razionale:* `ANVIL_LAND` (`block.anvil.land`) possiede un transiente metallico acuto ad altissima energia seguito da un rimbombo potente: taglia all'istante qualsiasi parlato NVDA nelle cuffie e trasmette un'immediata sensazione di pericolo imminente.
+
+#### Contratto PRAPI-B2: Allineamento Canale Audio a `SoundSource.PLAYERS`
+- **File:** `ProximityFallDetector.java`
+- **Specifica:**
+  * In `buildFallEvent`: generare `SoundCue.of(soundEvent, SoundSource.PLAYERS, dangerPos, volume, 1.0f)`;
+  * In `dispatchFallAlert` (legacy bypass): generare `SoundCue.of(soundEvent, SoundSource.PLAYERS, dangerPos, volume, 1.0f)`.
+  * *Razionale:* Si conforma allo standard aureo di sicurezza di `PlayerStatus.java` e `knowledge/11_audio_3d_e_gerarchia_vocale.md`. Gli allarmi di incolumità personale operano sul bus `PLAYERS` garantendo immunità dall'attenuazione dei blocchi del mondo.
+
+#### Contratto PRAPI-B3: Aggiornamento e Compatibilità della Suite di Test
+- **File Coinvolti:**
+  1. `ProximityFallDetectorTest.java`:
+     - Test 3 (`testZone2APreBrakeWithAcousticMutualExclusivity`): asserisce `SoundEvents.ANVIL_LAND`;
+     - Test 4 (`testZone2BMechanicalAutoSneak`): asserisce `SoundEvents.ANVIL_LAND`;
+     - Test 7 (`testZone1ToZone2AEscalationOnSameDanger`): asserisce `SoundEvents.ANVIL_LAND`.
+  2. `FallDetectorCognitiveDispatchTest.java`:
+     - Test 1 (`testNewFallDangerEmitsCriticalFastPathWithSoundAndVoice`): asserisce `SoundEvents.ANVIL_LAND` e `SoundSource.PLAYERS`;
+     - Test 3 (`testFallDangerSoundOnlyProducesNoSpokenText`): asserisce `SoundEvents.ANVIL_LAND` e `SoundSource.PLAYERS`;
+     - Test 4 (`testEdgeBumpDebounce1500MsPreserved`): asserisce `SoundEvents.ANVIL_LAND`;
+     - Test 6 (`testLegacyBypassWhenCoordinatorDisabled`): asserisce `SoundEvents.ANVIL_LAND` e `SoundSource.PLAYERS`.
+  3. `SafetyEventFactoryTest.java`:
+     - Test 4 (`testBuildFallEventVoiceAndSound`): asserisce `SoundEvents.ANVIL_LAND` e `SoundSource.PLAYERS`;
+     - Test 6 (`testBuildFallEventSoundOnly`): asserisce `SoundEvents.ANVIL_LAND` e `SoundSource.PLAYERS`;
+     - Test 7 (`testBuildFallEventEdgeBump`): asserisce `SoundEvents.ANVIL_LAND`.
+
+---
+
+## 14. Checklist di Avanzamento PRAPI-B (Matrice a 3 Stati)
+
+- [x] **PRAPI-B1: Adozione di `SoundEvents.ANVIL_LAND` in `ProximityFallDetector` e `FallDetector`** [COMPLETATO]
+- [x] **PRAPI-B2: Allineamento canale su `SoundSource.PLAYERS` in `ProximityFallDetector`** [COMPLETATO]
+- [x] **PRAPI-B3: Aggiornamento asserzioni in `ProximityFallDetectorTest`** [COMPLETATO]
+- [x] **PRAPI-B4: Aggiornamento asserzioni in `FallDetectorCognitiveDispatchTest` e `SafetyEventFactoryTest`** [COMPLETATO]
+- [x] **PRAPI-B5: Esecuzione test suite 100% verde (344+ test a 0 ms)** [COMPLETATO]
+- [x] **PRAPI-B6: Build shadowJar, re-deploy proattivo nelle istanze e terzo collaudo in-game di Luca** [COMPLETATO]
+
+---
+
+## 15. Stop Obbligatorio (Gating Semantico Sotto-Fase 1A PRAPI-B)
+
+Il piano tecnico integrativo PRAPI-B è aggiornato e formalizzato.
+**È fatto divieto assoluto di modificare il codice sorgente prima dell'esplicito comando di Luca ("procedi", "applica", "esegui").**
+
+

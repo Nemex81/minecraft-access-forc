@@ -78,7 +78,7 @@ class SafetyEventFactoryTest {
     }
 
     @Test
-    @DisplayName("4. buildFallEvent creates VOICE_AND_SOUND with warning key, full state signature and real ANVIL_HIT")
+    @DisplayName("4. buildFallEvent creates VOICE_AND_SOUND with warning key, full state signature and real ANVIL_LAND")
     void testBuildFallEventVoiceAndSound() {
         BlockPos dangerPos = new BlockPos(10, 60, 20);
         long now = 10000;
@@ -95,8 +95,8 @@ class SafetyEventFactoryTest {
         assertTrue(event.isSoundEnabled());
         assertNotNull(event.soundCue());
         assertNotNull(event.soundCue().soundEvent());
-        assertEquals(SoundEvents.ANVIL_HIT, event.soundCue().soundEvent());
-        assertEquals(SoundSource.BLOCKS, event.soundCue().soundSource());
+        assertEquals(SoundEvents.ANVIL_LAND, event.soundCue().soundEvent());
+        assertEquals(SoundSource.PLAYERS, event.soundCue().soundSource());
         assertEquals(0.8f, event.soundCue().volume());
         assertEquals(1.0f, event.soundCue().pitch());
         assertEquals(dangerPos, event.soundCue().position());
@@ -126,7 +126,7 @@ class SafetyEventFactoryTest {
     }
 
     @Test
-    @DisplayName("6. buildFallEvent creates SOUND_ONLY preserving semantic text in record with real ANVIL_HIT")
+    @DisplayName("6. buildFallEvent creates SOUND_ONLY preserving semantic text in record with real ANVIL_LAND")
     void testBuildFallEventSoundOnly() {
         BlockPos dangerPos = new BlockPos(10, 60, 20);
         CognitiveEvent event = FallDetector.buildFallEvent(
@@ -139,8 +139,8 @@ class SafetyEventFactoryTest {
         assertTrue(event.isSoundEnabled(), "isSoundEnabled must be true for SOUND_ONLY with cue");
         assertNotNull(event.soundCue());
         assertNotNull(event.soundCue().soundEvent());
-        assertEquals(SoundEvents.ANVIL_HIT, event.soundCue().soundEvent());
-        assertEquals(SoundSource.BLOCKS, event.soundCue().soundSource());
+        assertEquals(SoundEvents.ANVIL_LAND, event.soundCue().soundEvent());
+        assertEquals(SoundSource.PLAYERS, event.soundCue().soundSource());
         assertEquals(0.75f, event.soundCue().volume());
         assertEquals("Attenzione caduta davanti", event.narrationText(), "narrationText must be preserved in contract data even for SOUND_ONLY");
     }
@@ -159,6 +159,6 @@ class SafetyEventFactoryTest {
         assertEquals(8, event.stateSignature().severityLevel());
         assertEquals("fall:edge_bump", event.stateSignature().targetId());
         assertNotNull(event.soundCue());
-        assertEquals(SoundEvents.ANVIL_HIT, event.soundCue().soundEvent());
+        assertEquals(SoundEvents.ANVIL_LAND, event.soundCue().soundEvent());
     }
 }

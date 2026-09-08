@@ -13,6 +13,34 @@ Questo documento costituisce la memoria storica e forense perenne di tutte le an
 
 ## 🏛️ STORICO REVISIONI COLLAUDATE CON SUCCESSO (CICLO 26.2)
 
+### 🟢 Rev MC-26.18 — De-monolitizzazione & Architettura Duale Cadute (Prossimità 1..6 & Lungo Raggio 7..24)
+- **Stato**: `[COLLAUDATA CON SUCCESSO AL 100% IN-GAME DA LUCA]`
+- **Versione Chiusura**: 26.2-1.19.2 (Data 2026-09-08)
+- **Problema Riscontrato (Esperienza Luca)**:
+  1. *Monolitismo di FallDetector*: La classe storica (915 righe) sommava scansione orografica, controllo ciglio, gestione scale/tuffi e debouncing, rendendo opaco il coordinamento degli allarmi.
+  2. *Assenza di Pre-Allerta su Lungo Raggio*: Assenza di percezione anticipata su voragini, scarpate o burroni orografici distanti 7..24 blocchi prima di entrare nell'area di prossimità a ridosso del pericolo.
+  3. *Uscita sonora dell'incudine soffocata (PRAPI)*: Il suono `SoundEvents.ANVIL_HIT` su bus `BLOCKS` veniva facilmente mascherato dal parlato simultaneo di NVDA.
+- **Causa Radice**: Assenza di decomposizione a responsabilità singola per fasce di distanza, accoppiamento acustico spurio tra xilofono e incudine, e uso di un campione sonoro debole con bus d'attenuazione ambientale.
+- **Soluzioni Applicate (PRAPI & PRAPI-B)**:
+  1. *Decomposizione Modulare nel Package `features.safety.fall`*:
+     - `CentralFallSafetyManager`: orchestratore unico su tick client e coordinatore delle guardie;
+     - `ProximityFallDetector`: corto raggio $1..6\text{ m}$, scala a 3 zone (Zona 1 xilofono $2..6\text{ m}$, Zona 2A pre-freno $1.0..1.5\text{ m}$ con mutua esclusione acustica, Zona 2B ciglio meccanico $\le 0.85\text{ m}$);
+     - `LongRangeFallDetector`: radar orografico periodico $7..24\text{ m}$ (campanella 3.5s attenuata con curva decadimento $50\%$, proiezione vettoriale OpenAL $[2.5 .. 12.0]\text{ m}$ ed emissione diretta);
+     - `FallDetector`: facciata retrocompatibile preservata al 100%.
+  2. *Escalation Dinamica & Potenziamento Pre-Freno (PRAPI-B)*:
+     - Sostituito `SoundEvents.ANVIL_HIT` con `SoundEvents.ANVIL_LAND` (`block.anvil.land`), dotato di transiente metallico ad altissima energia penetrante attraverso la sintesi NVDA;
+     - Instradato l'evento salvavita sul bus `SoundSource.PLAYERS` (immunità da attenuazione blocchi ambientali);
+     - Implementato `isStatusEscalation` per garantire lo scatto reattivo dell'incudine all'avvicinarsi continuo alla stessa voragine.
+  3. *Quiete Sensoriale Assoluta in AutoWalk*: Soppressione totale di campanella, xilofono e annunci descrittivi durante la marcia automatica, preservando esclusivamente l'auto-sneak di emergenza.
+  4. *Suite di Test Headless*: 344 test unitari eseguiti a 0 ms (100% verdi).
+- **Piani Tecnici e Rapporti di Riferimento**:
+  - [`PIANO_TECNICO_REV_MC-26.18_ARCHITETTURA_DUALE_CADUTE.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/completati/PIANO_TECNICO_REV_MC-26.18_ARCHITETTURA_DUALE_CADUTE.md)
+  - [`REPORT_SESSIONE_REV_MC-26.18_ARCHITETTURA_DUALE_CADUTE.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_SESSIONE_REV_MC-26.18_ARCHITETTURA_DUALE_CADUTE.md)
+  - [`STRATEGIA_SISTEMA_CADUTE_PROSSIMITA_E_LUNGO_RAGGIO.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/strategie/archiviate/STRATEGIA_SISTEMA_CADUTE_PROSSIMITA_E_LUNGO_RAGGIO.md)
+- **Esito Collaudo**: Collaudata e validata con entusiasmo al 100% da Luca in tre sessioni in-game (14:38, 14:58, 15:16): incudine nitidissima e squillante, escalation progressiva perfetta, perfetta discesa su scale a pioli, zero errori nei log.
+
+---
+
 ### 🟢 Rev MC-26.10 — Perfezionamento Soglia Dislivello Minimo, Disaccoppiamento Soglie Anticaduta & Pervietà Corridoio Discesa in Acqua
 - **Stato**: `[COLLAUDATA CON SUCCESSO AL 100% IN-GAME DA LUCA]`
 - **Versione Chiusura**: 26.2-1.19.1 (Data 2026-09-08)

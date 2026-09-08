@@ -8,6 +8,29 @@
 Questo documento costituisce il **Diario Ufficiale delle Modifiche del Fork Personale in lingua Italiana**.
 Poiché il `README.md` pubblico e la documentazione del repository upstream rimangono in lingua Inglese per la community internazionale con la sola sezione `## [Unreleased]`, tutte le novità, i refactoring e i miglioramenti sviluppati sui nostri rami (`mymaster`, `dev`) vengono tracciati qui secondo la disciplina AVF (`V.A.R[.M]`).
 
+## 🚀 [v26.2-1.19.2] — 2026-09-08 (Rev. MC-26.18: De-monolitizzazione & Architettura Duale Cadute)
+
+### 🕳️ Rev MC-26.18: Architettura Duale Anticaduta (Prossimità 1..6m & Lungo Raggio 7..24m)
+- **De-monolitizzazione Modulare nel Package `features.safety.fall`**:
+  - `CentralFallSafetyManager`: orchestratore unico client-tick, coordina i due sensori, gestisce la mutua esclusione, la quiete sensoriale in AutoWalk e il trigger manuale (`Alt+F` / `Ctrl+Alt+F`).
+  - `ProximityFallDetector`: raggio $1..6\text{ m}$ suddiviso in tre fasce:
+    * *Zona 1* ($2..6\text{ m}$): pre-allerta con xilofono (`NOTE_BLOCK_IRON_XYLOPHONE`), rallentamento sprint e notifica vocale.
+    * *Zona 2A* ($1.0..1.5\text{ m}$): pre-freno acustico d'emergenza con incudine su canale `PLAYERS` e mutua esclusione acustica dallo xilofono.
+    * *Zona 2B* ($\le 0.85\text{ m}$): aggancio meccanico di sicurezza con auto-accovacciamento forzato (`autoSneak`) sul ciglio.
+  - `LongRangeFallDetector`: radar orografico periodico ($7..24\text{ m}$) a scansione 3.5s, rintocco di campanella 3D attenuata (`NOTE_BLOCK_BELL`), decadimento volume lento al $50\%$ e proiezione vettoriale OpenAL $[2.5 .. 12.0]\text{ m}$.
+  - `FallDetector`: ridotto a facciata leggera (~140 righe) con conservazione al 100% della retrocompatibilità binaria.
+- **Potenziamento Acustico Pre-Freno & Escalation Dinamica (PRAPI & PRAPI-B)**:
+  - Sostituito `SoundEvents.ANVIL_HIT` con `SoundEvents.ANVIL_LAND` (`block.anvil.land`), dotato di transiente metallico ad altissima energia penetrante attraverso la voce NVDA;
+  - Allineato il bus audio a `SoundSource.PLAYERS` per garantire immunità totale dai cursori di attenuazione dei blocchi ambientali;
+  - Implementato `isStatusEscalation` per suonare prontamente l'incudine durante l'avvicinamento continuo alla voragine.
+- **Quiete Sensoriale Assoluta in AutoWalk**:
+  - Campanella lungo raggio, xilofono e descrizioni vocali 100% soppressi durante la marcia autonoma; preservato l'auto-sneak salvavita sul ciglio.
+- **Suite di Test & Verifica Empirica**:
+  - Suite JUnit 5 headless: 344/344 test verdi a 0 ms.
+  - Collaudo in-game (Luca): escalation impeccabile, incudine squillante e perentoria, zero errori nei log.
+
+---
+
 ## 🚀 [v26.2-1.19.1] — 2026-09-08 (Rev. MC-26.10: Disaccoppiamento Soglie Anticaduta & Pervietà Corridoi Verticali)
 
 ### 🛡️ Rev MC-26.10: Disaccoppiamento Soglie Anticaduta (Zona 1 Percezione vs Zona 2 Intervento)

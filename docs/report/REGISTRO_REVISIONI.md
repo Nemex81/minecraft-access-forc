@@ -77,18 +77,4 @@ Questo documento costituisce il **Registro Attivo Snello** del progetto Minecraf
 - **Riferimento Strategico Master**: [`docs/strategie/attive/STRATEGIA_MIGRAZIONE_DOMINI_LEGACY_RESIDUI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/strategie/attive/STRATEGIA_MIGRAZIONE_DOMINI_LEGACY_RESIDUI.md)
 - **Piano Tecnico di Riferimento**: Da redigere in sessione dedicata.
 
----
 
-### 🕳️ Rev MC-26.18 — De-monolitizzazione & Architettura Duale Cadute (Prossimità 1..6 & Lungo Raggio 7..24)
-- **Stato**: `[STRATEGIA ATTIVA — FASE 0 CONCLUSA]`
-- **Data Apertura**: 2026-09-08
-- **Autori**: Luca & Antigravity
-- **Oggetto**: De-monolitizzazione di `FallDetector.java` (915 righe) nel package `features.safety.fall` con manager centrale (`CentralFallSafetyManager`), modulo di prossimità (`ProximityFallDetector` 1..6 blocchi) e radar orografico (`LongRangeFallDetector` 7..24 blocchi).
-- **Canali & Suoni di Sonificazione**:
-  - `PASSIVE` (7..24 m): `NOTE_BLOCK_BELL` (campanella 3D attenuata);
-  - `OPERATIONAL` (2..6 m): `NOTE_BLOCK_IRON_XYLOPHONE` (avviso di rotta xilofono + slowdown);
-  - `CRITICAL` (1.0..1.5 m pre-freno): `ANVIL_HIT` (incudine prima del blocco meccanico);
-  - `CRITICAL` (<= 0.85 m ciglio): `autoSneak` forzato via `SafetyMovementGuard`.
-- **Integrazione AutoWalk**: 100% quiete sensoriale durante la navigazione automatica.
-- **Riferimento Strategico Master**: [`docs/strategie/attive/STRATEGIA_SISTEMA_CADUTE_PROSSIMITA_E_LUNGO_RAGGIO.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/strategie/attive/STRATEGIA_SISTEMA_CADUTE_PROSSIMITA_E_LUNGO_RAGGIO.md)
-- **Piano Tecnico di Riferimento**: Da redigere in Sotto-Fase 1A.

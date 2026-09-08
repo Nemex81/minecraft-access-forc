@@ -83,8 +83,8 @@ class FallDetectorCognitiveDispatchTest {
         assertTrue(emittedNarrations.get(0).interrupt(), "Critical danger voice must interrupt background speech");
         assertEquals(1, emittedSounds.size(), "Audio cue must be emitted immediately");
         assertNotNull(emittedSounds.get(0).soundEvent());
-        assertEquals(SoundEvents.ANVIL_HIT, emittedSounds.get(0).soundEvent());
-        assertEquals(SoundSource.BLOCKS, emittedSounds.get(0).soundSource());
+        assertEquals(SoundEvents.ANVIL_LAND, emittedSounds.get(0).soundEvent());
+        assertEquals(SoundSource.PLAYERS, emittedSounds.get(0).soundSource());
         assertEquals(0.8f, emittedSounds.get(0).volume());
         assertTrue(legacyNarrations.isEmpty(), "Legacy path must not be called when coordinator is active");
         assertTrue(legacySounds.isEmpty());
@@ -106,7 +106,7 @@ class FallDetectorCognitiveDispatchTest {
     }
 
     @Test
-    @DisplayName("3. Fall danger with sound only produces sound cue with ANVIL_HIT and zero spoken narrations")
+    @DisplayName("3. Fall danger with sound only produces sound cue with ANVIL_LAND and zero spoken narrations")
     void testFallDangerSoundOnlyProducesNoSpokenText() {
         BlockPos dangerPos = new BlockPos(10, 64, 20);
         long t0 = 10000;
@@ -118,8 +118,8 @@ class FallDetectorCognitiveDispatchTest {
 
         assertEquals(1, emittedSounds.size(), "Sound cue must be emitted");
         assertNotNull(emittedSounds.get(0).soundEvent());
-        assertEquals(SoundEvents.ANVIL_HIT, emittedSounds.get(0).soundEvent());
-        assertEquals(SoundSource.BLOCKS, emittedSounds.get(0).soundSource());
+        assertEquals(SoundEvents.ANVIL_LAND, emittedSounds.get(0).soundEvent());
+        assertEquals(SoundSource.PLAYERS, emittedSounds.get(0).soundSource());
         assertEquals(0.8f, emittedSounds.get(0).volume());
         assertTrue(emittedNarrations.isEmpty(), "Narration must be empty when voice is disabled");
     }
@@ -135,7 +135,7 @@ class FallDetectorCognitiveDispatchTest {
 
         assertEquals(1, emittedNarrations.size(), "Initial edge-bump must be emitted");
         assertEquals(1, emittedSounds.size());
-        assertEquals(SoundEvents.ANVIL_HIT, emittedSounds.get(0).soundEvent());
+        assertEquals(SoundEvents.ANVIL_LAND, emittedSounds.get(0).soundEvent());
 
         // Duplicate edge-bump within window (t0 + 600ms < 1500ms)
         CognitiveEvent event2 = FallDetector.buildFallEvent(dangerPos, 4, 0.0, true, true, true, 0.8f, "Sul ciglio", t0 + 600);
@@ -201,8 +201,8 @@ class FallDetectorCognitiveDispatchTest {
         assertTrue(legacyNarrations.get(0).interrupt());
         assertEquals(1, legacySounds.size(), "Legacy audio delegate must be called once");
         assertNotNull(legacySounds.get(0).soundEvent());
-        assertEquals(SoundEvents.ANVIL_HIT, legacySounds.get(0).soundEvent());
-        assertEquals(SoundSource.BLOCKS, legacySounds.get(0).soundSource());
+        assertEquals(SoundEvents.ANVIL_LAND, legacySounds.get(0).soundEvent());
+        assertEquals(SoundSource.PLAYERS, legacySounds.get(0).soundSource());
         assertEquals(0.8f, legacySounds.get(0).volume());
     }
 }
