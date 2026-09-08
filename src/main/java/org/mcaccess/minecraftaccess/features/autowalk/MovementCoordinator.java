@@ -806,7 +806,9 @@ public class MovementCoordinator {
 
             @Override
             public void onStepNode() {
-                if (config.playNodeSoundCue) {
+                Config.AutoWalk.ProgressionFeedbackMode mode = config != null && config.progressionFeedbackMode != null
+                        ? config.progressionFeedbackMode : Config.AutoWalk.ProgressionFeedbackMode.SOUND_AND_VOICE;
+                if (AutoWalkMotor.shouldPlayNodeSound(config.playNodeSoundCue, mode)) {
                     long now = System.currentTimeMillis();
                     if (now - lastNodeSoundTime >= 200) {
                         lastNodeSoundTime = now;
@@ -818,10 +820,8 @@ public class MovementCoordinator {
 
             @Override
             public void onProgression(int remainingSteps) {
-                if (narrateHints) {
-                    CognitiveEvent event = createProgressEvent(remainingSteps, playerPosSupplier.get(), System.currentTimeMillis());
-                    postEvent(event, false);
-                }
+                CognitiveEvent event = createProgressEvent(remainingSteps, playerPosSupplier.get(), System.currentTimeMillis());
+                postEvent(event, false);
             }
 
             @Override

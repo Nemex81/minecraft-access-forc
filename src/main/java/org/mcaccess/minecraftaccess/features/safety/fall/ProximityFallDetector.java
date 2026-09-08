@@ -139,6 +139,10 @@ public class ProximityFallDetector {
         return autoSneakActive;
     }
 
+    public static boolean shouldSilenceFallAudioInAutoWalk(boolean autoWalkActive, boolean silenceFallWarnings) {
+        return autoWalkActive && silenceFallWarnings;
+    }
+
     public ProximityFallDetector() {
         this(Clock.systemDefaultZone(), Config.getInstance() != null && Config.getInstance().fallDetector != null
                 ? Config.getInstance().fallDetector : new Config.FallDetector(), SafetyMovementGuard.createDefault());
@@ -412,9 +416,9 @@ public class ProximityFallDetector {
         boolean isStatusEscalation = (status != lastWarnedStatus);
         long now = clock.millis();
 
-        // Durante AutoWalk la voce e lo xilofono ordinari sono zittiti a monte
+        // Durante AutoWalk la voce e tutti i cue sonori (xilofono ed emergenza incudine) sono zittiti a monte
         boolean fallVoiceSilenced = autoWalkActive && silenceFallVoiceWarnings;
-        boolean audioSilencedInAutoWalk = autoWalkActive && status == ProximityStatus.WARNING_ZONE_1;
+        boolean audioSilencedInAutoWalk = shouldSilenceFallAudioInAutoWalk(autoWalkActive, silenceFallVoiceWarnings);
 
         if (isNewDanger || isStatusEscalation) {
             lastWarnedDangerPos = dangerPos;
@@ -434,7 +438,7 @@ public class ProximityFallDetector {
             // Edge Bump debounced su collisione ciglio
             lastEdgeBumpTime = now;
             Config.FallDetector.EdgeBumpFeedbackMode bumpMode = config.edgeBumpFeedbackMode;
-            boolean soundWanted = (bumpMode == Config.FallDetector.EdgeBumpFeedbackMode.SOUND_AND_VOICE || bumpMode == Config.FallDetector.EdgeBumpFeedbackMode.SOUND_ONLY);
+            boolean soundWanted = (bumpMode == Config.FallDetector.EdgeBumpFeedbackMode.SOUND_AND_VOICE || bumpMode == Config.FallDetector.EdgeBumpFeedbackMode.SOUND_ONLY) && !audioSilencedInAutoWalk;
             boolean voiceWanted = (bumpMode == Config.FallDetector.EdgeBumpFeedbackMode.SOUND_AND_VOICE || bumpMode == Config.FallDetector.EdgeBumpFeedbackMode.VOICE_ONLY) && !fallVoiceSilenced;
 
             if (voiceWanted || soundWanted) {

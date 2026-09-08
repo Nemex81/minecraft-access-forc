@@ -523,7 +523,7 @@ public final class Config implements ConfigData {
         @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
         public DirectionFeedbackMode directionFeedbackMode = DirectionFeedbackMode.FOUR_DIRECTIONS;
 
-        private ObstacleDetector() {
+        public ObstacleDetector() {
         }
 
         public enum DirectionFeedbackMode {
@@ -571,7 +571,7 @@ public final class Config implements ConfigData {
         @ConfigEntry.Gui.CollapsibleObject
         public Filter filter = new Filter();
 
-        private NarrateCrosshair() {
+        public NarrateCrosshair() {
         }
 
         public enum BlockFaceNarrationMode {
@@ -723,6 +723,9 @@ public final class Config implements ConfigData {
         public boolean voiceFeedback = true;
         public boolean playNodeSoundCue = true;
 
+        @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
+        public ProgressionFeedbackMode progressionFeedbackMode = ProgressionFeedbackMode.SOUND_AND_VOICE;
+
         @ConfigEntry.BoundedDiscrete(min = 0, max = 1)
         public float audioCueVolume = 0.25f;
 
@@ -732,6 +735,13 @@ public final class Config implements ConfigData {
         public boolean silenceFallWarningsDuringWalk = true;
 
         public AutoWalk() {
+        }
+
+        public enum ProgressionFeedbackMode {
+            SOUND_AND_VOICE,
+            SOUND_ONLY,
+            VOICE_ONLY,
+            OFF
         }
     }
 

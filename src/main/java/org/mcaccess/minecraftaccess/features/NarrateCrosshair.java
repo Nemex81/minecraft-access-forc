@@ -37,8 +37,12 @@ import org.mcaccess.minecraftaccess.utils.events.ClientPlayingTick;
 @Slf4j
 public class NarrateCrosshair implements BalmClientModule {
     private final SessionLocal<@Nullable Vec3> previousSoundPos = new SessionLocal<>(() -> null);
-    private static final Config.NarrateCrosshair CONFIG = Config.getInstance().narrateCrosshair;
     private static long suppressUntil = 0;
+
+    private static Config.NarrateCrosshair getConfig() {
+        Config cfg = Config.getInstance();
+        return (cfg != null && cfg.narrateCrosshair != null) ? cfg.narrateCrosshair : new Config.NarrateCrosshair();
+    }
 
     public static void suppressNarration(long durationMillis) {
         suppressUntil = System.currentTimeMillis() + durationMillis;
@@ -60,10 +64,11 @@ public class NarrateCrosshair implements BalmClientModule {
 
     private void tick(Minecraft client, Player player, Level level) {
         if (client.gui.screen() != null) return;
-        if (!CONFIG.enabled) return;
+        Config.NarrateCrosshair config = getConfig();
+        if (!config.enabled) return;
         if (System.currentTimeMillis() < suppressUntil) return;
 
-        WorldNarrator narrator = MainClass.registry(WorldNarrator.class).get(CONFIG.narrator);
+        WorldNarrator narrator = MainClass.registry(WorldNarrator.class).get(config.narrator);
         HitResult rayCast = (narrator != null) ? narrator.rayCast() : null;
         if (rayCast == null || rayCast.getType() == HitResult.Type.MISS) {
             CrosshairFeedbackManager.onCrosshairMiss();
@@ -76,35 +81,40 @@ public class NarrateCrosshair implements BalmClientModule {
             return;
         }
 
-        if (CONFIG.relativePositionSoundCue.isSoundEnabled()) {
-            double rayCastDistance = Math.max(player.blockInteractionRange(), player.entityInteractionRange());
-            Vec3 targetPosition = switch (rayCast) {
-                case BlockHitResult blockHitResult -> Vec3.atCenterOf(blockHitResult.getBlockPos());
-                case EntityHitResult entityHitResult -> entityHitResult.getEntity().position();
-                default -> rayCast.getLocation();
-            };
-            if (!Objects.equals(targetPosition, previousSoundPos.value)) {
-                playRelativePositionSoundCue(targetPosition, rayCastDistance,
-                        SoundEvents.NOTE_BLOCK_HARP,
-                        CONFIG.relativePositionSoundCue.minSoundVolume,
-                        CONFIG.relativePositionSoundCue.maxSoundVolume);
+        if (config.relativePositionSoundCue.isSoundEnabled()) {
+            boolean autoWalkActive = org.mcaccess.minecraftaccess.features.autowalk.MovementCoordinator.isAutoWalkActive();
+            Config mainConfig = Config.getInstance();
+            boolean silenceCrosshair = mainConfig != null && mainConfig.autoWalk != null && mainConfig.autoWalk.silenceCrosshairDuringWalk;
+            if (!shouldSilenceCrosshairHarp(autoWalkActive, silenceCrosshair)) {
+                double rayCastDistance = Math.max(player.blockInteractionRange(), player.entityInteractionRange());
+                Vec3 targetPosition = switch (rayCast) {
+                    case BlockHitResult blockHitResult -> Vec3.atCenterOf(blockHitResult.getBlockPos());
+                    case EntityHitResult entityHitResult -> entityHitResult.getEntity().position();
+                    default -> rayCast.getLocation();
+                };
+                if (!Objects.equals(targetPosition, previousSoundPos.value)) {
+                    playRelativePositionSoundCue(targetPosition, rayCastDistance,
+                            SoundEvents.NOTE_BLOCK_HARP,
+                            config.relativePositionSoundCue.minSoundVolume,
+                            config.relativePositionSoundCue.maxSoundVolume);
+                }
+                previousSoundPos.value = targetPosition;
             }
-            previousSoundPos.value = targetPosition;
         }
 
         if (!(rayCast instanceof BlockHitResult || rayCast instanceof EntityHitResult)) {
-            log.warn("Filtering only works on BlockHitResult and EntityHitResult. Using narrator {}", CONFIG.narrator);
-        } else if (CONFIG.filter.enabled) {
+            log.warn("Filtering only works on BlockHitResult and EntityHitResult. Using narrator {}", config.narrator);
+        } else if (config.filter.enabled) {
             switch (rayCast) {
-                case BlockHitResult blockHitResult when CONFIG.filter.targetMode.filterBlocks() -> {
+                case BlockHitResult blockHitResult when config.filter.targetMode.filterBlocks() -> {
                     Identifier key = BuiltInRegistries.BLOCK.getKey(level.getBlockState(blockHitResult.getBlockPos()).getBlock());
-                    if (isIgnored(key)) {
+                    if (isIgnored(key, config)) {
                         return;
                     }
                 }
-                case EntityHitResult entityHitResult when CONFIG.filter.targetMode.filterEntities() -> {
+                case EntityHitResult entityHitResult when config.filter.targetMode.filterEntities() -> {
                     Identifier key = EntityType.getKey(entityHitResult.getEntity().getType());
-                    if (isIgnored(key)) {
+                    if (isIgnored(key, config)) {
                         return;
                     }
                 }
@@ -114,7 +124,7 @@ public class NarrateCrosshair implements BalmClientModule {
         }
 
         Object target = switch (rayCast) {
-            case BlockHitResult blockHitResult -> CONFIG.disableNarratingConsecutiveBlocks ? null : blockHitResult.getBlockPos();
+            case BlockHitResult blockHitResult -> config.disableNarratingConsecutiveBlocks ? null : blockHitResult.getBlockPos();
             case EntityHitResult entityHitResult -> entityHitResult.getEntity();
             default -> rayCast;
         };
@@ -131,13 +141,13 @@ public class NarrateCrosshair implements BalmClientModule {
         CrosshairFeedbackManager.processCrosshairTick(rayCast, target, narration, distance, inActiveMovement, canonicalId);
     }
 
-    private boolean isIgnored(Identifier identifier) {
+    private boolean isIgnored(Identifier identifier, Config.NarrateCrosshair config) {
         if (identifier == null) return false;
         String name = identifier.getPath();
-        Predicate<String> p = CONFIG.filter.fuzzy ? name::contains : name::equals;
-        return CONFIG.filter.whitelist
-                ? Arrays.stream(CONFIG.filter.targets).noneMatch(p)
-                : Arrays.stream(CONFIG.filter.targets).anyMatch(p);
+        Predicate<String> p = config.filter.fuzzy ? name::contains : name::equals;
+        return config.filter.whitelist
+                ? Arrays.stream(config.filter.targets).noneMatch(p)
+                : Arrays.stream(config.filter.targets).anyMatch(p);
     }
 
     // To indicate relative location between player and target.
@@ -171,5 +181,9 @@ public class NarrateCrosshair implements BalmClientModule {
                 pitch,
                 true
         );
+    }
+
+    public static boolean shouldSilenceCrosshairHarp(boolean isAutoWalkActive, boolean silenceConfig) {
+        return isAutoWalkActive && silenceConfig;
     }
 }

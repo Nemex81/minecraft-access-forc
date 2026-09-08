@@ -16,6 +16,30 @@ Questo documento costituisce il **Registro Attivo Snello** del progetto Minecraf
 
 ---
 
+### 🎯 Rev MC-26.20 — NullPointerException in ObjectTracker.isObjectValid() su Selezione Vuota
+- **Stato**: `[APERTA — RILEVAMENTO TELEMETRICO LIVE]`
+- **Data Rilevamento**: 2026-09-09
+- **Autori**: Luca & Antigravity
+- **Problema Riscontrato (Esperienza Luca & Telemetria Live)**:
+  - Alla pressione del tasto per rivolgere la visuale al punto d'interesse selezionato (`ObjectTracker.lookAtCurrentObject()`), se nessun oggetto è attualmente selezionato (`currentObject == null`), il client cattura un errore non gestito: `java.lang.NullPointerException` scatenata da `isObjectValid()`.
+- **Evidenza Telemetrica (latest.log ore 00:50:19)**:
+  ```
+  [00:50:19] [Render thread/ERROR]: Error executing task on Client
+  java.lang.NullPointerException
+  	at java.base/java.util.Objects.requireNonNull(Objects.java:220)
+  	at knot//org.mcaccess.minecraftaccess.features.point_of_interest.ObjectTracker.isObjectValid(ObjectTracker.java:444)
+  	at knot//org.mcaccess.minecraftaccess.features.point_of_interest.ObjectTracker.lookAtCurrentObject(ObjectTracker.java:330)
+  ```
+- **Causa Radice**: In Java 21+, il costrutto pattern-matching `return switch (object)` presente in `isObjectValid(Object object)` (riga 444) compila implicitamente con un controllo `Objects.requireNonNull(object)` a monte. Poiché `lookAtCurrentObject()` chiama `if (!isObjectValid(currentObject))` passando `null`, lo switch lancia un'eccezione a runtime prima di poter intercettare la condizione di oggetto non selezionato.
+- **Soluzione di Risoluzione (PRAPI / Dominio POI Rev MC-26.17)**:
+  1. Inserire una guardia difensiva `if (object == null) return false;` all'inizio di `isObjectValid(Object object)` o un `case null -> false;` nello switch;
+  2. Garantire che `lookAtCurrentObject()` raggiunga regolarmente `narrateDirect(I18n.get("minecraft_access.point_of_interest.not_selected"), true);` pronunciando *"Nessun punto di interesse selezionato"*.
+- **File Coinvolti**:
+  * `src/main/java/org/mcaccess/minecraftaccess/features/point_of_interest/ObjectTracker.java`
+- **Ambito Architetturale di Riferimento**: [`docs/report/REGISTRO_REVISIONI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/REGISTRO_REVISIONI.md) (Rev MC-26.17 — Dominio Radar POI e Mob).
+
+---
+
 ### ðŸ”µ Rev MC-26.7 â€” Resilienza & Fallback Traduzioni per Blocchi di Mod Terze (es. Macaw's Doors)
 - **Stato**: `[APERTA â€” DIFFERITA AL BUFFER RRU POST-STRATEGIA]`
 - **Data Rilevamento**: 2026-09-01

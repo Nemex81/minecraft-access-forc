@@ -3,8 +3,8 @@
 - **Progetto:** Minecraft Access (Fork 26.2 / 1.21.x)
 - **Autore:** Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA) & Antigravity
 - **Revisori:** Luca / Antigravity / GPT Codex / ChatGPT
-- **Data Ultimo Aggiornamento:** 2026-09-08
-- **Stato:** [ARCHIVIO STORICO PERENNE — 26 REVISIONI COLLAUDATE CON SUCCESSO]
+- **Data Ultimo Aggiornamento:** 2026-09-09
+- **Stato:** [ARCHIVIO STORICO PERENNE — 27 REVISIONI COLLAUDATE CON SUCCESSO]
 - **Registro Attivo Correlato:** [`docs/report/REGISTRO_REVISIONI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/REGISTRO_REVISIONI.md)
 
 Questo documento costituisce la memoria storica e forense perenne di tutte le anomalie, correzioni e rifiniture collaudate e chiuse con successo nel ciclo di vita di Minecraft Access. Ciascuna voce archiviata mantiene la sintesi del problema, la causa radice, la soluzione adottata e i collegamenti diretti ai relativi Piani Tecnici e Report di Sessione archiviati.
@@ -12,6 +12,29 @@ Questo documento costituisce la memoria storica e forense perenne di tutte le an
 ---
 
 ## 🏛️ STORICO REVISIONI COLLAUDATE CON SUCCESSO (CICLO 26.2)
+
+### 🟢 Rev MC-26.19 — Quiete Sensoriale AutoWalk & Navigatore, Verbosità di Progressione & Silenziamento Mirino e Incudine
+- **Stato**: `[COLLAUDATA CON SUCCESSO AL 100% IN-GAME DA LUCA]`
+- **Versione Chiusura**: 26.2-1.19.3 (Data 2026-09-09)
+- **Problema Riscontrato (Esperienza Luca)**:
+  1. *Accoppiamento Monolitico Telemetria Passi*: La lettura vocale dei passi mancanti a traguardi di 5 era legata alla variabile didattica globale `narrateHints`, privando l'utente del conteggio se disattivava i suggerimenti;
+  2. *Arpeggio Invasivo del Mirino nelle Curve*: Quando l'AutoWalk sterzava per seguire la rotta, il blocco mirato variava quota fino a 20°/tick scatenando note d'arpa continue (`NOTE_BLOCK_HARP`);
+  3. *Allarme Incudine Spurio su Tracciato Sicuro (PRAPI)*: Il transiente acustico metallico dell'incudine (`ANVIL_LAND`) risuonava all'avvicinarsi a $1.0 - 1.5\text{ m}$ da cigli e discese pur essendo su una rotta A* geometricamente protetta.
+- **Causa Radice**: Assenza di un enum dedicato alla progressione in Cloth Config, mancanza di una guardia sul cue sonoro di elevazione in `NarrateCrosshair.java` durante l'AutoWalk e limitazione del silenziamento acustico anticaduta al solo xilofono di Zona 1 in `ProximityFallDetector.java`.
+- **Soluzioni Applicate (PRAPI & PRAPI-B)**:
+  1. *Verbosità Regolabile (`ProgressionFeedbackMode`)*: Introdotto enum a 4 stati in `Config.AutoWalk` (`SOUND_AND_VOICE` default amato da Luca, `SOUND_ONLY`, `VOICE_ONLY`, `OFF`), con I18N IT/EN rigidamente ordinata in ordine alfabetico crescente;
+  2. *Svincolo Telemetria in `AutoWalkMotor`*: Cadenza vocale a 5 passi autonoma e pura;
+  3. *Silenziamento Mirino*: Soppressione di `playRelativePositionSoundCue` in `NarrateCrosshair` a rotta attiva, con tutela dell'interrogazione manuale `B` via `DirectInteractionShield`;
+  4. *Silenziamento Incudine in AutoWalk*: Soppressione di `SoundEvents.ANVIL_LAND` e dell'Edge Bump durante l'AutoWalk quando `silenceFallWarningsDuringWalk` è abilitato; ripristino immediato a 0 ms dell'incudine su stallo, takeover manuale o navigazione inattiva;
+  5. *Costruttori Pubblici*: Resi pubblici i costruttori di `Config.ObstacleDetector` e `Config.NarrateCrosshair` per piena conformità headless;
+  6. *Suite Headless*: 350/350 test unitari superati a 0 ms.
+- **Piani Tecnici e Rapporti di Riferimento**:
+  - [`PIANO_TECNICO_REV_MC-26.19_QUIETE_SENSORIALE_AUTOWALK_E_NAVIGATORE.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/completati/PIANO_TECNICO_REV_MC-26.19_QUIETE_SENSORIALE_AUTOWALK_E_NAVIGATORE.md)
+  - [`REPORT_SESSIONE_REV_MC-26.19_QUIETE_SENSORIALE_AUTOWALK_E_NAVIGATORE.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_SESSIONE_REV_MC-26.19_QUIETE_SENSORIALE_AUTOWALK_E_NAVIGATORE.md)
+  - [`STRATEGIA_QUIETE_SENSORIALE_AUTOWALK_E_NAVIGATORE.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/strategie/archiviate/STRATEGIA_QUIETE_SENSORIALE_AUTOWALK_E_NAVIGATORE.md)
+- **Esito Collaudo**: Collaudata e validata al 100% in-game da Luca in due sessioni (17:28 e 00:56): marcia fluida e silenziosa, cadenza vocale perfetta a intervalli di 5 passi, arpeggio arpa spento nelle curve, incudine muta sul percorso sicuro e vigile a piedi, integrità salvataggi verificata.
+
+---
 
 ### 🟢 Rev MC-26.18 — De-monolitizzazione & Architettura Duale Cadute (Prossimità 1..6 & Lungo Raggio 7..24)
 - **Stato**: `[COLLAUDATA CON SUCCESSO AL 100% IN-GAME DA LUCA]`

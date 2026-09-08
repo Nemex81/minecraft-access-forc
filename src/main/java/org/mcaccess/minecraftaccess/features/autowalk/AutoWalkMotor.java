@@ -447,7 +447,9 @@ public class AutoWalkMotor {
 
             int remainingSteps = navigator.getRemainingSteps();
             int currentIndex = navigator.getCurrentPathIndex();
-            if (narrateHints && remainingSteps > 0 && remainingSteps % 5 == 0 && currentIndex != lastAnnouncedStepIndex) {
+            Config.AutoWalk.ProgressionFeedbackMode progMode = config != null && config.progressionFeedbackMode != null
+                    ? config.progressionFeedbackMode : Config.AutoWalk.ProgressionFeedbackMode.SOUND_AND_VOICE;
+            if (shouldNarrateStepProgression(remainingSteps, currentIndex, lastAnnouncedStepIndex, progMode)) {
                 lastAnnouncedStepIndex = currentIndex;
                 callback.onProgression(remainingSteps);
             }
@@ -749,5 +751,27 @@ public class AutoWalkMotor {
 
     public static boolean isDoorOrGateClosed(Level level, BlockPos pos) {
         return AutoWalkPathfinder.isDoorOrGateClosed(level, pos);
+    }
+
+    public static boolean shouldNarrateStepProgression(
+            int remainingSteps,
+            int currentIndex,
+            int lastAnnouncedIndex,
+            Config.AutoWalk.ProgressionFeedbackMode mode
+    ) {
+        if (mode != Config.AutoWalk.ProgressionFeedbackMode.SOUND_AND_VOICE && mode != Config.AutoWalk.ProgressionFeedbackMode.VOICE_ONLY) {
+            return false;
+        }
+        return remainingSteps > 0 && remainingSteps % 5 == 0 && currentIndex != lastAnnouncedIndex;
+    }
+
+    public static boolean shouldPlayNodeSound(
+            boolean playNodeSoundCue,
+            Config.AutoWalk.ProgressionFeedbackMode mode
+    ) {
+        if (!playNodeSoundCue) {
+            return false;
+        }
+        return mode == Config.AutoWalk.ProgressionFeedbackMode.SOUND_AND_VOICE || mode == Config.AutoWalk.ProgressionFeedbackMode.SOUND_ONLY;
     }
 }

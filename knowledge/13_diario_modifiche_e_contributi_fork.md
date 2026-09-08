@@ -8,6 +8,29 @@
 Questo documento costituisce il **Diario Ufficiale delle Modifiche del Fork Personale in lingua Italiana**.
 Poiché il `README.md` pubblico e la documentazione del repository upstream rimangono in lingua Inglese per la community internazionale con la sola sezione `## [Unreleased]`, tutte le novità, i refactoring e i miglioramenti sviluppati sui nostri rami (`mymaster`, `dev`) vengono tracciati qui secondo la disciplina AVF (`V.A.R[.M]`).
 
+## 🚀 [v26.2-1.19.3] — 2026-09-09 (Rev. MC-26.19: Quiete Sensoriale AutoWalk & Navigatore, Verbosità di Progressione & Silenziamento Mirino e Incudine)
+
+### 🚶 Rev MC-26.19: Quiete Sensoriale AutoWalk & Navigatore, Verbosità di Progressione & Silenziamento Mirino e Incudine
+- **Verbosità di Progressione Regolabile (`ProgressionFeedbackMode`)**:
+  - Introdotto l'enum `ProgressionFeedbackMode` con 4 livelli in `Config.AutoWalk`: `SOUND_AND_VOICE` (default storico Luca), `SOUND_ONLY`, `VOICE_ONLY`, `OFF`;
+  - Svincolato il conteggio vocale dei passi rimanenti (`callback.onProgression`) dalla variabile globale dei suggerimenti didattici `narrateHints`;
+  - Cadenza vocale autonoma a intervalli debounced di 5 passi (*"Ancora 25 passi"*, *"Ancora 20 passi"*...);
+  - Rigore I18N rispettato al 100% in `it_it.json` ed `en_us.json` con ordinamento alfabetico crescente obbligatorio.
+- **Silenziamento Chirurgico Cue Arpa Mirino (`NarrateCrosshair`)**:
+  - Soppressa l'emissione del suono `playRelativePositionSoundCue` (`NOTE_BLOCK_HARP`) durante le sterzate della visuale dell'AutoWalk se `silenceCrosshairDuringWalk` è abilitato;
+  - Preservata al 100% l'interrogazione manuale immediata ad alta priorità tramite tasto `B` (`DirectInteractionShield`).
+- **Silenziamento Cue Acustico Anticaduta (Incudine) in Marcia**:
+  - Soppresso il pre-freno acustico d'emergenza (`SoundEvents.ANVIL_LAND`) e l'Edge Bump debounced in `ProximityFallDetector` durante la deambulazione assistita da pathfinder A*;
+  - Ripristino immediato (0 ms) della protezione acustica totale dell'incudine su marcia manuale, arresto, arrivo a meta o interruzione da stallo/takeover (`keySneak` / WASD); auto-sneak fisico sul ciglio preservato intatto.
+- **Conformità Headless & Robustezza Modulare**:
+  - Resi pubblici i costruttori di `Config.ObstacleDetector` e `Config.NarrateCrosshair` per compatibilità headless e Cloth Config;
+  - Creati test seams deterministici a 0 ms senza dipendenze grafiche.
+- **Suite di Test & Convalida Empirica**:
+  - Suite JUnit 5 headless: 350/350 test verdi a 0 ms;
+  - Collaudo in-game (Luca): tre navigazioni verificate con successo, ambiente acustico pulito e ritmato, telemetria nitida, zero falsi allarmi.
+
+---
+
 ## 🚀 [v26.2-1.19.2] — 2026-09-08 (Rev. MC-26.18: De-monolitizzazione & Architettura Duale Cadute)
 
 ### 🕳️ Rev MC-26.18: Architettura Duale Anticaduta (Prossimità 1..6m & Lungo Raggio 7..24m)
