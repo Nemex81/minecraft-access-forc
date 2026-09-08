@@ -32,50 +32,6 @@ Questo documento costituisce il **Registro Attivo Snello** del progetto Minecraf
 
 ---
 
-### ðŸŸ¡ Rev MC-26.8 â€” Interruttore Diagnostico del Cognitive Coordinator (Ctrl+Alt+C)
-- **Stato**: `[DIFFERITA AL BUFFER RRU POST-STRATEGIA â€” FASE 8]`
-- **Data Revisione**: 2026-09-04
-- **Pianificazione Operativa (Aggiornamento Luca)**: Posticipata fino alla chiusura e convalida della Fase 7, quindi affrontata nel Buffer RRU della Fase 8, prima della validazione finale.
-- **Ramo Git**: `feat/cognitive-orchestrator`
-- **Verifica Funzionale Scale (Collaudo Luca)**: Il problema storico dello sticky-sneak sulle scale a pioli a parete Ã¨ **risolto**: davanti a una scala il sistema vocalizza correttamente *"discesa sicura"* e il giocatore puÃ² attraversare la scala e scendere liberamente.
-- **Componenti Congelati e Protetti (Zero Modifiche)**:
-  - Nessuna modifica a `FallDetector`, `TraversalSafetyAnalyzer`, `SafetyMovementGuard` o ai relativi test;
-  - Nessuna introduzione di `TraversalSafetyEventFactory` (evitata sovraingegnerizzazione);
-  - Nessuna rimozione preventiva dei rami storici di `calculateDangerousDrop`;
-  - Nessuna macchina a stati aggiuntiva per la transizione sulle scale;
-  - Fase 3B (`ObstacleDetector`, mirino) rigorosamente confermata come chiusa e protetta.
-- **Scope Operativo Esclusivo di MC-26.8**:
-  1. Interruttore diagnostico globale volatile di sessione per `CognitiveCoordinator`: combinazione `Ctrl+Alt+C` registrata nella categoria esistente `KeyMappingCategories.OTHER`;
-  2. Stato solo di sessione in memoria (nessuna scrittura nella configurazione salvata su disco);
-  3. Svuotamento atomico immediato di buffer di tick, code, memorie e scudi (`clearAllBuffers()`) a ogni commutazione (ON -> OFF e OFF -> ON);
-  4. Instradamento dinamico: bypass dell'arbitraggio, con inoltro diretto ai consumatori legacy configurati quando disattivato, e ripresa dell'arbitraggio centrale quando attivato;
-  5. Notifica vocale diretta tramite `MainClass.narrate(msg, true)`, indipendente dall'arbitraggio cognitivo;
-  6. Suite di test dedicati per il toggle e il routing A/B cognitivo/legacy.
-- **Piano Tecnico di Riferimento**: `docs/piani/attivi/PIANO_TECNICO_REV_MC-26.8_TRAVERSAL_SAFETY_ANALYZER.md` (allineato e differito al Buffer RRU post-strategia).
-- **Report di Sessione & File Correlati**: Da associare all'avvio della sessione in Fase 8.
-- **Esito Collaudo**: In attesa di avvio lavorazione nella Fase 8.
-
----
-
-### ðŸŸ£ Rev MC-26.9 â€” Interruttore Maestro del Modulo Tastierino Numerico (NumpadControls)
-- **Stato**: `[PIANIFICATA / DIFFERITA AL BUFFER RRU POST-STRATEGIA]`
-- **Data Rilevamento**: 2026-09-04
-- **Oggetto**: Interruttore maestro globale per abilitare/disabilitare l'intero modulo Tastierino Numerico (`NumpadControls`).
-- **Scorciatoia Definitiva**: `Ctrl+Alt+F8` (binding Kuma con `InputConstants.KEY_F8` e modificatori `CONTROL + ALT`; sostituisce definitivamente ogni ipotesi su NumLock o Numpad +).
-- **Scopo & Requisiti**:
-  1. Consentire all'utente di spegnere/accendere completamente l'ascolto e l'elaborazione del tastierino numerico in tempo reale;
-  2. Quando disattivato, nessun input da tastierino numerico deve essere intercettato o consumato dal mod, consentendo il comportamento libero o nativo di Minecraft;
-  3. Fornire feedback vocale e sonoro immediato all'attivazione e disattivazione;
-  4. Nessuna interferenza o modifica al codice durante la stabilizzazione del coordinatore cognitivo.
-- **Differimento Formale & Vincolo Inderogabile**: Nessuna implementazione prima del completamento e della convalida formale della Fase 7; revisione differita alla Fase 8, dopo tutti i punti della roadmap cognitiva.
-- **Vincolo di Sessione**: Zero modifiche a `NumpadControls` o al relativo package nella sessione corrente.
-- **Piano Tecnico di Riferimento**: Da redigere nella sessione dedicata.
-- **Report di Sessione & File Correlati**: Da associare all'avvio della sessione in Fase 8.
-
-
-
----
-
 ### ❤️ Rev MC-26.14 — Integrazione Cognitiva Dominio Vitalità e Stato Fisiologico
 - **Stato**: `[PIANIFICATA — STRATEGIA ATTIVA]`
 - **Data Apertura**: 2026-09-08
@@ -120,3 +76,19 @@ Questo documento costituisce il **Registro Attivo Snello** del progetto Minecraf
 - **Scopo & Beneficio**: Segnalazione discreta e non invasiva della presenza di mostri nel perimetro ($< 6$ metri con priorità `OPERATIONAL`) senza intralciare il feed del mirino.
 - **Riferimento Strategico Master**: [`docs/strategie/attive/STRATEGIA_MIGRAZIONE_DOMINI_LEGACY_RESIDUI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/strategie/attive/STRATEGIA_MIGRAZIONE_DOMINI_LEGACY_RESIDUI.md)
 - **Piano Tecnico di Riferimento**: Da redigere in sessione dedicata.
+
+---
+
+### 🕳️ Rev MC-26.18 — De-monolitizzazione & Architettura Duale Cadute (Prossimità 1..6 & Lungo Raggio 7..24)
+- **Stato**: `[STRATEGIA ATTIVA — FASE 0 CONCLUSA]`
+- **Data Apertura**: 2026-09-08
+- **Autori**: Luca & Antigravity
+- **Oggetto**: De-monolitizzazione di `FallDetector.java` (915 righe) nel package `features.safety.fall` con manager centrale (`CentralFallSafetyManager`), modulo di prossimità (`ProximityFallDetector` 1..6 blocchi) e radar orografico (`LongRangeFallDetector` 7..24 blocchi).
+- **Canali & Suoni di Sonificazione**:
+  - `PASSIVE` (7..24 m): `NOTE_BLOCK_BELL` (campanella 3D attenuata);
+  - `OPERATIONAL` (2..6 m): `NOTE_BLOCK_IRON_XYLOPHONE` (avviso di rotta xilofono + slowdown);
+  - `CRITICAL` (1.0..1.5 m pre-freno): `ANVIL_HIT` (incudine prima del blocco meccanico);
+  - `CRITICAL` (<= 0.85 m ciglio): `autoSneak` forzato via `SafetyMovementGuard`.
+- **Integrazione AutoWalk**: 100% quiete sensoriale durante la navigazione automatica.
+- **Riferimento Strategico Master**: [`docs/strategie/attive/STRATEGIA_SISTEMA_CADUTE_PROSSIMITA_E_LUNGO_RAGGIO.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/strategie/attive/STRATEGIA_SISTEMA_CADUTE_PROSSIMITA_E_LUNGO_RAGGIO.md)
+- **Piano Tecnico di Riferimento**: Da redigere in Sotto-Fase 1A.
