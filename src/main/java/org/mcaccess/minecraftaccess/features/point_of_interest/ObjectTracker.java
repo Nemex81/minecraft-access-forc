@@ -35,6 +35,7 @@ import org.mcaccess.minecraftaccess.api.WorldNarrator;
 import org.mcaccess.minecraftaccess.features.point_of_interest.waypoints.Waypoint;
 import org.mcaccess.minecraftaccess.features.point_of_interest.waypoints.WaypointUtils;
 import org.mcaccess.minecraftaccess.utils.KeyMappingCategories;
+import org.mcaccess.minecraftaccess.utils.ModifierUtils;
 import org.mcaccess.minecraftaccess.utils.NarrationUtils;
 import org.mcaccess.minecraftaccess.utils.events.ClientPlayingTick;
 
@@ -71,6 +72,7 @@ public class ObjectTracker implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_HOME))
                 .overrideCategory(KeyMappingCategories.OBJECT_TRACKER)
                 .handleWorldInput(_ -> {
+                    if (!ModifierUtils.hasNoModifiers()) return false;
                     narrateCurrentObject(true);
                     return true;
                 })
@@ -134,6 +136,7 @@ public class ObjectTracker implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_HOME, KeyModifiers.of(KeyModifier.CONTROL)))
                 .overrideCategory(KeyMappingCategories.OBJECT_TRACKER)
                 .handleWorldInput(_ -> {
+                    if (!ModifierUtils.hasControlOnly()) return false;
                     lookAtCurrentObject();
                     return true;
                 })
@@ -143,6 +146,8 @@ public class ObjectTracker implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_HOME, KeyModifiers.of(KeyModifier.ALT)))
                 .overrideCategory(KeyMappingCategories.OBJECT_TRACKER)
                 .handleWorldInput(_ -> {
+                    // Accetta sia Alt+Home sia Ctrl+Alt+Home con Control sia sinistro che destro
+                    if (!ModifierUtils.hasAltOnly() && !ModifierUtils.hasControlAndAlt()) return false;
                     narrateCoordinatesOfCurrentObject();
                     return true;
                 })

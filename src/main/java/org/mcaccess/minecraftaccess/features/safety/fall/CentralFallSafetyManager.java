@@ -11,6 +11,7 @@ import net.blay09.mods.kuma.api.KeyModifier;
 import net.blay09.mods.kuma.api.KeyModifiers;
 import net.blay09.mods.kuma.api.Kuma;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.player.Player;
@@ -109,6 +110,59 @@ public class CentralFallSafetyManager implements BalmClientModule {
                     return true;
                 })
                 .build();
+
+        Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "fall_detector.toggle_proximity_detector"))
+                .withDefault(InputBinding.key(InputConstants.KEY_F3, KeyModifiers.of(KeyModifier.CONTROL, KeyModifier.ALT)))
+                .overrideCategory(KeyMappingCategories.OTHER)
+                .handleWorldInput(_ -> {
+                    if (!ModifierUtils.hasControlAndAlt()) return false;
+                    toggleProximityFallDetector();
+                    return true;
+                })
+                .build();
+
+        Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "fall_detector.toggle_long_range_detector"))
+                .withDefault(InputBinding.key(InputConstants.KEY_F4, KeyModifiers.of(KeyModifier.CONTROL, KeyModifier.ALT)))
+                .overrideCategory(KeyMappingCategories.OTHER)
+                .handleWorldInput(_ -> {
+                    if (!ModifierUtils.hasControlAndAlt()) return false;
+                    toggleLongRangeFallDetector();
+                    return true;
+                })
+                .build();
+    }
+
+    public void toggleProximityFallDetector() {
+        Config cfg = Config.getInstance();
+        Config.FallDetector config = configSupplier != null ? configSupplier.get() : null;
+        if (config == null) {
+            config = cfg != null && cfg.fallDetector != null ? cfg.fallDetector : null;
+        }
+        if (config == null) return;
+        config.proximityEnabled = !config.proximityEnabled;
+        if (cfg != null) cfg.save();
+        if (config.proximityEnabled) {
+            MainClass.narrate(I18n.get("minecraft_access.fall_detector.proximity_on"), true);
+        } else {
+            proximityDetector.resetSafetyState();
+            MainClass.narrate(I18n.get("minecraft_access.fall_detector.proximity_off"), true);
+        }
+    }
+
+    public void toggleLongRangeFallDetector() {
+        Config cfg = Config.getInstance();
+        Config.FallDetector config = configSupplier != null ? configSupplier.get() : null;
+        if (config == null) {
+            config = cfg != null && cfg.fallDetector != null ? cfg.fallDetector : null;
+        }
+        if (config == null) return;
+        config.longRangeEnabled = !config.longRangeEnabled;
+        if (cfg != null) cfg.save();
+        if (config.longRangeEnabled) {
+            MainClass.narrate(I18n.get("minecraft_access.fall_detector.long_range_on"), true);
+        } else {
+            MainClass.narrate(I18n.get("minecraft_access.fall_detector.long_range_off"), true);
+        }
     }
 
     public void tick(Minecraft client, Player player, Level level) {

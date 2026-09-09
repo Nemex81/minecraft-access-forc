@@ -10,8 +10,14 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.blay09.mods.balm.client.platform.event.callback.ClientLifecycleCallback;
 import net.blay09.mods.balm.client.platform.module.BalmClientModule;
+import net.blay09.mods.kuma.api.InputBinding;
+import net.blay09.mods.kuma.api.KeyModifier;
+import net.blay09.mods.kuma.api.KeyModifiers;
+import net.blay09.mods.kuma.api.Kuma;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Player;
@@ -24,6 +30,8 @@ import org.jetbrains.annotations.Nullable;
 
 import org.mcaccess.minecraftaccess.Config;
 import org.mcaccess.minecraftaccess.MainClass;
+import org.mcaccess.minecraftaccess.utils.KeyMappingCategories;
+import org.mcaccess.minecraftaccess.utils.ModifierUtils;
 import org.mcaccess.minecraftaccess.utils.condition.Interval;
 import org.mcaccess.minecraftaccess.utils.events.ClientPlayingTick;
 
@@ -87,6 +95,84 @@ public class POIBlocks implements BalmClientModule {
             markedBlock = null;
             lastScanResults = new ArrayList<>();
         });
+
+        // Batteria interruttori suoni radar POI Blocchi (Ctrl+Alt+F7..F12 + G) — Rev MC-26.22
+        registerToggle("poi.sound_toggle.blocks.ore",       InputConstants.KEY_F7,  this::toggleSoundOre);
+        registerToggle("poi.sound_toggle.blocks.functional",InputConstants.KEY_F8,  this::toggleSoundFunctional);
+        registerToggle("poi.sound_toggle.blocks.door",      InputConstants.KEY_F9,  this::toggleSoundDoor);
+        registerToggle("poi.sound_toggle.blocks.portal",    InputConstants.KEY_F10, this::toggleSoundPortal);
+        registerToggle("poi.sound_toggle.blocks.ladder",    InputConstants.KEY_F11, this::toggleSoundLadder);
+        registerToggle("poi.sound_toggle.blocks.fluid",     InputConstants.KEY_F12, this::toggleSoundFluid);
+        registerToggle("poi.sound_toggle.blocks.gui",       InputConstants.KEY_G,   this::toggleSoundGui);
+    }
+
+    /** Registra un keymapping Kuma Ctrl+Alt+<key> per un toggle suono categoria blocchi. */
+    private void registerToggle(String id, int keyCode, Runnable action) {
+        Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, id))
+                .withDefault(InputBinding.key(keyCode, KeyModifiers.of(KeyModifier.CONTROL, KeyModifier.ALT)))
+                .overrideCategory(KeyMappingCategories.OTHER)
+                .handleWorldInput(_ -> {
+                    if (!ModifierUtils.hasControlAndAlt()) return false;
+                    action.run();
+                    return true;
+                })
+                .build();
+    }
+
+    public void toggleSoundOre() {
+        CONFIG.soundEnabledOre = !CONFIG.soundEnabledOre;
+        Config.getInstance().save();
+        MainClass.narrate(I18n.get(CONFIG.soundEnabledOre
+                ? "minecraft_access.poi.sound_toggle.blocks.ore.on"
+                : "minecraft_access.poi.sound_toggle.blocks.ore.off"), true);
+    }
+
+    public void toggleSoundFunctional() {
+        CONFIG.soundEnabledFunctional = !CONFIG.soundEnabledFunctional;
+        Config.getInstance().save();
+        MainClass.narrate(I18n.get(CONFIG.soundEnabledFunctional
+                ? "minecraft_access.poi.sound_toggle.blocks.functional.on"
+                : "minecraft_access.poi.sound_toggle.blocks.functional.off"), true);
+    }
+
+    public void toggleSoundDoor() {
+        CONFIG.soundEnabledDoor = !CONFIG.soundEnabledDoor;
+        Config.getInstance().save();
+        MainClass.narrate(I18n.get(CONFIG.soundEnabledDoor
+                ? "minecraft_access.poi.sound_toggle.blocks.door.on"
+                : "minecraft_access.poi.sound_toggle.blocks.door.off"), true);
+    }
+
+    public void toggleSoundPortal() {
+        CONFIG.soundEnabledPortal = !CONFIG.soundEnabledPortal;
+        Config.getInstance().save();
+        MainClass.narrate(I18n.get(CONFIG.soundEnabledPortal
+                ? "minecraft_access.poi.sound_toggle.blocks.portal.on"
+                : "minecraft_access.poi.sound_toggle.blocks.portal.off"), true);
+    }
+
+    public void toggleSoundLadder() {
+        CONFIG.soundEnabledLadder = !CONFIG.soundEnabledLadder;
+        Config.getInstance().save();
+        MainClass.narrate(I18n.get(CONFIG.soundEnabledLadder
+                ? "minecraft_access.poi.sound_toggle.blocks.ladder.on"
+                : "minecraft_access.poi.sound_toggle.blocks.ladder.off"), true);
+    }
+
+    public void toggleSoundFluid() {
+        CONFIG.soundEnabledFluid = !CONFIG.soundEnabledFluid;
+        Config.getInstance().save();
+        MainClass.narrate(I18n.get(CONFIG.soundEnabledFluid
+                ? "minecraft_access.poi.sound_toggle.blocks.fluid.on"
+                : "minecraft_access.poi.sound_toggle.blocks.fluid.off"), true);
+    }
+
+    public void toggleSoundGui() {
+        CONFIG.soundEnabledGui = !CONFIG.soundEnabledGui;
+        Config.getInstance().save();
+        MainClass.narrate(I18n.get(CONFIG.soundEnabledGui
+                ? "minecraft_access.poi.sound_toggle.blocks.gui.on"
+                : "minecraft_access.poi.sound_toggle.blocks.gui.off"), true);
     }
 
     private void tick(Minecraft client, Player player, Level level) {

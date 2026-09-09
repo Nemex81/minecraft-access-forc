@@ -1,6 +1,7 @@
 package org.mcaccess.minecraftaccess.mixin;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.Options;
 import net.minecraft.world.phys.HitResult;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -10,6 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import org.mcaccess.minecraftaccess.features.AccessMenu;
 import org.mcaccess.minecraftaccess.features.door.DoorInteractionHelper;
+import org.mcaccess.minecraftaccess.utils.ModifierUtils;
 
 @Mixin(Minecraft.class)
 abstract class MinecraftMixin {
@@ -18,6 +20,25 @@ abstract class MinecraftMixin {
 
     @Shadow
     public HitResult hitResult;
+
+    @Shadow
+    public Options options;
+
+    /**
+     * Neutralizza le azioni vanilla dei tasti F5 (cambio prospettiva) e F1 (nascondi HUD)
+     * quando si usano gli interruttori Minecraft Access con Ctrl+Alt (Rev MC-26.22).
+     */
+    @Inject(method = "handleKeybinds", at = @At("HEAD"))
+    private void suppressVanillaFunctionKeysWhenCtrlAlt(CallbackInfo ci) {
+        if (ModifierUtils.hasControlAndAlt() && this.options != null) {
+            while (this.options.keyTogglePerspective.consumeClick()) {
+                // Svuota click F5 per prevenire il cambio di prospettiva
+            }
+            while (this.options.keyToggleGui.consumeClick()) {
+                // Svuota click F1 per prevenire la scomparsa dell'HUD
+            }
+        }
+    }
 
     /**
      * {@link AccessMenu} allows menu functions to be triggered when

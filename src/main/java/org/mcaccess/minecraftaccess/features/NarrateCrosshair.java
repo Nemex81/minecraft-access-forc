@@ -4,10 +4,16 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Predicate;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import lombok.extern.slf4j.Slf4j;
 import net.blay09.mods.balm.client.platform.module.BalmClientModule;
 import net.blay09.mods.balm.client.platform.util.SessionLocal;
+import net.blay09.mods.kuma.api.InputBinding;
+import net.blay09.mods.kuma.api.KeyModifier;
+import net.blay09.mods.kuma.api.KeyModifiers;
+import net.blay09.mods.kuma.api.Kuma;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -28,6 +34,8 @@ import org.mcaccess.minecraftaccess.Config;
 import org.mcaccess.minecraftaccess.MainClass;
 import org.mcaccess.minecraftaccess.api.WorldNarrator;
 import org.mcaccess.minecraftaccess.features.crosshair.CrosshairFeedbackManager;
+import org.mcaccess.minecraftaccess.utils.KeyMappingCategories;
+import org.mcaccess.minecraftaccess.utils.ModifierUtils;
 import org.mcaccess.minecraftaccess.utils.events.ClientPlayingTick;
 
 /**
@@ -60,6 +68,42 @@ public class NarrateCrosshair implements BalmClientModule {
     @Override
     public void initialize() {
         ClientPlayingTick.AFTER.register(this::tick);
+
+        Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "narrate_crosshair.toggle_crosshair_audio"))
+                .withDefault(InputBinding.key(InputConstants.KEY_F5, KeyModifiers.of(KeyModifier.CONTROL, KeyModifier.ALT)))
+                .overrideCategory(KeyMappingCategories.OTHER)
+                .handleWorldInput(_ -> {
+                    if (!ModifierUtils.hasControlAndAlt()) return false;
+                    toggleCrosshairAudio();
+                    return true;
+                })
+                .build();
+    }
+
+    public void toggleCrosshairAudio() {
+        Config cfg = Config.getInstance();
+        if (cfg == null || cfg.narrateCrosshair == null || cfg.narrateCrosshair.relativePositionSoundCue == null) return;
+        Config.NarrateCrosshair.RelativePositionSoundCue rpc = cfg.narrateCrosshair.relativePositionSoundCue;
+        boolean wasSoundEnabled = rpc.isSoundEnabled();
+        if (wasSoundEnabled) {
+            if (rpc.feedbackMode == Config.NarrateCrosshair.ElevationFeedbackMode.SOUND_AND_VOICE) {
+                rpc.feedbackMode = Config.NarrateCrosshair.ElevationFeedbackMode.VOICE_ONLY;
+            } else {
+                rpc.feedbackMode = Config.NarrateCrosshair.ElevationFeedbackMode.OFF;
+            }
+        } else {
+            if (rpc.feedbackMode == Config.NarrateCrosshair.ElevationFeedbackMode.VOICE_ONLY) {
+                rpc.feedbackMode = Config.NarrateCrosshair.ElevationFeedbackMode.SOUND_AND_VOICE;
+            } else {
+                rpc.feedbackMode = Config.NarrateCrosshair.ElevationFeedbackMode.SOUND_AND_VOICE;
+            }
+        }
+        cfg.save();
+        if (rpc.isSoundEnabled()) {
+            MainClass.narrate(I18n.get("minecraft_access.narrate_crosshair.audio_on"), true);
+        } else {
+            MainClass.narrate(I18n.get("minecraft_access.narrate_crosshair.audio_off"), true);
+        }
     }
 
     private void tick(Minecraft client, Player player, Level level) {

@@ -8,6 +8,50 @@
 Questo documento costituisce il **Diario Ufficiale delle Modifiche del Fork Personale in lingua Italiana**.
 Poiché il `README.md` pubblico e la documentazione del repository upstream rimangono in lingua Inglese per la community internazionale con la sola sezione `## [Unreleased]`, tutte le novità, i refactoring e i miglioramenti sviluppati sui nostri rami (`mymaster`, `dev`) vengono tracciati qui secondo la disciplina AVF (`V.A.R[.M]`).
 
+## 🚀 [v26.2-1.20.0] — 2026-09-09 (Rev. MC-26.21 & Rev. MC-26.22: Interruttori Sensori F1..F6, Didgeridoo, Control Destro, Neutralizzazione Mixin Vanilla & Batteria Suoni POI per Categoria)
+
+### 🎛️ Rev MC-26.21: Batteria Interruttori Sensori Contigui (Ctrl+Alt+F1..F6), Univocità Acustica Didgeridoo & Supporto Simmetrico Control Destro
+- **Univocità Acustica Assoluta per Radar Voragini Lontane**:
+  - Sostituito il suono di `NOTE_BLOCK_BELL` con `NOTE_BLOCK_DIDGERIDOO` (timbro cavernoso tellurico a pitch `0.8f`) in `LongRangeFallDetector`, restituendo la campanella limpida in purezza esclusiva a POI e Waypoint.
+  - Aggiornati i test di regressione headless con asserzioni dedicate sul suono didgeridoo.
+- **Batteria Contigua dei 6 Interruttori Sensoriali (`Ctrl + Alt + F1..F6`)**:
+  - `Ctrl + Alt + F1`: Faro acustico Waypoint / Traccia rotte (`POIWaypoints.toggleAudioBeacon()`).
+  - `Ctrl + Alt + F2`: Rilevatore ostacoli (`ObstacleDetector.toggleObstacleDetector()`).
+  - `Ctrl + Alt + F3`: Rilevatore buche corto raggio 1..6m (`CentralFallSafetyManager.toggleProximityFallDetector()`).
+  - `Ctrl + Alt + F4`: Radar orografico buche lontane 7..24m (`CentralFallSafetyManager.toggleLongRangeFallDetector()`).
+  - `Ctrl + Alt + F5`: Suono arpeggio elevazione mirino (`NarrateCrosshair.toggleCrosshairAudio()`).
+  - `Ctrl + Alt + F6`: Sentinella minacce ostili ravvicinate 6m con allarme basedrum (`POIEntities.toggleHostileRadar()`).
+  - Notifica vocale bilingue con annuncio di stato ("Attivo" / "Disattivato") e persistenza automatica su configurazione `minecraft-access.json`.
+- **Supporto Simmetrico Hardware Control/Alt Destro**:
+  - Aggiornato `ModifierUtils` con interrogazione hardware GLFW per `GLFW_KEY_RIGHT_CONTROL` e `GLFW_KEY_RIGHT_ALT`, rendendo tutti i comandi `Ctrl` e `Ctrl+Alt` (incluso `Ctrl+Alt+Home` per `ObjectTracker`) accessibili indifferentemente da entrambi i lati della tastiera.
+
+### 🛡️ Rev MC-26.22: Neutralizzazione Mixin Tasti Vanilla F1..F6 & Batteria Interruttori Suoni Radar POI per Categoria
+- **Neutralizzazione Incondizionata Tasti Funzione Vanilla (F1, F3, F5)**:
+  - `DebugScreenEntryListMixin`: Intercetta e cancella `toggleDebugOverlay()` a monte quando `ModifierUtils.hasControlAndAlt()` è attivo, azzerando al 100% l'apertura indesiderata della schermata di debug di F3 sia alla pressione che al rilascio.
+  - `KeyboardHandlerMixin`: Firma corretta `(KeyEvent event, CallbackInfoReturnable<Boolean> cir)` per bloccare le combinazioni debug vanilla senza interferire con il motore di gioco.
+  - `MinecraftMixin`: All'inizio di `handleKeybinds()`, se `Ctrl+Alt` sono premuti, svuota a vuoto i click pendenti di `keyTogglePerspective` (F5) e `keyToggleGui` (F1), impedendo cambi involontari di prospettiva telecamera o scomparsa dell'HUD.
+- **Controllo Granulare Suoni Radar POI per Categoria via `BooleanSupplier`**:
+  - Architettura a Inversion of Control in `POIGroup`: aggiunto `BooleanSupplier soundEnabledSupplier` e guardia difensiva in `playSoundForGroupItems()`.
+  - Estensione configurazione: 7 flag per blocchi (`soundEnabledOre`, `soundEnabledFunctional`, `soundEnabledDoor`, `soundEnabledPortal`, `soundEnabledLadder`, `soundEnabledFluid`, `soundEnabledGui`) e 9 flag per entità (`soundEnabledHostile`, `soundEnabledPassive`, ecc.), tutti attivi di default (`true`).
+  - Batteria Kuma 9 nuovi interruttori su tastiera IT:
+    * `Ctrl + Alt + F7`: Suono Minerali (ORE)
+    * `Ctrl + Alt + F8`: Suono Blocchi Funzionali (FUNCTIONAL)
+    * `Ctrl + Alt + F9`: Suono Porte e botole (DOOR)
+    * `Ctrl + Alt + F10`: Suono Portali (PORTAL)
+    * `Ctrl + Alt + F11`: Suono Scale a pioli (LADDER)
+    * `Ctrl + Alt + F12`: Suono Fluidi (FLUID)
+    * `Ctrl + Alt + G`: Suono GUI e forzieri (HAVE_INTERFACE)
+    * `Ctrl + Alt + H`: Suono Radar Ostili periodico (NOTE_BLOCK_BELL 24m, DISTINTO dalla sentinella F6)
+    * `Ctrl + Alt + P`: Suono Animali Passivi (PASSIVE)
+- **Aiuto In-Game & Rigore I18N**:
+  - Aggiunta la Categoria 8 *"Interruttori Suoni Radar POI"* in `QuickKeysHelpScreen` (`F1`).
+  - Localizzazioni complete in `it_it.json` ed `en_us.json` con rigoroso ordinamento alfabetico crescente conforme alla CI.
+- **Suite di Test & Verifica Empirica**:
+  - Test JUnit 5 headless: 354/354 test verdi a 0 ms.
+  - Collaudo in-game (Luca): sequenza di tutti i toggle testata con successo, azzeramento selettivo dei suoni confermato, zero conflitti grafici o visivi.
+
+---
+
 ## 🚀 [v26.2-1.19.4] — 2026-09-09 (Rev. MC-26.20: Null Safety in ObjectTracker.isObjectValid() su Selezione Vuota)
 
 ### 🎯 Rev MC-26.20: Null Safety in ObjectTracker.isObjectValid() su Selezione Vuota

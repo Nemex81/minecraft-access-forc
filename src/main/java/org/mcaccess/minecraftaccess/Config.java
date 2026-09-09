@@ -126,6 +126,10 @@ public final class Config implements ConfigData {
         }
     }
 
+    public void save() {
+        saveConfig();
+    }
+
     public static void applyCognitiveConfig() {
         if (instance != null) {
             applyCognitiveSettings(instance.cognitiveCoordinator);
@@ -329,6 +333,14 @@ public final class Config implements ConfigData {
             public float volume = 0.25f;
             public boolean playSoundForOtherBlocks = true;
             public int delay = 3000;
+            // Interruttori suono per categoria (Ctrl+Alt+F7..F12 + G) — Rev MC-26.22
+            public boolean soundEnabledOre = true;
+            public boolean soundEnabledFunctional = true;
+            public boolean soundEnabledDoor = true;
+            public boolean soundEnabledPortal = true;
+            public boolean soundEnabledLadder = true;
+            public boolean soundEnabledFluid = true;
+            public boolean soundEnabledGui = true;
 
             private Blocks() {
             }
@@ -340,6 +352,18 @@ public final class Config implements ConfigData {
             public boolean playSound = true;
             public float volume = 0.25f;
             public int delay = 3000;
+            public boolean hostileThreatAlerts = true;
+            // Interruttori suono per categoria (Ctrl+Alt+H e P) — Rev MC-26.22
+            // soundEnabledHostile: silenzia il radar periodico 3s per ostili (DISTINTO da hostileThreatAlerts/F6 sentinella ravvicinata)
+            public boolean soundEnabledHostile = true;
+            public boolean soundEnabledYourPets = true;
+            public boolean soundEnabledOtherPets = true;
+            public boolean soundEnabledBoss = true;
+            public boolean soundEnabledPassive = true;
+            public boolean soundEnabledPlayer = true;
+            public boolean soundEnabledVehicle = true;
+            public boolean soundEnabledItem = true;
+            public boolean soundEnabledDisplay = true;
 
             private Entities() {
             }

@@ -4,7 +4,7 @@
 - **Autore:** Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA) & Antigravity
 - **Revisori:** Luca / Antigravity / GPT Codex / ChatGPT
 - **Data Ultimo Aggiornamento:** 2026-09-09
-- **Stato:** [ARCHIVIO STORICO PERENNE — 28 REVISIONI COLLAUDATE CON SUCCESSO]
+- **Stato:** [ARCHIVIO STORICO PERENNE — 30 REVISIONI COLLAUDATE CON SUCCESSO]
 - **Registro Attivo Correlato:** [`docs/report/REGISTRO_REVISIONI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/REGISTRO_REVISIONI.md)
 
 Questo documento costituisce la memoria storica e forense perenne di tutte le anomalie, correzioni e rifiniture collaudate e chiuse con successo nel ciclo di vita di Minecraft Access. Ciascuna voce archiviata mantiene la sintesi del problema, la causa radice, la soluzione adottata e i collegamenti diretti ai relativi Piani Tecnici e Report di Sessione archiviati.
@@ -12,6 +12,52 @@ Questo documento costituisce la memoria storica e forense perenne di tutte le an
 ---
 
 ## 🏛️ STORICO REVISIONI COLLAUDATE CON SUCCESSO (CICLO 26.2)
+
+### 🟢 Rev MC-26.22 — Neutralizzazione Mixin Tasti Vanilla F1..F6 & Batteria Interruttori Suoni Radar POI per Categoria
+- **Stato**: `[COLLAUDATA CON SUCCESSO AL 100% IN-GAME DA LUCA]`
+- **Versione Chiusura**: 26.2-1.20.0 (Data 2026-09-09)
+- **Problema Riscontrato (Esperienza Luca)**:
+  1. *Conflitto Tasti Funzione Vanilla*: Alla pressione di `Ctrl+Alt+F3` (buche corte) Minecraft apriva la Debug Screen con grafici e testo a schermo; su `Ctrl+Alt+F5` (suono mirino) cambiava la prospettiva della telecamera in terza persona;
+  2. *Rumore di Fondo Radar POI*: Impossibilità di silenziare singole categorie dello scanner POI (porte, minerali, fluidi, mob passivi, ecc.) mantenendo lo scanner attivo e la narrazione testuale;
+  3. *Distinzione Sentinella vs Radar Ostili*: Necessità di separare la sentinella minacce ravvicinate 6m (`Ctrl+Alt+F6`, allarme basedrum) dal pinging periodico a 24m per i mob ostili.
+- **Causa Radice**: La pipeline di input vanilla esegue `toggleDebugOverlay()` al rilascio di F3 (`action == 0`) e registra click per `keyTogglePerspective` (F5) e `keyToggleGui` (F1) prima che il gameplay possa sopprimerli. Inoltre `POIGroup` emetteva suoni incondizionatamente per tutti i gruppi senza un controllo granulare per categoria.
+- **Soluzioni Applicate (PRAPI)**:
+  1. *Neutralizzazione Mixin F1, F3, F5*:
+     * `DebugScreenEntryListMixin`: Annullamento preventivo di `toggleDebugOverlay()` a monte con `ci.cancel()` se `ModifierUtils.hasControlAndAlt()` è attivo;
+     * `KeyboardHandlerMixin`: Firma corretta API Mojang 26.2 `(KeyEvent event, CallbackInfoReturnable<Boolean> cir)` con restituzione deterministica a `cir.setReturnValue(true)`;
+     * `MinecraftMixin`: All'inizio di `handleKeybinds()`, svuotamento a vuoto dei click pendenti di `keyTogglePerspective` (F5) e `keyToggleGui` (F1) quando `Ctrl+Alt` sono premuti.
+  2. *Controllo Granulare Suoni POI via `BooleanSupplier`*:
+     * `POIGroup`: Campo `BooleanSupplier soundEnabledSupplier` e guardia difensiva all'inizio di `playSoundForGroupItems()`;
+     * `Config`: 7 flag `boolean` per blocchi e 9 per entità, tutti attivi (`true`) di default;
+     * Batteria Kuma 9 interruttori su tastiera IT: `Ctrl+Alt+F7..F12` (Minerali, Funzionali, Porte, Portali, Scale, Fluidi) + `Ctrl+Alt+G` (GUI/Forzieri) + `Ctrl+Alt+H` (Radar Ostili periodico 24m) + `Ctrl+Alt+P` (Animali Passivi);
+     * Schermata aiuto rapido `F1`: Aggiunta Categoria 8 *"Interruttori Suoni Radar POI"* (`cat_poi_sound_toggles`);
+     * Localizzazioni complete e rigorosamente ordinate in `it_it.json` ed `en_us.json`.
+- **Piani Tecnici e Rapporti di Riferimento**:
+  - [`PIANO_TECNICO_REV_MC-26.22_MIXIN_VANILLA_FN_E_TOGGLE_POI_SUONI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/completati/PIANO_TECNICO_REV_MC-26.22_MIXIN_VANILLA_FN_E_TOGGLE_POI_SUONI.md)
+  - [`REPORT_SESSIONE_REV_MC-26.21_E_26.22_INTERRUTTORI_SENSORI_MIXIN_E_SUONI_POI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_SESSIONE_REV_MC-26.21_E_26.22_INTERRUTTORI_SENSORI_MIXIN_E_SUONI_POI.md)
+- **Esito Collaudo**: Collaudata e validata al 100% in-game da Luca: tutti i 9 interruttori commutati con successo, azzeramento selettivo dei suoni confermato, zero sovrapposizioni visive o grafiche.
+
+---
+
+### 🟢 Rev MC-26.21 — Interruttori Sensori Contigui (Ctrl+Alt+F1..F6), Univocità Didgeridoo & Supporto Control Destro
+- **Stato**: `[COLLAUDATA CON SUCCESSO AL 100% IN-GAME DA LUCA]`
+- **Versione Chiusura**: 26.2-1.20.0 (Data 2026-09-09)
+- **Problema Riscontrato (Esperienza Luca)**:
+  1. *Collisione Acustica Storica*: Il radar buche a lungo raggio usava la campanella `NOTE_BLOCK_BELL`, generando ambiguità con lo scanner POI e i waypoint;
+  2. *Assenza Interruttori Rapidi Sensoriali*: Impossibilità di silenziare il bip del waypoint durante il crafting/riposo e assenza di scorciatoie rapide per sensori ostacoli, buche e mirino;
+  3. *Asimmetria Control Destro*: `Ctrl+Alt+Home` per la lettura coordinate POI rispondeva solo premendo il `Ctrl` sinistro.
+- **Causa Radice**: Sovrapposizione del suono campana in `LongRangeFallDetector`, assenza di comandi dedicati e interrogazione hardware limitata al solo `GLFW_KEY_LEFT_CONTROL` in `ModifierUtils`.
+- **Soluzioni Applicate (PRAPI)**:
+  1. *Univocità Acustica*: Assegnato `NOTE_BLOCK_DIDGERIDOO` (pitch `0.8f`) al radar orografico buche lontane 7..24m;
+  2. *Batteria Contigua F1..F6*: `Ctrl+Alt+F1` (Waypoint), `F2` (Ostacoli), `F3` (Buche corte), `F4` (Buche lontane), `F5` (Suono mirino), `F6` (Sentinella minacce ostili 6m) con annuncio vocale e persistenza;
+  3. *Supporto Hardware Simmetrico*: Aggiornato `ModifierUtils` per interrogare sia tasto sinistro che destro (`GLFW_KEY_RIGHT_CONTROL`, `GLFW_KEY_RIGHT_ALT`);
+  4. *Suite Headless*: Aggiornati test di regressione (354/354 verdi a 0 ms).
+- **Piani Tecnici e Rapporti di Riferimento**:
+  - [`PIANO_TECNICO_REV_MC-26.21_INTERRUTTORI_SENSORI_UNIVOCITA_DIDGERIDOO_E_CTRL_DESTRO.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/completati/PIANO_TECNICO_REV_MC-26.21_INTERRUTTORI_SENSORI_UNIVOCITA_DIDGERIDOO_E_CTRL_DESTRO.md)
+  - [`REPORT_SESSIONE_REV_MC-26.21_E_26.22_INTERRUTTORI_SENSORI_MIXIN_E_SUONI_POI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_SESSIONE_REV_MC-26.21_E_26.22_INTERRUTTORI_SENSORI_MIXIN_E_SUONI_POI.md)
+- **Esito Collaudo**: Collaudata e validata al 100% in-game da Luca: Didgeridoo profondo e inconfondibile, sequenza F1..F6 attiva e reattiva, tasto Control destro perfettamente riconosciuto.
+
+---
 
 ### 🟢 Rev MC-26.20 — Null Safety in ObjectTracker.isObjectValid() su Selezione Vuota
 - **Stato**: `[COLLAUDATA CON SUCCESSO AL 100% IN-GAME DA LUCA]`

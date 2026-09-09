@@ -22,6 +22,34 @@ La mod implementa una mappatura completa per eliminare qualsiasi uso del mouse:
 | **`Alt + Page Up`** | **Aumenta Volume Passi Giocatore** (+10%, fino a 300%) | `features/PlayerStepSound.java` |
 | **`Alt + Page Down`** | **Riduci Volume Passi Giocatore** (-10%, fino a 0%) | `features/PlayerStepSound.java` |
 
+### B. Batteria Interruttori Sensori Contigui (`Ctrl + Alt + F1 .. F6`)
+Sequenza ordinata e contigua per attivare/disattivare a richiesta i singoli sottosistemi sensoriali, con annuncio vocale di stato e persistenza automatica. Il Mixin `KeyboardHandlerMixin` neutralizza le azioni vanilla di F1..F6 (Debug Screen, cambio prospettiva) quando `Ctrl+Alt` è premuto (Rev MC-26.22):
+- **`Ctrl + Alt + F1`**: **Faro Acustico Waypoint / Traccia Rotte** (zittisce il bip da fermi).
+- **`Ctrl + Alt + F2`**: **Rilevatore Ostacoli** (attiva/disattiva avvisi e rintocchi frontali).
+- **`Ctrl + Alt + F3`**: **Rilevatore Buche Corto Raggio** (allarme + auto-sneak voragini 1..6m).
+- **`Ctrl + Alt + F4`**: **Rilevatore Buche Lungo Raggio** (radar orografico 7..24m, timbro *Didgeridoo*).
+- **`Ctrl + Alt + F5`**: **Suono Mirino Elevazione** (arpeggio su dislivelli e puntamento).
+- **`Ctrl + Alt + F6`**: **Sentinella Mob Ostili Ravvicinata** — allarme basedrum ogni 3.5s se un ostile è entro 6 blocchi. `Config.POI.Entities.hostileThreatAlerts`. **DISTINTO da Ctrl+Alt+H.**
+
+### C. Batteria Interruttori Suoni Radar POI per Categoria (`Ctrl+Alt+F7..F12 + G + H + P`) — Rev MC-26.22
+Silenzia/riattiva il suono del radar POI (scan periodico ogni 3s) per singola categoria, mantenendo lo scanner attivo e la narrazione testuale. Il flag `BooleanSupplier soundEnabledSupplier` in `POIGroup.playSoundForGroupItems()` è il punto di controllo centralizzato:
+
+**Categorie Blocchi** (`POIBlocks.java` / `Config.POI.Blocks`):
+- **`Ctrl + Alt + F7`**: Suono **Minerali** (ORE) — `soundEnabledOre`
+- **`Ctrl + Alt + F8`**: Suono **Blocchi Funzionali** (leve, pulsanti, pistoni…) — `soundEnabledFunctional`
+- **`Ctrl + Alt + F9`**: Suono **Porte** (door + trapdoor) — `soundEnabledDoor`
+- **`Ctrl + Alt + F10`**: Suono **Portali** — `soundEnabledPortal`
+- **`Ctrl + Alt + F11`**: Suono **Scale** (ladder) — `soundEnabledLadder`
+- **`Ctrl + Alt + F12`**: Suono **Fluidi** (acqua/lava) — `soundEnabledFluid`
+- **`Ctrl + Alt + G`**: Suono **GUI e Forzieri** (HAVE_INTERFACE) — `soundEnabledGui`
+
+**Categorie Entità** (`POIEntities.java` / `Config.POI.Entities`):
+- **`Ctrl + Alt + H`**: Suono **Radar Mob Ostili** periodico (NOTE_BLOCK_BELL, 24 blocchi, 3s) — `soundEnabledHostile`. **DISTINTO da `Ctrl+Alt+F6`** (sentinella ravvicinata 6 blocchi).
+- **`Ctrl + Alt + P`**: Suono **Animali Passivi** — `soundEnabledPassive`
+- Restanti categorie entità (YOUR_PETS, OTHER_PETS, BOSS, PLAYER, VEHICLE, ITEM, DISPLAY): flag config disponibili (tutti `true` di default), tasto rapido rinviato a revisione futura.
+
+> **Supporto Simmetrico Control Destro (`GLFW_KEY_RIGHT_CONTROL`)**: Tutti i comandi con `Ctrl` o `Ctrl+Alt` funzionano indistintamente con il tasto `Ctrl` sinistro o destro.
+
 ---
 
 ## 2. Mappa Architetturale dei 3 Layer del Tastierino Numerico (Numpad Controls - Zero Shift)

@@ -47,7 +47,7 @@ public class LongRangeFallDetector {
         }
     };
     static Consumer<CognitiveEvent> cognitiveEventConsumer = CognitiveCoordinator::submitEvent;
-    static Supplier<SoundEvent> bellSoundSupplier = () -> SoundEvents.NOTE_BLOCK_BELL.value();
+    static Supplier<SoundEvent> didgeridooSoundSupplier = () -> SoundEvents.NOTE_BLOCK_DIDGERIDOO.value();
 
     public static void resetTestSeams() {
         legacyAudioConsumer = cue -> {
@@ -58,7 +58,7 @@ public class LongRangeFallDetector {
             }
         };
         cognitiveEventConsumer = CognitiveCoordinator::submitEvent;
-        bellSoundSupplier = () -> SoundEvents.NOTE_BLOCK_BELL.value();
+        didgeridooSoundSupplier = () -> SoundEvents.NOTE_BLOCK_DIDGERIDOO.value();
     }
 
     public static void setLegacyAudioConsumer(Consumer<SoundCue> consumer) {
@@ -69,8 +69,8 @@ public class LongRangeFallDetector {
         cognitiveEventConsumer = consumer;
     }
 
-    public static void setBellSoundSupplier(Supplier<SoundEvent> supplier) {
-        bellSoundSupplier = supplier;
+    public static void setDidgeridooSoundSupplier(Supplier<SoundEvent> supplier) {
+        didgeridooSoundSupplier = supplier;
     }
 
     public LongRangeFallDetector() {
@@ -235,7 +235,7 @@ public class LongRangeFallDetector {
         float minVol = maxVol * 0.5f;
         float computedVolume = maxVol - progress * (maxVol - minVol);
 
-        SoundEvent bellSound = bellSoundSupplier != null ? bellSoundSupplier.get() : SoundEvents.NOTE_BLOCK_BELL.value();
+        SoundEvent didgeridooSound = didgeridooSoundSupplier != null ? didgeridooSoundSupplier.get() : SoundEvents.NOTE_BLOCK_DIDGERIDOO.value();
 
         // 2. Proiezione Vettoriale Sicura: azzera il cutoff a 16 blocchi di OpenAL
         // preservando al 100% orientamento azimutale ed elevazione 3D
@@ -253,7 +253,7 @@ public class LongRangeFallDetector {
             soundPos = pit.pos();
         }
 
-        SoundCue cue = SoundCue.of(bellSound, SoundSource.BLOCKS, soundPos, computedVolume, 1.0f);
+        SoundCue cue = SoundCue.of(didgeridooSound, SoundSource.BLOCKS, soundPos, computedVolume, 0.8f);
 
         // 3. Canale Audio Diretto: il radar di lungo raggio è un feedback acustico puro non-verbale.
         // Emette direttamente all'audioConsumer per non subire lo scarto verbale del CognitiveCoordinator

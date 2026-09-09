@@ -16,6 +16,8 @@ Questo documento costituisce il **Registro Attivo Snello** del progetto Minecraf
 
 ---
 
+
+
 ### 🔵 Rev MC-26.7 — Resilienza & Fallback Traduzioni per Blocchi di Mod Terze (es. Macaw's Doors)
 - **Stato**: `[APERTA â€” DIFFERITA AL BUFFER RRU POST-STRATEGIA]`
 - **Data Rilevamento**: 2026-09-01

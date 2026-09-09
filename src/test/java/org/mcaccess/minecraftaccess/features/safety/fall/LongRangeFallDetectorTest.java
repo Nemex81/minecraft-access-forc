@@ -181,11 +181,13 @@ class LongRangeFallDetectorTest {
         CognitiveEvent event = emittedEvents.get(0);
         assertEquals(CognitivePriority.PASSIVE, event.priority(), "L'avviso di lungo raggio deve essere PASSIVE");
         assertNotNull(event.soundCue());
-        assertEquals(SoundEvents.NOTE_BLOCK_BELL.value(), event.soundCue().soundEvent(), "Il suono deve essere NOTE_BLOCK_BELL");
+        assertEquals(SoundEvents.NOTE_BLOCK_DIDGERIDOO.value(), event.soundCue().soundEvent(), "Il suono deve essere NOTE_BLOCK_DIDGERIDOO");
+        assertEquals(0.8f, event.soundCue().pitch(), 0.01f, "Il pitch deve essere 0.8f per timbro tellurico");
 
         // Verifica PRAPI-4: Il cue sonoro viene inviato direttamente all'audio consumer
         assertEquals(1, emittedSounds.size(), "Il cue sonoro deve essere emesso direttamente all'audio consumer");
-        assertEquals(SoundEvents.NOTE_BLOCK_BELL.value(), emittedSounds.get(0).soundEvent());
+        assertEquals(SoundEvents.NOTE_BLOCK_DIDGERIDOO.value(), emittedSounds.get(0).soundEvent());
+        assertEquals(0.8f, emittedSounds.get(0).pitch(), 0.01f, "Il pitch deve essere 0.8f");
         assertTrue(emittedSounds.get(0).volume() >= 0.35f, "Il volume calcolato non deve essere inferiore al floor di sicurezza");
     }
 

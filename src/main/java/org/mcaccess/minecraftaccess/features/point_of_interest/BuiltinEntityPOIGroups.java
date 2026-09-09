@@ -26,10 +26,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.entity.vehicle.VehicleEntity;
 
+import org.mcaccess.minecraftaccess.Config;
+
 public enum BuiltinEntityPOIGroups {
     HOSTILE(new POIGroup<>(
             "minecraft_access.point_of_interest.group.hostile",
             new POIGroup.Sound(SoundEvents.NOTE_BLOCK_BELL.value(), 2.0f),
+            () -> Config.getInstance().poi.entities.soundEnabledHostile,
             entity -> {
                 if (entity instanceof Enemy) return true;
                 if (entity instanceof NeutralMob mob) {
@@ -46,6 +49,7 @@ public enum BuiltinEntityPOIGroups {
     YOUR_PETS(new POIGroup<>(
             "minecraft_access.point_of_interest.group.your_pet",
             new POIGroup.Sound(SoundEvents.NOTE_BLOCK_FLUTE.value(), 1.0f),
+            () -> Config.getInstance().poi.entities.soundEnabledYourPets,
             entity -> {
                 if (!(entity instanceof TamableAnimal pet)) return false;
                 assert Minecraft.getInstance().player != null;
@@ -55,16 +59,19 @@ public enum BuiltinEntityPOIGroups {
     OTHER_PETS(new POIGroup<>(
             "minecraft_access.point_of_interest.group.other_pet",
             new POIGroup.Sound(SoundEvents.NOTE_BLOCK_COW_BELL.value(), 1.0f),
+            () -> Config.getInstance().poi.entities.soundEnabledOtherPets,
             entity -> entity instanceof TamableAnimal pet && pet.isTame()
     )),
     BOSS(new POIGroup<>(
             "minecraft_access.point_of_interest.group.boss",
             new POIGroup.Sound(SoundEvents.NOTE_BLOCK_PLING.value(), 2.0f),
+            () -> Config.getInstance().poi.entities.soundEnabledBoss,
             entity -> entity instanceof EnderDragon || entity instanceof WitherBoss || entity instanceof ElderGuardian || entity instanceof Warden
     )),
     PASSIVE(new POIGroup<>(
             "minecraft_access.point_of_interest.group.passive",
             new POIGroup.Sound(SoundEvents.NOTE_BLOCK_BELL.value(), 0.0f),
+            () -> Config.getInstance().poi.entities.soundEnabledPassive,
             entity -> (entity instanceof AgeableMob || entity instanceof WaterAnimal || entity instanceof NeutralMob
                     || entity instanceof Allay || entity instanceof CopperGolem || entity instanceof SnowGolem)
                     && !(entity.getPassengers().contains(Minecraft.getInstance().player))
@@ -72,16 +79,19 @@ public enum BuiltinEntityPOIGroups {
     PLAYER(new POIGroup<>(// Players
             "minecraft_access.point_of_interest.group.player",
             new POIGroup.Sound(SoundEvents.NOTE_BLOCK_CHIME.value(), 1.0f),
+            () -> Config.getInstance().poi.entities.soundEnabledPlayer,
             Player.class::isInstance
     )),
     VEHICLE(new POIGroup<>(
             "minecraft_access.point_of_interest.group.vehicle",
             new POIGroup.Sound(SoundEvents.NOTE_BLOCK_IRON_XYLOPHONE.value(), 1.0f),
+            () -> Config.getInstance().poi.entities.soundEnabledVehicle,
             entity -> entity instanceof VehicleEntity vehicle && !(vehicle.getPassengers().contains(Minecraft.getInstance().player))
     )),
     ITEM(new POIGroup<>(
             "minecraft_access.point_of_interest.group.item",
             new POIGroup.Sound(SoundEvents.METAL_PRESSURE_PLATE_CLICK_ON, 2.0f),
+            () -> Config.getInstance().poi.entities.soundEnabledItem,
             entity -> {
                 boolean itemOnGround = entity instanceof ItemEntity itemEntity && itemEntity.onGround();
                 boolean pickupAllowedProjectile = entity instanceof AbstractArrow projectile && projectile.pickup == AbstractArrow.Pickup.ALLOWED;
@@ -91,6 +101,7 @@ public enum BuiltinEntityPOIGroups {
     DISPLAY(new POIGroup<>(
             "minecraft_access.point_of_interest.group.display",
             new POIGroup.Sound(SoundEvents.UI_TOAST_IN, 1.0f),
+            () -> Config.getInstance().poi.entities.soundEnabledDisplay,
             Display.class::isInstance
     ));
 
