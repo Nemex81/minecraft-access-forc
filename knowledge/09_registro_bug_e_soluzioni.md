@@ -554,5 +554,24 @@ Questo registro documenta i problemi tecnici complessi risolti nel tempo, preser
      - In `@Inject(method = "startUseItem", at = @At("HEAD"))`, se è presente un hit permissivo, assegna temporaneamente `this.hitResult = permissiveHit`. Minecraft Vanilla esegue `gameMode.useItemOn` chiudendo la porta al primo colpo da mouse fisico, tasto `]` e Numpad Enter.
   3. *Suite di Test & Collaudo*: 7 nuovi test headless in `DoorInteractionHelperTest.java` (totale suite 315/315 test verdi) e collaudo in-game confermato con successo al 100% da Luca.
 
+---
+
+### Record 42 — Crash `InvalidInjectionException` su `KeyboardHandlerMixin` & Neutralizzazione Tripla Barriera Tasti Funzione F1, F3, F5 (Rev MC-26.22)
+- **Data**: 2026-09-09
+- **Versione di Riferimento**: Minecraft 26.2 (Fabric / Java 25)
+- **Moduli Coinvolti**: `KeyboardHandlerMixin.java`, `DebugScreenEntryListMixin.java`, `MinecraftMixin.java`, `ModifierUtils.java`
+- **Sintomi**:
+  1. *Crash all'Avvio*: Minecraft non caricava la finestra e arrestava l'istanza con eccezione Mixin nel log: `InvalidInjectionException: Invalid descriptor on KeyboardHandlerMixin->@Inject::suppressDebugKeysWhenCtrlAlt ... Expected (Lnet/minecraft/client/input/KeyEvent;Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfoReturnable;)V but found (JIIILorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;)V`.
+  2. *Interferenze Visive In-Game*: Premendo `Ctrl+Alt+F3` (interruttore buche corte) compariva la schermata di debug con grafici e testo; premendo `Ctrl+Alt+F5` (suono mirino) la visuale cambiava in terza persona.
+- **Causa Radice**:
+  1. *Firma API 26.2*: In Minecraft 26.2 il metodo `handleDebugKeys` in `KeyboardHandler` è stato rifattorizzato da Mojang e non accetta più i 4 parametri raw di GLFW (`long window, int key, int scancode, int action`), ma l'oggetto incapsulato `KeyEvent` e restituisce un `boolean`.
+  2. *Ciclo di Vita Release*: Il framework Kuma cattura solo l'evento `KEY_PRESS` (`action == 1`). La Debug Screen di Minecraft Vanilla (F3) viene invece attivata al rilascio del tasto (`action == 0`, `KEY_RELEASE`) da `DebugScreenEntryList.toggleDebugOverlay()`. Ricevendo il release non consumato, Minecraft apriva l'overlay di testo.
+  3. *Accumulatori di Click*: I tasti F5 (`keyTogglePerspective`) e F1 (`keyToggleGui`) accumulano click nei `KeyMapping` nativi e vengono consumati nel tick di input di `Minecraft.handleKeybinds()`.
+- **Soluzione Definitiva (Pattern Tripla Barriera)**:
+  1. *Firma Corretta*: In `KeyboardHandlerMixin.java`, allineata la firma a `suppressDebugKeysWhenCtrlAlt(KeyEvent event, CallbackInfoReturnable<Boolean> cir)` impostando `cir.setReturnValue(true)` se `ModifierUtils.hasControlAndAlt()`.
+  2. *Neutralizzazione Target F3*: Creato `DebugScreenEntryListMixin.java` che intercetta a monte `toggleDebugOverlay()` con `@Inject(at = @At("HEAD"), cancellable = true)` e lo cancella (`ci.cancel()`) quando `Ctrl+Alt` sono premuti, azzerando qualsiasi apertura su press o release.
+  3. *Svuotamento Accumulatori F1 e F5*: In `MinecraftMixin.java`, inserita iniezione a `@At("HEAD")` su `handleKeybinds()` che svuota a vuoto i click pendenti (`while (this.options.keyTogglePerspective.consumeClick())` e `while (this.options.keyToggleGui.consumeClick())`) prima che raggiungano la logica Vanilla.
+- **Verifica e Collaudo**: Compilazione e test verdi al 100%, avvio pulito del gioco, zero interferenze visive durante l'azionamento dei tasti rapidi confermato da Luca in-game.
+
 
 

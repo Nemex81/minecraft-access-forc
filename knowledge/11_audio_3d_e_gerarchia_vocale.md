@@ -224,3 +224,20 @@ L'integrazione del sottosistema anticaduta duale (`CentralFallSafetyManager`) st
      $$\text{factor} = 1.0 - 0.5 \times \frac{d - d_{\min}}{d_{\max} - d_{\min}}$$
      garantendo che alla distanza massima ($24\text{ m}$) il rintocco mantenga almeno il $50\%$ del volume base impostato.
    - *Proiezione Vettoriale Sicura*: La sorgente 3D OpenAL viene calcolata lungo il vettore euclideo con clamp di prossimità a $[2.5 .. 12.0]\text{ m}$, preservando l'autenticità azimutale stereo (destra/sinistra) senza rischiare la dispersione o il distacco acustico.
+
+---
+
+## 8. Univocità Timbrica Assoluta & Tassonomia dei Sensori (Rev MC-26.21 & MC-26.22)
+
+1. **Univocità Timbrica Assoluta per Segnali a Diversa Funzione Operativa**:
+   - Due eventi a valenza differente (radar orografico baratri lontani vs scanner punti di interesse/waypoint) non devono MAI condividere la stessa famiglia di timbri, anche a pitch differenti.
+   - Sostituito `NOTE_BLOCK_BELL` con `NOTE_BLOCK_DIDGERIDOO` (pitch `0.8f`, timbro tellurico e cavernoso) nel radar orografico $7..24\text{ m}$ (`LongRangeFallDetector`), restituendo la campanella limpida in purezza esclusiva allo scanner POI e Waypoint (`POIWaypoints`).
+
+2. **Tassonomia dei Sensori: Sentinella Attiva di Pericolo vs Radar Passivo di Orientamento**:
+   - *Sentinella Minacce Ravvicinate* (`Ctrl+Alt+F6`): Raggio corto ($6\text{ m}$), allarme sonoro perentorio con cassa grave (`NOTE_BLOCK_BASEDRUM`), protezione fisica salvavita.
+   - *Radar Ostili Periodico* (`Ctrl+Alt+H`): Raggio medio ($24\text{ m}$), scansione temporizzata (3s) con campana acuta (`NOTE_BLOCK_BELL`), consapevolezza spaziale passiva.
+   - *Disaccoppiamento Comandi*: L'utente deve poter zittire il ticchettio del radar periodico quando lavora in sicurezza senza MAI disattivare la sentinella salvavita ravvicinata.
+
+3. **Disaccoppiamento tra Silenziamento Acustico e Scansione Spaziale**:
+   - I toggle rapidi per categoria POI (`Ctrl+Alt+F7..F12 + G + H + P`) disattivano unicamente il playback del suono nel bus di emissione (`POIGroup.playSoundForGroupItems()`).
+   - La scansione geometrica e il tracciamento dei blocchi/entità rimangono pienamente attivi a pieno regime a beneficio del mirino (`B`), del blocco orientamento (`M`/`5`), della lettura coordinate e della sintesi vocale.
