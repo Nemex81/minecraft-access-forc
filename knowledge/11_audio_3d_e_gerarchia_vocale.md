@@ -200,3 +200,44 @@ L'evoluzione dal modello a scudi sincroni sparsi verso il **Cognitive Coordinato
      1. **Sicurezza Fisica Fail-Safe**: L'auto-sneak hardware (`SafetyMovementGuard`) rimane pienamente attivo ed esegue l'accovacciamento protettivo sui cigli anche durante l'AutoWalk.
      2. **Fast-Path Critico**: I pericoli letali a priorità `CRITICAL` (lava, fuoco, caduta nel vuoto) continuano a interrompere all'istante qualsiasi stato a latenza zero.
      3. **Tutela Interazione Manuale Esplicita**: Le interrogazioni manuali da tastiera (tasto `B` per il mirino, `M`/`5` per centramento orizzonte, `X` per lock POI) mantengono precedenza assoluta tramite `DirectInteractionShield`, parlando all'istante anche durante la marcia.
+---
+
+## 7. Standard Acustici Anticaduta, Pre-Freno & Radar Oro-geografico (Rev MC-26.18)
+
+L'integrazione del sottosistema anticaduta duale (`CentralFallSafetyManager`) stabilisce i seguenti canoni acustici e percettivi:
+
+1. **Il Principio del Transiente Salvavita Penetrativo (`ANVIL_LAND`)**:
+   - *Problema*: Campioni sonori sordi, bassi o con attacco morbido (come `SoundEvents.ANVIL_HIT` o `NOTE_BLOCK_BASS`) vengono facilmente mascherati e coperti dalla voce dello screen reader NVDA che narra contemporaneamente la coordinata o il blocco mirato.
+   - *Soluzione e Regola Aurea*: Per gli allarmi di pre-freno imminente sul ciglio ($1.0..1.5\text{ m}$), è fatto obbligo di impiegare suoni con transienti metallici acuti ad altissima energia (`SoundEvents.ANVIL_LAND` — `block.anvil.land`). Il picco dello spettro taglia istantaneamente il flusso vocale nelle cuffie, allertando i riflessi del giocatore non vedente a rilasciare `W` prima dell'ancoraggio meccanico forzato.
+
+2. **Immunità del Bus Audio (`SoundSource.PLAYERS`)**:
+   - Gli allarmi acustici di sicurezza e incolumità fisica del giocatore devono essere emessi tassativamente sul bus `SoundSource.PLAYERS` (o `SoundSource.VOICE`), mai su `SoundSource.BLOCKS`.
+   - Il bus `BLOCKS` è soggetto all'attenuazione volumetrica delle categorie d'ambiente nel mixer audio di Minecraft e rischia di zittire il segnale vitale; il bus `PLAYERS` garantisce riproduzione fedele e volume costante calibrato ($0.80\text{f}$).
+
+3. **Mutua Esclusione Acustica Assoluta (Zona 1 vs Zona 2A)**:
+   - All'interno del raggio di prossimità ($1..6\text{ m}$), non è consentita la sovrapposizione tra la pre-allerta informativa dello xilofono e l'incudine di pre-freno:
+     * *Zona 1* ($2.0..6.0\text{ m}$): emissione di `NOTE_BLOCK_IRON_XYLOPHONE`;
+     * *Zona 2A* ($1.0..1.5\text{ m}$): l'emissione di `ANVIL_LAND` sopprime e zittisce all'istante lo xilofono per prevenire cacofonia e affaticamento uditivo.
+
+4. **Curva di Decadimento e Clamping per Radar a Lungo Raggio ($7..24\text{ m}$)**:
+   - *Decadimento Lento al 50%*: Il roll-off esponenziale standard di Minecraft rende impercettibili i suoni oltre i $12\text{ m}$. Il radar orografico applica una curva controllata:
+     $$\text{factor} = 1.0 - 0.5 \times \frac{d - d_{\min}}{d_{\max} - d_{\min}}$$
+     garantendo che alla distanza massima ($24\text{ m}$) il rintocco mantenga almeno il $50\%$ del volume base impostato.
+   - *Proiezione Vettoriale Sicura*: La sorgente 3D OpenAL viene calcolata lungo il vettore euclideo con clamp di prossimità a $[2.5 .. 12.0]\text{ m}$, preservando l'autenticità azimutale stereo (destra/sinistra) senza rischiare la dispersione o il distacco acustico.
+
+---
+
+## 8. Univocità Timbrica Assoluta & Tassonomia dei Sensori (Rev MC-26.21 & MC-26.22)
+
+1. **Univocità Timbrica Assoluta per Segnali a Diversa Funzione Operativa**:
+   - Due eventi a valenza differente (radar orografico baratri lontani vs scanner punti di interesse/waypoint) non devono MAI condividere la stessa famiglia di timbri, anche a pitch differenti.
+   - Sostituito `NOTE_BLOCK_BELL` con `NOTE_BLOCK_DIDGERIDOO` (pitch `0.8f`, timbro tellurico e cavernoso) nel radar orografico $7..24\text{ m}$ (`LongRangeFallDetector`), restituendo la campanella limpida in purezza esclusiva allo scanner POI e Waypoint (`POIWaypoints`).
+
+2. **Tassonomia dei Sensori: Sentinella Attiva di Pericolo vs Radar Passivo di Orientamento**:
+   - *Sentinella Minacce Ravvicinate* (`Ctrl+Alt+F6`): Raggio corto ($6\text{ m}$), allarme sonoro perentorio con cassa grave (`NOTE_BLOCK_BASEDRUM`), protezione fisica salvavita.
+   - *Radar Ostili Periodico* (`Ctrl+Alt+H`): Raggio medio ($24\text{ m}$), scansione temporizzata (3s) con campana acuta (`NOTE_BLOCK_BELL`), consapevolezza spaziale passiva.
+   - *Disaccoppiamento Comandi*: L'utente deve poter zittire il ticchettio del radar periodico quando lavora in sicurezza senza MAI disattivare la sentinella salvavita ravvicinata.
+
+3. **Disaccoppiamento tra Silenziamento Acustico e Scansione Spaziale**:
+   - I toggle rapidi per categoria POI (`Ctrl+Alt+F7..F12 + G + H + P`) disattivano unicamente il playback del suono nel bus di emissione (`POIGroup.playSoundForGroupItems()`).
+   - La scansione geometrica e il tracciamento dei blocchi/entità rimangono pienamente attivi a pieno regime a beneficio del mirino (`B`), del blocco orientamento (`M`/`5`), della lettura coordinate e della sintesi vocale.

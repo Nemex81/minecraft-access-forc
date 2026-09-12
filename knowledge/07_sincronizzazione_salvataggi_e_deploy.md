@@ -72,16 +72,24 @@ Copia automatica del file `.jar` compilato in tutte le istanze PrismLauncher sco
 
 ---
 
-## 4. Sincronizzazione Multi-Postazione & Adattività Hardware GPU
+## 3. PROCEDURA DI DEPLOY AUTOMATIZZATO PROATTIVO (FASE 2)
 
-Per garantire la perfetta parità e massime prestazioni tra il PC fisso e il portatile di Luca:
-- **Rilevamento Adattivo GPU**: Su qualsiasi macchina host (PC Portatile `MSI` o PC Fisso Salotto), analizzare le schede video disponibili e configurare `instance.cfg` per utilizzare l'adattatore grafico più prestante (es. GPU discreta / dedicata):
-  ```properties
-  UseDiscreteGpu=true
-  LaunchMaximized=true
-  OverrideWindow=true
-  ```
-- **Parità Configurazioni**: Le configurazioni collaudate dell'istanza e i file mod vengono sincronizzati nelle rispettive sottocartelle di `minecraft backup\`.
+Durante la Sotto-Fase 1B e Fase 2 della Pipeline Operativa ASTRALIS, Antigravity esegue il deploy automatico del `.jar` appena compilato nell'istanza attiva di gioco prima che Luca inizi il collaudo manuale.
+
+### Script o Comando di Deploy
+1. **Compilazione**: `.\gradlew.bat --no-daemon --no-watch-fs shadowJar`
+2. **Individuazione Destinazione**: Rilevamento automatico dell'istanza PrismLauncher `Minecraft 26.2 Access Client` (o via pattern `*26.2*Access*`) sotto `%APPDATA%\PrismLauncher\instances\`.
+3. **Copia Protetta**:
+   - Rimuovere i vecchi `.jar` di `minecraft-access` dalla cartella `mods/` dell'istanza target.
+   - Copiare il nuovo file generato in `build/libs/minecraft-access-26.2-1.21.0.SNAPSHOT.jar` dentro `mods/`.
+4. **Notifica Vocale & Log**: Conferma ad alto segnale per NVDA con nome del file e dimensione del JAR copiato.
+
+---
+
+## 4. REGOLA DI PARITÀ TRA MACCHINE (SALOTTO VS LAPTOP)
+
+- **Profili Hardware**: I profili macchina (`MSI` e `NEMEXMASTER`) sono registrati nella suite `backup istanze/profili/`.
+- **Parità Configurazioni**: Le configurazioni collaudate dell'istanza e i file mod vengono sincronizzati nelle rispettive sottocartelle di `backup istanze\`.
 - Prima di avviare una sessione sul PC opposto, verificare la presenza del `.jar` aggiornato e sincronizzare i salvataggi `.zip`.
 
 ---

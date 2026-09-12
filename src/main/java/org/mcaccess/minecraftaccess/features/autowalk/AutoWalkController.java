@@ -20,6 +20,8 @@ public class AutoWalkController {
         WALKING,
         JUMPING,
         SWIMMING,
+        CLIMBING_UP,
+        CLIMBING_DOWN,
         ARRIVED,
         CANCELLED
     }
@@ -41,6 +43,8 @@ public class AutoWalkController {
             case WALKING -> State.WALKING;
             case JUMPING -> State.JUMPING;
             case SWIMMING -> State.SWIMMING;
+            case CLIMBING_UP -> State.CLIMBING_UP;
+            case CLIMBING_DOWN -> State.CLIMBING_DOWN;
             case ARRIVED -> State.ARRIVED;
             case CANCELLED -> State.CANCELLED;
         };

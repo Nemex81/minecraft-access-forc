@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 
 import org.mcaccess.minecraftaccess.MainClass;
 import org.mcaccess.minecraftaccess.utils.KeyMappingCategories;
+import org.mcaccess.minecraftaccess.utils.ModifierUtils;
 
 public class QuickHelpKey implements BalmClientModule {
     @Override
@@ -23,6 +24,7 @@ public class QuickHelpKey implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_F1))
                 .overrideCategory(KeyMappingCategories.OTHER)
                 .handleWorldInput(_ -> {
+                    if (!ModifierUtils.hasNoModifiers()) return false;
                     Minecraft.getInstance().gui.setScreen(new QuickKeysHelpScreen());
                     return true;
                 })

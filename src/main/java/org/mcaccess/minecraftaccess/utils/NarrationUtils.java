@@ -12,10 +12,12 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Translate input objects to narration text.
@@ -38,10 +40,15 @@ public final class NarrationUtils {
     }
 
     public static String narrateRelativePositionOfPlayerAnd(BlockPos blockPos) {
-        if (CLIENT.player == null) return "up";
+        return narrateRelativePositionOf(CLIENT != null ? CLIENT.player : null, blockPos);
+    }
 
-        Direction dir = CLIENT.player.getDirection();
-        Vec3 diff = new Vec3(CLIENT.player.getX(), CLIENT.player.getEyeY(), CLIENT.player.getZ()).subtract(Vec3.atCenterOf(blockPos)); // pre 1.18
+    public static String narrateRelativePositionOf(@Nullable Player player, BlockPos blockPos) {
+        if (player == null) return "up";
+
+        Direction dir = player.getDirection();
+        if (dir == null) dir = Direction.NORTH;
+        Vec3 diff = new Vec3(player.getX(), player.getEyeY(), player.getZ()).subtract(Vec3.atCenterOf(blockPos)); // pre 1.18
         BlockPos diffBlockPos = new BlockPos((int) diff.x, (int) diff.y, (int) diff.z); // post 1.20
 
         String diffXBlockPos = "";

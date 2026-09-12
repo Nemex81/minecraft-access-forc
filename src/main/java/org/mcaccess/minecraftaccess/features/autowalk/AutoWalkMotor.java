@@ -1,31 +1,41 @@
 package org.mcaccess.minecraftaccess.features.autowalk;
 
+import java.util.List;
+import java.util.function.Consumer;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.client.resources.language.I18n;
+import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.FenceGateBlock;
 import net.minecraft.world.level.block.TrapDoorBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
-import java.util.List;
-import java.util.function.Consumer;
 
 import org.mcaccess.minecraftaccess.Config;
 import org.mcaccess.minecraftaccess.MainClass;
 import org.mcaccess.minecraftaccess.features.autowalk.AutoWalkPathfinder.PathResult;
 import org.mcaccess.minecraftaccess.features.door.DoorInteractionHelper;
 import org.mcaccess.minecraftaccess.features.door.DoorInteractionManager;
+import org.mcaccess.minecraftaccess.features.safety.traversal.ClimbContactProbe;
+import org.mcaccess.minecraftaccess.features.safety.traversal.ClimbEntryTransition;
+import org.mcaccess.minecraftaccess.features.safety.traversal.ClimbLandingProbe;
+import org.mcaccess.minecraftaccess.features.safety.traversal.ClimbTraversal;
+import org.mcaccess.minecraftaccess.features.safety.traversal.ClimbableGeometry;
+import org.mcaccess.minecraftaccess.features.safety.traversal.ControlledDescentPort;
 import org.mcaccess.minecraftaccess.features.safety.traversal.CrouchIntent;
 import org.mcaccess.minecraftaccess.features.safety.traversal.CrouchIntentProbe;
 import org.mcaccess.minecraftaccess.features.safety.traversal.RawCrouchIntentProvider;
@@ -34,6 +44,7 @@ import org.mcaccess.minecraftaccess.features.safety.traversal.RawCrouchIntentPro
  * AutoWalk Motor (Level 2 - Motor Execution Body).
  * Detentore della FSM cinematica (State), esecutore dei comandi virtuali del client,
  * gestione della sterzata progressiva, frenata in curva, salti su gradino, nuoto,
+ * arrampicata assistita su scale/impalcature/rampicanti (Contratto D3),
  * rilevamento porte chiuse e riaperte, stuck watchdog e human takeover.
  */
 @Slf4j
@@ -44,8 +55,19 @@ public class AutoWalkMotor {
         WALKING,
         JUMPING,
         SWIMMING,
+        CLIMBING_UP,
+        CLIMBING_DOWN,
         ARRIVED,
         CANCELLED
+    }
+
+    public enum ClimbSubPhase {
+        MOUNT,
+        ALIGN,
+        APPROACH,
+        CAPTURE_WAIT,
+        TRANSIT,
+        DISMOUNT
     }
 
     public enum StuckAction {
@@ -67,11 +89,48 @@ public class AutoWalkMotor {
         void onNoPath(Object target);
         void onStuck();
         void onRepathRequested();
+        default void onClimbStart(boolean isUp, @Nullable ClimbTraversal traversal) {}
+        default void onClimbLanding(BlockPos landingPos) {}
+        default void onClimbStuck() {}
+        default void onClimbInterrupted() {}
     }
 
     @Getter
     @Setter
     private State state = State.IDLE;
+
+    @Getter
+    @Setter
+    private ClimbSubPhase climbSubPhase = ClimbSubPhase.MOUNT;
+
+    @Getter
+    private int climbWatchdogTicks = 0;
+
+    @Getter
+    private double lastClimbObservedY = 0.0;
+
+    @Getter
+    private int climbStuckRecoveryAttempts = 0;
+
+    @Getter
+    private @Nullable String activeDescentColumnId = null;
+
+    @Getter
+    @Setter
+    private @Nullable ControlledDescentPort controlledDescentPort = null;
+
+    @Getter
+    private boolean motorHoldingJumpForClimb = false;
+
+    @Getter
+    private int climbJumpPulseTicksRemaining = 0;
+
+    @Getter
+    private @Nullable ClimbTraversal activeClimbTraversal = null;
+    private @Nullable ClimbEntryTransition activeClimbEntryTransition = null;
+    private @Nullable AABB previousClimbPlayerBox = null;
+    private int climbLandingStableTicks = 0;
+    private long activeClimbRouteRevisionId = 0L;
 
     @Getter
     private Vec3 lastTickPos = Vec3.ZERO;
@@ -122,7 +181,44 @@ public class AutoWalkMotor {
     }
 
     public boolean isActive() {
-        return state == State.WALKING || state == State.JUMPING || state == State.SWIMMING;
+        return state == State.WALKING || state == State.JUMPING || state == State.SWIMMING
+                || state == State.CLIMBING_UP || state == State.CLIMBING_DOWN;
+    }
+
+    public boolean isClimbing() {
+        return state == State.CLIMBING_UP || state == State.CLIMBING_DOWN;
+    }
+
+    public @Nullable ControlledDescentPort resolveDescentPort() {
+        if (controlledDescentPort != null) {
+            return controlledDescentPort;
+        }
+        try {
+            return org.mcaccess.minecraftaccess.features.safety.traversal.SafetyMovementGuard.getDefaultInstance();
+        } catch (Throwable ignored) {
+            return null;
+        }
+    }
+
+    public void resetClimbState(@Nullable Minecraft client) {
+        if (motorHoldingJumpForClimb && client != null && client.options != null) {
+            client.options.keyJump.setDown(false);
+            motorHoldingJumpForClimb = false;
+        }
+        ControlledDescentPort port = resolveDescentPort();
+        if (port != null && activeDescentColumnId != null) {
+            port.releaseDescentLease(activeDescentColumnId);
+        }
+        activeDescentColumnId = null;
+        climbSubPhase = ClimbSubPhase.MOUNT;
+        climbWatchdogTicks = 0;
+        climbStuckRecoveryAttempts = 0;
+        climbJumpPulseTicksRemaining = 0;
+        activeClimbTraversal = null;
+        activeClimbEntryTransition = null;
+        previousClimbPlayerBox = null;
+        climbLandingStableTicks = 0;
+        activeClimbRouteRevisionId = 0L;
     }
 
     /**
@@ -169,6 +265,7 @@ public class AutoWalkMotor {
         } else {
             resetMovement(null, null, client != null ? client.player : null);
         }
+        resetClimbState(client);
     }
 
     public void resetMovement(@Nullable KeyMapping keyUp, @Nullable KeyMapping keyJump, @Nullable LocalPlayer player) {
@@ -217,8 +314,8 @@ public class AutoWalkMotor {
             return;
         }
 
-        // 3. Dynamic Entity Tracking
-        if (navigator.shouldRepathForEntity()) {
+        // 3. Dynamic Entity Tracking (sospeso durante l'arrampicata fino al dismount)
+        if (!isClimbing() && navigator.shouldRepathForEntity()) {
             Object targetBefore = navigator.getTargetObject();
             PathResult result = navigator.repath(level, player.position(), config.maxRange);
             if (handleRepathResult(result, client, player, navigator, config, targetBefore, callback)) {
@@ -226,9 +323,9 @@ public class AutoWalkMotor {
             }
         }
 
-        // 4. Post-Landing Repath Checkpoint
+        // 4. Post-Landing Repath Checkpoint (sospeso durante l'arrampicata)
         boolean onGround = player.onGround();
-        if (wasInAir && onGround) {
+        if (!isClimbing() && wasInAir && onGround) {
             double currentY = player.getY();
             if (Math.abs(currentY - lastGroundY) > 0.4 || state == State.JUMPING) {
                 lastGroundY = currentY;
@@ -253,6 +350,14 @@ public class AutoWalkMotor {
         BlockPos targetNodePos = navigator.getCurrentNodePos();
         if (targetNodePos == null) {
             finishArrival(client, player, navigator, config, callback);
+            return;
+        }
+
+        // 5.5. Arrampicata verticale assistita (Contratto D3: Mount, Transit, Dismount)
+        RouteSegment currentSegment = navigator.getCurrentSegment();
+        boolean segmentIsClimb = currentSegment != null && currentSegment.isClimb();
+        if (isClimbing() || segmentIsClimb) {
+            processClimbTick(client, player, level, navigator, currentSegment, config, narrateHints, callback);
             return;
         }
 
@@ -447,7 +552,9 @@ public class AutoWalkMotor {
 
             int remainingSteps = navigator.getRemainingSteps();
             int currentIndex = navigator.getCurrentPathIndex();
-            if (narrateHints && remainingSteps > 0 && remainingSteps % 5 == 0 && currentIndex != lastAnnouncedStepIndex) {
+            Config.AutoWalk.ProgressionFeedbackMode progMode = config != null && config.progressionFeedbackMode != null
+                    ? config.progressionFeedbackMode : Config.AutoWalk.ProgressionFeedbackMode.SOUND_AND_VOICE;
+            if (shouldNarrateStepProgression(remainingSteps, currentIndex, lastAnnouncedStepIndex, progMode)) {
                 lastAnnouncedStepIndex = currentIndex;
                 callback.onProgression(remainingSteps);
             }
@@ -749,5 +856,330 @@ public class AutoWalkMotor {
 
     public static boolean isDoorOrGateClosed(Level level, BlockPos pos) {
         return AutoWalkPathfinder.isDoorOrGateClosed(level, pos);
+    }
+
+    public static boolean shouldNarrateStepProgression(
+            int remainingSteps,
+            int currentIndex,
+            int lastAnnouncedIndex,
+            Config.AutoWalk.ProgressionFeedbackMode mode
+    ) {
+        if (mode != Config.AutoWalk.ProgressionFeedbackMode.SOUND_AND_VOICE && mode != Config.AutoWalk.ProgressionFeedbackMode.VOICE_ONLY) {
+            return false;
+        }
+        return remainingSteps > 0 && remainingSteps % 5 == 0 && currentIndex != lastAnnouncedIndex;
+    }
+
+    public static boolean shouldPlayNodeSound(
+            boolean playNodeSoundCue,
+            Config.AutoWalk.ProgressionFeedbackMode mode
+    ) {
+        if (!playNodeSoundCue) {
+            return false;
+        }
+        return mode == Config.AutoWalk.ProgressionFeedbackMode.SOUND_AND_VOICE || mode == Config.AutoWalk.ProgressionFeedbackMode.SOUND_ONLY;
+    }
+
+    // ==========================================
+    // FSM Cinematica Arrampicata (Contratto D3)
+    // ==========================================
+
+    /**
+     * Esecuzione del tick cinematico specifico per arrampicata assistita (Contratto D3).
+     */
+    public void processClimbTick(
+            Minecraft client,
+            LocalPlayer player,
+            Level level,
+            RouteNavigator navigator,
+            @Nullable RouteSegment currentSegment,
+            Config.AutoWalk config,
+            boolean narrateHints,
+            MotorCallback callback
+    ) {
+        BlockPos targetNodePos = navigator.getCurrentNodePos();
+        if (targetNodePos == null) {
+            finishArrival(client, player, navigator, config, callback);
+            return;
+        }
+
+        // 1. Determina o inizializza lo stato CLIMBING_UP o CLIMBING_DOWN
+        if (!isClimbing()) {
+            boolean isAscent = true;
+            if (currentSegment != null && currentSegment.climbData() != null) {
+                isAscent = currentSegment.climbData().isAscent();
+            } else if (currentSegment != null) {
+                isAscent = currentSegment.to().getY() >= currentSegment.from().getY();
+            } else {
+                isAscent = targetNodePos.getY() >= player.getY();
+            }
+            this.state = isAscent ? State.CLIMBING_UP : State.CLIMBING_DOWN;
+            this.climbSubPhase = isAscent ? ClimbSubPhase.MOUNT : ClimbSubPhase.ALIGN;
+            this.climbWatchdogTicks = 0;
+            this.lastClimbObservedY = player.getY();
+            this.climbStuckRecoveryAttempts = 0;
+            this.climbJumpPulseTicksRemaining = ClimbKinematics.MOUNT_JUMP_PULSE_TICKS;
+            this.activeClimbTraversal = (currentSegment != null) ? currentSegment.climbData() : null;
+            this.activeClimbEntryTransition = (currentSegment != null) ? currentSegment.climbEntryTransition() : null;
+            this.previousClimbPlayerBox = player.getBoundingBox();
+            this.climbLandingStableTicks = 0;
+            this.activeClimbRouteRevisionId = navigator.getRouteRevisionId();
+            callback.onClimbStart(isAscent, this.activeClimbTraversal);
+        }
+
+        // Disattivazione incondizionata dello sprint durante l'arrampicata
+        player.setSprinting(false);
+
+        // Controllo e cooperazione preventiva con botole lungo la colonna
+        checkTrapdoorsInClimbColumn(client, level, player, targetNodePos, currentSegment, narrateHints);
+
+        // Aggiorna o conserva activeClimbTraversal se il segmento corrente fornisce dati validi
+        if (currentSegment != null && currentSegment.climbData() != null) {
+            this.activeClimbTraversal = currentSegment.climbData();
+        }
+        if (currentSegment != null && currentSegment.climbEntryTransition() != null) {
+            this.activeClimbEntryTransition = currentSegment.climbEntryTransition();
+        }
+
+        // Determina se il nodo corrente e' l'ultimo rung transit prima del landing
+        boolean isLastTransitRung = false;
+        int nextSegIndex = navigator.getCurrentPathIndex();
+        if (nextSegIndex < navigator.getCurrentSegments().size()) {
+            RouteSegment nextSeg = navigator.getCurrentSegments().get(nextSegIndex);
+            isLastTransitRung = (nextSeg.climbLeg() == RouteSegment.ClimbLeg.DISMOUNT || !nextSeg.isClimb());
+        } else {
+            isLastTransitRung = true;
+        }
+
+        // Costruisce lo snapshot per il seam cinematico deterministico (Contratti D4..D8)
+        ControlledDescentPort descentPort = resolveDescentPort();
+        boolean effectiveLease = descentPort != null && this.activeClimbTraversal != null
+                && descentPort.isDescentLeaseActiveFor(this.activeClimbTraversal.columnId());
+
+        AABB currentPlayerBox = player.getBoundingBox();
+        AABB previousPlayerBox = this.previousClimbPlayerBox != null
+                ? this.previousClimbPlayerBox
+                : currentPlayerBox;
+        ClimbContactProbe.Result contactResult = ClimbContactProbe.Result.outside();
+        ClimbLandingProbe.Result landingResult = new ClimbLandingProbe.Result(false, true, false, false);
+        double verticalVelocity = player.getDeltaMovement() != null ? player.getDeltaMovement().y : 0.0;
+        if (level != null && this.activeClimbTraversal != null) {
+            BlockPos probePos = resolveClimbProbePos(level, player, targetNodePos, this.activeClimbTraversal);
+            BlockState climbState = level.getBlockState(probePos);
+            VoxelShape climbShape = climbState.getShape(level, probePos);
+            contactResult = ClimbContactProbe.evaluate(
+                    currentPlayerBox,
+                    previousPlayerBox,
+                    climbShape,
+                    probePos,
+                    this.activeClimbEntryTransition,
+                    this.activeClimbTraversal
+            );
+            landingResult = ClimbLandingProbe.evaluate(
+                    level,
+                    currentPlayerBox,
+                    this.activeClimbTraversal.landingPos(),
+                    player.onGround(),
+                    verticalVelocity
+            );
+        }
+        ClimbKinematics.ClimbSnapshot snapshot = new ClimbKinematics.ClimbSnapshot(
+                this.climbSubPhase,
+                this.state == State.CLIMBING_UP,
+                player.position(),
+                player.blockPosition(),
+                player.onGround(),
+                player.onClimbable(),
+                player.horizontalCollision,
+                targetNodePos,
+                navigator.getCurrentClimbLeg(),
+                this.activeClimbTraversal,
+                this.climbWatchdogTicks,
+                this.lastClimbObservedY,
+                this.climbStuckRecoveryAttempts,
+                this.climbJumpPulseTicksRemaining,
+                isLastTransitRung,
+                effectiveLease,
+                this.activeClimbEntryTransition,
+                player.getYRot(),
+                contactResult,
+                landingResult,
+                verticalVelocity,
+                this.climbLandingStableTicks,
+                navigator.getRouteRevisionId(),
+                this.activeClimbRouteRevisionId
+        );
+
+        ClimbKinematics.ClimbDecision decision = ClimbKinematics.evaluate(snapshot);
+
+        // Telemetria diagnostica di transizione ai cambi di fase (Contratto D29)
+        boolean semanticEvent = decision.nextSubPhase() != this.climbSubPhase
+                || decision.outcome() != ClimbKinematics.Outcome.CONTINUE
+                || decision.reasonCode() != ClimbContactProbe.ReasonCode.NONE;
+        if (semanticEvent && log.isInfoEnabled()) {
+            log.info("[Climb FSM] routeRevision={}, columnId={}, phase={}->{}, pos=({}, {}, {}), "
+                            + "entryDistance={}, contact={}, onClimbable={}, onGround={}, velocityY={}, yaw={}, "
+                            + "keyUp={}, keyJump={}, lease={}, rung={}, bottom={}, landing={}, reason={}, outcome={}",
+                    navigator.getRouteRevisionId(),
+                    this.activeClimbTraversal != null ? this.activeClimbTraversal.columnId() : "none",
+                    this.climbSubPhase,
+                    decision.nextSubPhase(),
+                    String.format(java.util.Locale.ROOT, "%.2f", player.getX()),
+                    String.format(java.util.Locale.ROOT, "%.2f", player.getY()),
+                    String.format(java.util.Locale.ROOT, "%.2f", player.getZ()),
+                    String.format(java.util.Locale.ROOT, "%.3f", contactResult.signedEntryPlaneDistance()),
+                    contactResult.state(),
+                    player.onClimbable(),
+                    player.onGround(),
+                    String.format(java.util.Locale.ROOT, "%.3f", verticalVelocity),
+                    decision.desiredYaw() != null ? String.format(java.util.Locale.ROOT, "%.1f", decision.desiredYaw()) : "current",
+                    decision.keyUp(),
+                    decision.keyJump(),
+                    decision.leaseAction(),
+                    targetNodePos,
+                    this.activeClimbTraversal != null ? this.activeClimbTraversal.columnBottomPos() : "none",
+                    this.activeClimbTraversal != null ? this.activeClimbTraversal.landingPos() : "none",
+                    decision.reasonCode(),
+                    decision.outcome()
+            );
+        }
+
+        // Applica transizioni e stato cinematico
+        this.climbSubPhase = decision.nextSubPhase();
+        this.climbWatchdogTicks = decision.nextWatchdogTicks();
+        this.lastClimbObservedY = decision.nextLastObservedY();
+        this.climbStuckRecoveryAttempts = decision.nextRecoveryAttempts();
+        this.climbJumpPulseTicksRemaining = decision.nextJumpPulseTicksRemaining();
+        this.climbLandingStableTicks = decision.nextLandingStableTicks();
+        this.previousClimbPlayerBox = currentPlayerBox;
+
+        // Gestione lease controllata di discesa prima dell'applicazione input (Contratti D11, D12)
+        ControlledDescentPort port = descentPort;
+        boolean climbInputAuthorized = true;
+        if (port != null) {
+            if (decision.leaseAction() == ClimbKinematics.LeaseAction.ACQUIRE_RENEW) {
+                String colId = (this.activeClimbTraversal != null)
+                        ? this.activeClimbTraversal.columnId()
+                        : "climb:" + targetNodePos.getX() + "," + targetNodePos.getZ();
+                this.activeDescentColumnId = colId;
+                boolean requiresSneak = (this.activeClimbTraversal != null && this.activeClimbTraversal.climbType() == ClimbableGeometry.ClimbType.SCAFFOLDING);
+                port.acquireDescentLease(colId, requiresSneak);
+                port.renewDescentLease(colId);
+                climbInputAuthorized = port.isDescentLeaseActiveFor(colId);
+            } else if (decision.leaseAction() == ClimbKinematics.LeaseAction.RELEASE) {
+                if (this.activeDescentColumnId != null) {
+                    port.releaseDescentLease(this.activeDescentColumnId);
+                    this.activeDescentColumnId = null;
+                }
+            }
+        }
+
+        // Applica comandi virtuali del client
+        if (client != null && client.options != null) {
+            boolean keyUp = decision.keyUp() && climbInputAuthorized;
+            boolean keyJump = decision.keyJump() && climbInputAuthorized;
+            client.options.keyUp.setDown(keyUp);
+            client.options.keyJump.setDown(keyJump);
+            this.motorHoldingJumpForClimb = keyJump;
+        }
+        if (decision.desiredYaw() != null) {
+            player.setYRot(decision.desiredYaw());
+        }
+
+        // Avanzamento atomico del waypoint per-rung lungo la colonna (Contratti D3, D5)
+        if (decision.shouldAdvanceWaypoint()) {
+            boolean advanced = navigator.advanceClimbWaypoint(navigator.getCurrentPathIndex(), navigator.getRouteRevisionId());
+            if (!advanced) {
+                resetMovement(client);
+                resetClimbState(client);
+                this.state = State.CANCELLED;
+                callback.onClimbStuck();
+                callback.onStuck();
+                return;
+            }
+            callback.onStepNode();
+        }
+
+        // Gestione esito terminale o continuo (Contratto D6)
+        switch (decision.outcome()) {
+            case COMPLETED -> {
+                BlockPos landingPos = (this.activeClimbTraversal != null)
+                        ? this.activeClimbTraversal.landingPos()
+                        : targetNodePos;
+                resetClimbState(client);
+                callback.onClimbLanding(landingPos);
+                boolean advanced = navigator.advanceClimbWaypoint(navigator.getCurrentPathIndex(), navigator.getRouteRevisionId());
+                if (!advanced) {
+                    resetMovement(client);
+                    this.state = State.CANCELLED;
+                    callback.onClimbStuck();
+                    callback.onStuck();
+                    return;
+                }
+                callback.onStepNode();
+
+                if (navigator.isRouteCompleted()) {
+                    finishArrival(client, player, navigator, config, callback);
+                } else {
+                    this.state = State.WALKING;
+                }
+            }
+            case STUCK_ABORT -> {
+                resetMovement(client);
+                resetClimbState(client);
+                this.state = State.CANCELLED;
+                callback.onClimbStuck();
+                callback.onStuck();
+            }
+            case TOPOLOGICAL_ABORT -> {
+                resetMovement(client);
+                resetClimbState(client);
+                this.state = State.CANCELLED;
+                callback.onClimbInterrupted();
+                callback.onStuck();
+            }
+            case CONTINUE, REMOUNT_RETRY -> {
+                // Marcia in corso
+            }
+        }
+    }
+
+    private static BlockPos resolveClimbProbePos(
+            Level level,
+            LocalPlayer player,
+            BlockPos targetNodePos,
+            ClimbTraversal traversal
+    ) {
+        if (ClimbableGeometry.isClimbable(level.getBlockState(targetNodePos))) {
+            return targetNodePos;
+        }
+        int y = Mth.clamp(player.blockPosition().getY(),
+                traversal.columnBottomPos().getY(), traversal.columnTopPos().getY());
+        BlockPos byPlayerHeight = new BlockPos(
+                traversal.columnTopPos().getX(), y, traversal.columnTopPos().getZ());
+        if (ClimbableGeometry.isClimbable(level.getBlockState(byPlayerHeight))) {
+            return byPlayerHeight;
+        }
+        return traversal.entryPos();
+    }
+
+    private void checkTrapdoorsInClimbColumn(
+            Minecraft client,
+            Level level,
+            Player player,
+            BlockPos targetNodePos,
+            @Nullable RouteSegment currentSegment,
+            boolean narrateHints
+    ) {
+        if (level == null || player == null) return;
+        if (currentSegment != null && currentSegment.climbData() != null && currentSegment.climbData().trapdoorPos() != null) {
+            DoorInteractionManager.requestTrapdoorPassage(client, level, player, currentSegment.climbData().trapdoorPos(), true, narrateHints);
+        }
+        BlockPos feetPos = player.blockPosition();
+        for (BlockPos check : List.of(feetPos, feetPos.above(), targetNodePos, targetNodePos.above())) {
+            if (level.getBlockState(check).getBlock() instanceof TrapDoorBlock) {
+                DoorInteractionManager.requestTrapdoorPassage(client, level, player, check, true, narrateHints);
+            }
+        }
     }
 }

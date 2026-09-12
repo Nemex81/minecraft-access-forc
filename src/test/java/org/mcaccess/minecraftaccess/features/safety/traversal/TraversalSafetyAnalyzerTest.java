@@ -253,4 +253,111 @@ class TraversalSafetyAnalyzerTest {
         assertNotNull(result.candidate());
         assertEquals(SafeDescentType.LADDER, result.candidate().type());
     }
+
+    @Test
+    @DisplayName("8. Rev MC-26.10: Short ladder (drop of 2 blocks) under warning threshold (3) -> NOT_APPLICABLE (silenced)")
+    void testShortLadderSilencedUnderWarningThreshold() {
+        TestBlockGetter level = new TestBlockGetter();
+
+        // Player at Y=68, ladder at Y=67 and Y=66, ground at Y=66 (landing block Y=66, drop = 2 blocks)
+        level.set(new BlockPos(10, 67, 5), Blocks.STONE.defaultBlockState());
+        BlockState ladderState = Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, Direction.NORTH);
+        level.set(new BlockPos(10, 67, 4), ladderState);
+        level.set(new BlockPos(10, 66, 4), Blocks.STONE.defaultBlockState()); // Solid landing at Y=66
+
+        Vec3 playerPos = new Vec3(10.5, 68.0, 5.2);
+        AABB bbox = new AABB(10.2, 68.0, 4.9, 10.8, 69.8, 5.5);
+        Vec3 intentNorth = new Vec3(0.0, 0.0, -1.0);
+
+        // warningDepthThreshold = 3, autoSneakDepthThreshold = 4
+        TraversalSafetyContext context = new TraversalSafetyContext(
+                playerPos, bbox, 68, intentNorth, true, 3, 4, level
+        );
+
+        TraversalSafetyResult result = TraversalSafetyAnalyzer.analyzeTraversal(context);
+
+        assertEquals(TraversalSafetyStatus.NOT_APPLICABLE, result.status(),
+                "Short ladder with drop of 2 blocks under warning threshold (3) must be ignored to prevent vocal spam");
+    }
+
+    @Test
+    @DisplayName("9. Decoupled 3-block drop (warning=3, autoSneak=4) -> NOT_APPLICABLE in analyzeTraversal (handled by findDangerAhead without autoSneak)")
+    void testDecoupledThreeBlockDropNotApplicable() {
+        TestBlockGetter level = new TestBlockGetter();
+
+        // Player at Y=68. Drop of 3 blocks to landing at Y=65
+        level.set(new BlockPos(10, 67, 5), Blocks.STONE.defaultBlockState());
+        level.set(new BlockPos(10, 65, 4), Blocks.STONE.defaultBlockState());
+
+        Vec3 playerPos = new Vec3(10.5, 68.0, 5.2);
+        AABB bbox = new AABB(10.2, 68.0, 4.9, 10.8, 69.8, 5.5);
+        Vec3 intentNorth = new Vec3(0.0, 0.0, -1.0);
+
+        // warningDepthThreshold = 3, autoSneakDepthThreshold = 4
+        TraversalSafetyContext context = new TraversalSafetyContext(
+                playerPos, bbox, 68, intentNorth, true, 3, 4, level
+        );
+
+        TraversalSafetyResult result = TraversalSafetyAnalyzer.analyzeTraversal(context);
+
+        assertEquals(TraversalSafetyStatus.NOT_APPLICABLE, result.status(),
+                "3-block drop must be NOT_APPLICABLE in analyzeTraversal when autoSneak=4 so findDangerAhead can issue voice warning without sneak lock");
+    }
+
+    @Test
+    @DisplayName("10. Rev MC-26.10 D2.1: Underground water pool buried under solid stone -> NOT_APPLICABLE (corridor blocked, no false safe descent)")
+    void testBuriedWaterUnderSolidGroundNotSafeDescent() {
+        TestBlockGetter level = new TestBlockGetter();
+
+        // Player walking on dirt path at Y=64, with solid stone at Y=63 and underground water at Y=59
+        level.set(new BlockPos(10, 64, 5), Blocks.DIRT_PATH.defaultBlockState());
+        level.set(new BlockPos(10, 64, 4), Blocks.DIRT_PATH.defaultBlockState());
+        level.set(new BlockPos(10, 63, 4), Blocks.STONE.defaultBlockState());
+        level.set(new BlockPos(10, 62, 4), Blocks.STONE.defaultBlockState());
+        level.set(new BlockPos(10, 61, 4), Blocks.STONE.defaultBlockState());
+        level.set(new BlockPos(10, 60, 4), Blocks.STONE.defaultBlockState());
+        level.setFluid(new BlockPos(10, 59, 4), Fluids.WATER.defaultFluidState());
+
+        Vec3 playerPos = new Vec3(10.5, 64.9375, 5.2);
+        AABB bbox = new AABB(10.2, 64.9375, 4.9, 10.8, 66.7375, 5.5);
+        Vec3 intentNorth = new Vec3(0.0, 0.0, -1.0);
+
+        TraversalSafetyContext context = new TraversalSafetyContext(
+                playerPos, bbox, 64, intentNorth, true, 3, 4, level
+        );
+
+        TraversalSafetyResult result = TraversalSafetyAnalyzer.analyzeTraversal(context);
+
+        assertNotEquals(TraversalSafetyStatus.SAFE_DESCENT_AVAILABLE, result.status(),
+                "Buried water pool under solid ground must NEVER trigger SAFE_DESCENT_AVAILABLE");
+        assertEquals(TraversalSafetyStatus.NOT_APPLICABLE, result.status(),
+                "Walking on solid ground over buried water must remain NOT_APPLICABLE (safe walking corridor)");
+    }
+
+    @Test
+    @DisplayName("11. Rev MC-26.10 D2.2: Open air cliff jump into deep water pool -> SAFE_DESCENT_AVAILABLE")
+    void testOpenAirWaterDropSafeDescent() {
+        TestBlockGetter level = new TestBlockGetter();
+
+        // Player at cliff edge Y=68, air below until water at Y=63 (drop of 5 blocks)
+        level.set(new BlockPos(10, 67, 5), Blocks.STONE.defaultBlockState());
+        // Air from Y=67 down to Y=64 in column (10, y, 4)
+        level.setFluid(new BlockPos(10, 63, 4), Fluids.WATER.defaultFluidState());
+        level.set(new BlockPos(10, 62, 4), Blocks.STONE.defaultBlockState());
+
+        Vec3 playerPos = new Vec3(10.5, 68.0, 5.2);
+        AABB bbox = new AABB(10.2, 68.0, 4.9, 10.8, 69.8, 5.5);
+        Vec3 intentNorth = new Vec3(0.0, 0.0, -1.0);
+
+        TraversalSafetyContext context = new TraversalSafetyContext(
+                playerPos, bbox, 68, intentNorth, true, 3, 4, level
+        );
+
+        TraversalSafetyResult result = TraversalSafetyAnalyzer.analyzeTraversal(context);
+
+        assertEquals(TraversalSafetyStatus.SAFE_DESCENT_AVAILABLE, result.status(),
+                "Open air jump into water pool must be recognized as SAFE_DESCENT_AVAILABLE");
+        assertNotNull(result.candidate());
+        assertEquals(SafeDescentType.WATER_DESCENT, result.candidate().type());
+    }
 }

@@ -30,11 +30,13 @@ public enum BuiltinBlockPOIGroups {
     ORE(new POIGroup<>(
             "minecraft_access.point_of_interest.group.ore",
             new POIGroup.Sound(SoundEvents.ITEM_PICKUP, -5.0f),
+            () -> Config.getInstance().poi.blocks.soundEnabledOre,
             pos -> Ore.PREDICATE.test(getBlockState(pos).getBlock())
     )),
     FUNCTIONAL(new POIGroup<>(
             "minecraft_access.point_of_interest.group.functional",
             new POIGroup.Sound(SoundEvents.NOTE_BLOCK_BIT.value(), 2.0f),
+            () -> Config.getInstance().poi.blocks.soundEnabledFunctional,
             pos -> {
                 Block block = getBlockState(pos).getBlock();
                 return block instanceof ButtonBlock || block instanceof LeverBlock || Functional.PREDICATE.test(block);
@@ -43,6 +45,7 @@ public enum BuiltinBlockPOIGroups {
     DOOR(new POIGroup<>(
             "minecraft_access.point_of_interest.group.door",
             new POIGroup.Sound(SoundEvents.NOTE_BLOCK_BIT.value(), 2.0f),
+            () -> Config.getInstance().poi.blocks.soundEnabledDoor,
             pos -> {
                 assert Minecraft.getInstance().level != null;
                 BlockState doorState = Minecraft.getInstance().level.getBlockState(pos);
@@ -56,6 +59,8 @@ public enum BuiltinBlockPOIGroups {
     )),
     PORTAL(new POIGroup<>(
             "minecraft_access.point_of_interest.group.portal",
+            new POIGroup.Sound(null, 0),
+            () -> Config.getInstance().poi.blocks.soundEnabledPortal,
             pos -> {
                 assert Minecraft.getInstance().level != null;
                 Block block = Minecraft.getInstance().level.getBlockState(pos).getBlock();
@@ -65,6 +70,7 @@ public enum BuiltinBlockPOIGroups {
     LADDER(new POIGroup<>(
             "minecraft_access.point_of_interest.group.ladder",
             new POIGroup.Sound(SoundEvents.NOTE_BLOCK_BIT.value(), 2.0f),
+            () -> Config.getInstance().poi.blocks.soundEnabledLadder,
             pos -> {
                 assert Minecraft.getInstance().level != null;
                 Block block = Minecraft.getInstance().level.getBlockState(pos).getBlock();
@@ -74,6 +80,7 @@ public enum BuiltinBlockPOIGroups {
     FLUID(new POIGroup<>(
             "minecraft_access.point_of_interest.group.fluid",
             new POIGroup.Sound(SoundEvents.NOTE_BLOCK_BIT.value(), 2.0f),
+            () -> Config.getInstance().poi.blocks.soundEnabledFluid,
             pos -> {
                 Level level = Minecraft.getInstance().level;
                 boolean configEnabled = Config.getInstance().poi.blocks.detectFluidBlocks;
@@ -87,6 +94,7 @@ public enum BuiltinBlockPOIGroups {
     HAVE_INTERFACE(new POIGroup<>(
             "minecraft_access.point_of_interest.group.gui",
             new POIGroup.Sound(SoundEvents.NOTE_BLOCK_BANJO.value(), 0.0f),
+            () -> Config.getInstance().poi.blocks.soundEnabledGui,
             pos -> {
                 BlockState state = getBlockState(pos);
                 if (state.getBlock() instanceof ChestBlock) {

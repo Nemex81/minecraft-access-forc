@@ -554,5 +554,45 @@ Questo registro documenta i problemi tecnici complessi risolti nel tempo, preser
      - In `@Inject(method = "startUseItem", at = @At("HEAD"))`, se è presente un hit permissivo, assegna temporaneamente `this.hitResult = permissiveHit`. Minecraft Vanilla esegue `gameMode.useItemOn` chiudendo la porta al primo colpo da mouse fisico, tasto `]` e Numpad Enter.
   3. *Suite di Test & Collaudo*: 7 nuovi test headless in `DoorInteractionHelperTest.java` (totale suite 315/315 test verdi) e collaudo in-game confermato con successo al 100% da Luca.
 
+---
+
+### Record 42 — Crash `InvalidInjectionException` su `KeyboardHandlerMixin` & Neutralizzazione Tripla Barriera Tasti Funzione F1, F3, F5 (Rev MC-26.22)
+- **Data**: 2026-09-09
+- **Versione di Riferimento**: Minecraft 26.2 (Fabric / Java 25)
+- **Moduli Coinvolti**: `KeyboardHandlerMixin.java`, `DebugScreenEntryListMixin.java`, `MinecraftMixin.java`, `ModifierUtils.java`
+- **Sintomi**:
+  1. *Crash all'Avvio*: Minecraft non caricava la finestra e arrestava l'istanza con eccezione Mixin nel log: `InvalidInjectionException: Invalid descriptor on KeyboardHandlerMixin->@Inject::suppressDebugKeysWhenCtrlAlt ... Expected (Lnet/minecraft/client/input/KeyEvent;Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfoReturnable;)V but found (JIIILorg/spongepowered/asm/mixin/injection/callback/CallbackInfo;)V`.
+  2. *Interferenze Visive In-Game*: Premendo `Ctrl+Alt+F3` (interruttore buche corte) compariva la schermata di debug con grafici e testo; premendo `Ctrl+Alt+F5` (suono mirino) la visuale cambiava in terza persona.
+- **Causa Radice**:
+  1. *Firma API 26.2*: In Minecraft 26.2 il metodo `handleDebugKeys` in `KeyboardHandler` è stato rifattorizzato da Mojang e non accetta più i 4 parametri raw di GLFW (`long window, int key, int scancode, int action`), ma l'oggetto incapsulato `KeyEvent` e restituisce un `boolean`.
+  2. *Ciclo di Vita Release*: Il framework Kuma cattura solo l'evento `KEY_PRESS` (`action == 1`). La Debug Screen di Minecraft Vanilla (F3) viene invece attivata al rilascio del tasto (`action == 0`, `KEY_RELEASE`) da `DebugScreenEntryList.toggleDebugOverlay()`. Ricevendo il release non consumato, Minecraft apriva l'overlay di testo.
+  3. *Accumulatori di Click*: I tasti F5 (`keyTogglePerspective`) e F1 (`keyToggleGui`) accumulano click nei `KeyMapping` nativi e vengono consumati nel tick di input di `Minecraft.handleKeybinds()`.
+- **Soluzione Definitiva (Pattern Tripla Barriera)**:
+  1. *Firma Corretta*: In `KeyboardHandlerMixin.java`, allineata la firma a `suppressDebugKeysWhenCtrlAlt(KeyEvent event, CallbackInfoReturnable<Boolean> cir)` impostando `cir.setReturnValue(true)` se `ModifierUtils.hasControlAndAlt()`.
+  2. *Neutralizzazione Target F3*: Creato `DebugScreenEntryListMixin.java` che intercetta a monte `toggleDebugOverlay()` con `@Inject(at = @At("HEAD"), cancellable = true)` e lo cancella (`ci.cancel()`) quando `Ctrl+Alt` sono premuti, azzerando qualsiasi apertura su press o release.
+  3. *Svuotamento Accumulatori F1 e F5*: In `MinecraftMixin.java`, inserita iniezione a `@At("HEAD")` su `handleKeybinds()` che svuota a vuoto i click pendenti (`while (this.options.keyTogglePerspective.consumeClick())` e `while (this.options.keyToggleGui.consumeClick())`) prima che raggiungano la logica Vanilla.
+- **Verifica e Collaudo**: Compilazione e test verdi al 100%, avvio pulito del gioco, zero interferenze visive durante l'azionamento dei tasti rapidi confermato da Luca in-game.
+
+---
+
+### Record 43 — Stallo Dismount Ascendente su Botole/Tetti e Falso Blocco a Terra in Discesa Scale (Rev MC-26.23)
+- **Data**: 2026-09-12
+- **Versione di Riferimento**: Minecraft 26.2 (Fabric / Java 25)
+- **Moduli Coinvolti**: `ClimbKinematics.java`, `ClimbLandingProbe.java`, `ClimbContactProbe.java`, `AutoWalkMotor.java`
+- **Sintomi**:
+  1. *Stallo Salita su Sommità*: Scalando una scala a pioli verso un tetto o botola, il personaggio saliva regolarmente ma si bloccava in cima con *"Movimento bloccato sulla scala"* e scivolava all'indietro.
+  2. *Falso Allarme a Terra in Discesa*: In discesa, il personaggio atterrava sul pavimento ma la FSM restava in transito per 1.5s prima di interrompersi con *"Movimento bloccato sulla scala"* anziché annunciare *"Raggiunto piano stabile"*.
+- **Causa Radice**:
+  1. *Dismount Simmetrico Complanare*: L'oracolo `evaluateDismount` richiedeva che il pavimento di sbarco fosse già alla quota dei piedi ($\pm 0.08\text{ m}$). In salita, la scala termina 1 blocco sotto il tetto ($Y_{landing} - 1.12\text{ m}$): il mancato appoggio spegneva la propulsione `keyUp`, lasciando cadere il giocatore.
+  2. *Corridoio Rigido al Suolo & Landing Nominalmente Disallineato*: In discesa, all'atterraggio a terra, il personaggio si trovava a $Z = -42.20$, appena fuori dalla colonna $1 \times 1\text{ m}$ ($[-42.0, -41.0]$), invalidando `bottomCrossing`, mentre il landing nominale era calcolato a quota inferiore. La FSM non controllava se il giocatore era già fisicamente a terra (`playerOnGround`).
+  3. *Tolleranza Velocità Verticale Vanilla*: `ClimbLandingProbe` imponeva `abs(velocityY) <= 0.03`, ma a terra la fisica di Minecraft restituisce costantemente `Motion.y = -0.0784000015 m/tick`.
+- **Soluzione Definitiva (Contratti D30..D41)**:
+  1. *Dismount Ascendente Biforcato (D33)*: Introdotta la distinzione direzionale `snapshot.isAscent()`. In salita, divide la manovra in *Sollevamento Residuo* (`keyUp=true` continuo verso la scala finché $Y \ge Y_{landing} - 0.20\text{ m}$) e *Trasferimento* (rotazione verso il blocco di sbarco `targetYaw` con avanzamento attivo e stabilizzazione su 2 tick).
+  2. *Dismount Discendente con Grounding Immediato (D34)*: Aggiunta la condizione `snapshot.playerOnGround()` sull'ultimo piolo in discesa (`isLastTransitRung()`), promuovendo all'istante la FSM a `DISMOUNT` con `SUPPORTED_LANDING` e notifica vocale di arrivo sul piano stabile.
+  3. *Calibrazione Tolleranza Cinetica*: Impostato `VELOCITY_EPSILON = 0.085` per assorbire deterministicamente la costante gravitazionale vanilla.
+  4. *Bonifica D41*: Eliminato lo stato orfano `REACQUIRE` e il metodo morto `evaluateReacquire()`.
+- **Verifica e Collaudo**: 396/396 test headless verdi a 0 ms; collaudo in-game alla Torre del Belvedere convalidato al 100% da Luca sia in salita che in discesa.
+
+
 
 

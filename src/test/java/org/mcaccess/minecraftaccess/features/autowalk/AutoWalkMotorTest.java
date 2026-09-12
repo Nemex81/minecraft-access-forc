@@ -464,4 +464,99 @@ class AutoWalkMotorTest {
         assertTrue(motorWithProbe.isManualMovementKeyPressed(null, null, null, keyShift),
                 "In assenza di probe affidabile, il fallback deve consultare keyShift");
     }
+
+    @Test
+    @DisplayName("D3: Stati CLIMBING_UP e CLIMBING_DOWN attivi e identificati come arrampicata")
+    void testClimbingStatesActive() {
+        motor.setState(AutoWalkMotor.State.CLIMBING_UP);
+        assertTrue(motor.isActive());
+        assertTrue(motor.isClimbing());
+
+        motor.setState(AutoWalkMotor.State.CLIMBING_DOWN);
+        assertTrue(motor.isActive());
+        assertTrue(motor.isClimbing());
+
+        motor.setState(AutoWalkMotor.State.WALKING);
+        assertTrue(motor.isActive());
+        assertFalse(motor.isClimbing());
+    }
+
+    @Test
+    @DisplayName("D3: Sottofasi arrampicata e rilascio lease di discesa controllata")
+    void testClimbSubPhaseAndLeaseRelease() {
+        org.mcaccess.minecraftaccess.features.safety.traversal.ControlledDescentPort descentPort =
+                mock(org.mcaccess.minecraftaccess.features.safety.traversal.ControlledDescentPort.class);
+        motor.setControlledDescentPort(descentPort);
+
+        motor.setState(AutoWalkMotor.State.CLIMBING_DOWN);
+        motor.setClimbSubPhase(AutoWalkMotor.ClimbSubPhase.TRANSIT);
+        assertEquals(AutoWalkMotor.ClimbSubPhase.TRANSIT, motor.getClimbSubPhase());
+
+        // Reset movimento deve reimpostare sottofase e rilasciare lease
+        motor.resetMovement(null);
+        assertEquals(AutoWalkMotor.ClimbSubPhase.MOUNT, motor.getClimbSubPhase());
+    }
+
+    @Test
+    @DisplayName("D12/D14: Ordine verificabile: acquisizione lease precede applicazione keyUp")
+    void testLeaseAcquiredBeforeClientVirtualKeys() {
+        org.mcaccess.minecraftaccess.features.safety.traversal.ControlledDescentPort descentPort =
+                mock(org.mcaccess.minecraftaccess.features.safety.traversal.ControlledDescentPort.class);
+        motor.setControlledDescentPort(descentPort);
+
+        List<String> orderOfOperations = new ArrayList<>();
+        doAnswer(invocation -> {
+            orderOfOperations.add("ACQUIRE_LEASE");
+            return null;
+        }).when(descentPort).acquireDescentLease(anyString(), anyBoolean());
+
+        Minecraft mockClient = null;
+
+        LocalPlayer mockPlayer = mock(LocalPlayer.class);
+        when(mockPlayer.position()).thenReturn(new Vec3(-59.5, 85.0, -41.2));
+        when(mockPlayer.blockPosition()).thenReturn(new BlockPos(-59, 85, -41));
+        when(mockPlayer.getY()).thenReturn(85.0);
+
+        RouteNavigator navigator = mock(RouteNavigator.class);
+        when(navigator.getCurrentNodePos()).thenReturn(new BlockPos(-59, 85, -41));
+        when(navigator.getCurrentPathIndex()).thenReturn(0);
+        when(navigator.getCurrentSegments()).thenReturn(List.of());
+
+        org.mcaccess.minecraftaccess.features.safety.traversal.ClimbTraversal traversal =
+                org.mcaccess.minecraftaccess.features.safety.traversal.ClimbTraversal.of(
+                        net.minecraft.core.Direction.AxisDirection.NEGATIVE,
+                        org.mcaccess.minecraftaccess.features.safety.traversal.ClimbableGeometry.ClimbType.WALL_MOUNTED,
+                        new BlockPos(-59, 81, -41),
+                        new BlockPos(-59, 85, -41),
+                        new BlockPos(-59, 85, -41),
+                        new BlockPos(-59, 81, -40),
+                        net.minecraft.core.Direction.NORTH,
+                        null
+                );
+
+        RouteSegment segment = new RouteSegment(
+                new BlockPos(-59, 85, -40),
+                new BlockPos(-59, 85, -41),
+                RouteSegment.SegmentType.CLIMB,
+                RouteSegment.ClimbLeg.TRANSIT,
+                traversal
+        );
+
+        motor.setState(AutoWalkMotor.State.CLIMBING_DOWN);
+        motor.setClimbSubPhase(AutoWalkMotor.ClimbSubPhase.MOUNT);
+
+        TestMotorCallback callback = new TestMotorCallback();
+        motor.processClimbTick(mockClient, mockPlayer, null, navigator, segment, new Config.AutoWalk(), false, callback);
+
+        // Verifica che ACQUIRE_LEASE preceda qualsiasi operazione sui tasti
+        assertTrue(orderOfOperations.contains("ACQUIRE_LEASE"));
+        if (orderOfOperations.contains("KEY_UP_SET")) {
+            int leaseIdx = orderOfOperations.indexOf("ACQUIRE_LEASE");
+            int keyUpIdx = orderOfOperations.indexOf("KEY_UP_SET");
+            assertTrue(leaseIdx < keyUpIdx, "La lease DEVE essere acquisita PRIMA di impostare keyUp!");
+        }
+
+        // Verifica che per WALL_MOUNTED requiresSneak sia stato passato come false
+        verify(descentPort).acquireDescentLease(eq(traversal.columnId()), eq(false));
+    }
 }

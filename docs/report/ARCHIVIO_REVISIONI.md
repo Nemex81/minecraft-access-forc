@@ -3,8 +3,8 @@
 - **Progetto:** Minecraft Access (Fork 26.2 / 1.21.x)
 - **Autore:** Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA) & Antigravity
 - **Revisori:** Luca / Antigravity / GPT Codex / ChatGPT
-- **Data Ultimo Aggiornamento:** 2026-09-07
-- **Stato:** [ARCHIVIO STORICO PERENNE — 25 REVISIONI COLLAUDATE CON SUCCESSO]
+- **Data Ultimo Aggiornamento:** 2026-09-12
+- **Stato:** [ARCHIVIO STORICO PERENNE — 32 REVISIONI COLLAUDATE CON SUCCESSO]
 - **Registro Attivo Correlato:** [`docs/report/REGISTRO_REVISIONI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/REGISTRO_REVISIONI.md)
 
 Questo documento costituisce la memoria storica e forense perenne di tutte le anomalie, correzioni e rifiniture collaudate e chiuse con successo nel ciclo di vita di Minecraft Access. Ciascuna voce archiviata mantiene la sintesi del problema, la causa radice, la soluzione adottata e i collegamenti diretti ai relativi Piani Tecnici e Report di Sessione archiviati.
@@ -12,6 +12,158 @@ Questo documento costituisce la memoria storica e forense perenne di tutte le an
 ---
 
 ## 🏛️ STORICO REVISIONI COLLAUDATE CON SUCCESSO (CICLO 26.2)
+
+### 🟢 Rev MC-26.23 — AutoWalk Verticale & Assistente Tattico di Scalata (Climb Assistant)
+- **Stato**: `[COLLAUDATA CON SUCCESSO AL 100% IN-GAME DA LUCA]`
+- **Versione Chiusura**: 26.2-1.21.0 (Data 2026-09-12)
+- **Sintesi**: introdotto e stabilizzato il motore verticale condiviso per scale a pioli e blocchi arrampicabili, usato sia da AutoWalk sia dal Climb Assistant semi-automatico.
+- **Esito Collaudo**: Luca ha confermato in-game il funzionamento completo in salita e discesa alla Torre del Belvedere, con sbarco corretto, zero cadute e annuncio vocale coerente.
+- **Riferimenti**:
+  - [`REPORT_HANDOVER_CODEX_PIANO_AUTOWALK_VERTICALE.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_HANDOVER_CODEX_PIANO_AUTOWALK_VERTICALE.md)
+  - [`PIANO_TECNICO_CORRETTIVO_TRANSIZIONI_VERTICALI_E_LANDING.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/completati/PIANO_TECNICO_CORRETTIVO_TRANSIZIONI_VERTICALI_E_LANDING.md)
+  - [`STRATEGIA_AUTOWALK_VERTICALE_E_CLIMB_ASSISTANT.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/strategie/archiviate/STRATEGIA_AUTOWALK_VERTICALE_E_CLIMB_ASSISTANT.md)
+  - [`STRATEGIA_CORRETTIVA_DISMOUNT_SALITA_E_DISCESA.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/strategie/archiviate/STRATEGIA_CORRETTIVA_DISMOUNT_SALITA_E_DISCESA.md)
+
+### 🟢 Rev MC-26.22 — Neutralizzazione Mixin Tasti Vanilla F1..F6 & Batteria Interruttori Suoni Radar POI per Categoria
+- **Stato**: `[COLLAUDATA CON SUCCESSO AL 100% IN-GAME DA LUCA]`
+- **Versione Chiusura**: 26.2-1.20.0 (Data 2026-09-09)
+- **Problema Riscontrato (Esperienza Luca)**:
+  1. *Conflitto Tasti Funzione Vanilla*: Alla pressione di `Ctrl+Alt+F3` (buche corte) Minecraft apriva la Debug Screen con grafici e testo a schermo; su `Ctrl+Alt+F5` (suono mirino) cambiava la prospettiva della telecamera in terza persona;
+  2. *Rumore di Fondo Radar POI*: Impossibilità di silenziare singole categorie dello scanner POI (porte, minerali, fluidi, mob passivi, ecc.) mantenendo lo scanner attivo e la narrazione testuale;
+  3. *Distinzione Sentinella vs Radar Ostili*: Necessità di separare la sentinella minacce ravvicinate 6m (`Ctrl+Alt+F6`, allarme basedrum) dal pinging periodico a 24m per i mob ostili.
+- **Causa Radice**: La pipeline di input vanilla esegue `toggleDebugOverlay()` al rilascio di F3 (`action == 0`) e registra click per `keyTogglePerspective` (F5) e `keyToggleGui` (F1) prima che il gameplay possa sopprimerli. Inoltre `POIGroup` emetteva suoni incondizionatamente per tutti i gruppi senza un controllo granulare per categoria.
+- **Soluzioni Applicate (PRAPI)**:
+  1. *Neutralizzazione Mixin F1, F3, F5*:
+     * `DebugScreenEntryListMixin`: Annullamento preventivo di `toggleDebugOverlay()` a monte con `ci.cancel()` se `ModifierUtils.hasControlAndAlt()` è attivo;
+     * `KeyboardHandlerMixin`: Firma corretta API Mojang 26.2 `(KeyEvent event, CallbackInfoReturnable<Boolean> cir)` con restituzione deterministica a `cir.setReturnValue(true)`;
+     * `MinecraftMixin`: All'inizio di `handleKeybinds()`, svuotamento a vuoto dei click pendenti di `keyTogglePerspective` (F5) e `keyToggleGui` (F1) quando `Ctrl+Alt` sono premuti.
+  2. *Controllo Granulare Suoni POI via `BooleanSupplier`*:
+     * `POIGroup`: Campo `BooleanSupplier soundEnabledSupplier` e guardia difensiva all'inizio di `playSoundForGroupItems()`;
+     * `Config`: 7 flag `boolean` per blocchi e 9 per entità, tutti attivi (`true`) di default;
+     * Batteria Kuma 9 interruttori su tastiera IT: `Ctrl+Alt+F7..F12` (Minerali, Funzionali, Porte, Portali, Scale, Fluidi) + `Ctrl+Alt+G` (GUI/Forzieri) + `Ctrl+Alt+H` (Radar Ostili periodico 24m) + `Ctrl+Alt+P` (Animali Passivi);
+     * Schermata aiuto rapido `F1`: Aggiunta Categoria 8 *"Interruttori Suoni Radar POI"* (`cat_poi_sound_toggles`);
+     * Localizzazioni complete e rigorosamente ordinate in `it_it.json` ed `en_us.json`.
+- **Piani Tecnici e Rapporti di Riferimento**:
+  - [`PIANO_TECNICO_REV_MC-26.22_MIXIN_VANILLA_FN_E_TOGGLE_POI_SUONI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/completati/PIANO_TECNICO_REV_MC-26.22_MIXIN_VANILLA_FN_E_TOGGLE_POI_SUONI.md)
+  - [`REPORT_SESSIONE_REV_MC-26.21_E_26.22_INTERRUTTORI_SENSORI_MIXIN_E_SUONI_POI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_SESSIONE_REV_MC-26.21_E_26.22_INTERRUTTORI_SENSORI_MIXIN_E_SUONI_POI.md)
+- **Esito Collaudo**: Collaudata e validata al 100% in-game da Luca: tutti i 9 interruttori commutati con successo, azzeramento selettivo dei suoni confermato, zero sovrapposizioni visive o grafiche.
+
+---
+
+### 🟢 Rev MC-26.21 — Interruttori Sensori Contigui (Ctrl+Alt+F1..F6), Univocità Didgeridoo & Supporto Control Destro
+- **Stato**: `[COLLAUDATA CON SUCCESSO AL 100% IN-GAME DA LUCA]`
+- **Versione Chiusura**: 26.2-1.20.0 (Data 2026-09-09)
+- **Problema Riscontrato (Esperienza Luca)**:
+  1. *Collisione Acustica Storica*: Il radar buche a lungo raggio usava la campanella `NOTE_BLOCK_BELL`, generando ambiguità con lo scanner POI e i waypoint;
+  2. *Assenza Interruttori Rapidi Sensoriali*: Impossibilità di silenziare il bip del waypoint durante il crafting/riposo e assenza di scorciatoie rapide per sensori ostacoli, buche e mirino;
+  3. *Asimmetria Control Destro*: `Ctrl+Alt+Home` per la lettura coordinate POI rispondeva solo premendo il `Ctrl` sinistro.
+- **Causa Radice**: Sovrapposizione del suono campana in `LongRangeFallDetector`, assenza di comandi dedicati e interrogazione hardware limitata al solo `GLFW_KEY_LEFT_CONTROL` in `ModifierUtils`.
+- **Soluzioni Applicate (PRAPI)**:
+  1. *Univocità Acustica*: Assegnato `NOTE_BLOCK_DIDGERIDOO` (pitch `0.8f`) al radar orografico buche lontane 7..24m;
+  2. *Batteria Contigua F1..F6*: `Ctrl+Alt+F1` (Waypoint), `F2` (Ostacoli), `F3` (Buche corte), `F4` (Buche lontane), `F5` (Suono mirino), `F6` (Sentinella minacce ostili 6m) con annuncio vocale e persistenza;
+  3. *Supporto Hardware Simmetrico*: Aggiornato `ModifierUtils` per interrogare sia tasto sinistro che destro (`GLFW_KEY_RIGHT_CONTROL`, `GLFW_KEY_RIGHT_ALT`);
+  4. *Suite Headless*: Aggiornati test di regressione (354/354 verdi a 0 ms).
+- **Piani Tecnici e Rapporti di Riferimento**:
+  - [`PIANO_TECNICO_REV_MC-26.21_INTERRUTTORI_SENSORI_UNIVOCITA_DIDGERIDOO_E_CTRL_DESTRO.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/completati/PIANO_TECNICO_REV_MC-26.21_INTERRUTTORI_SENSORI_UNIVOCITA_DIDGERIDOO_E_CTRL_DESTRO.md)
+  - [`REPORT_SESSIONE_REV_MC-26.21_E_26.22_INTERRUTTORI_SENSORI_MIXIN_E_SUONI_POI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_SESSIONE_REV_MC-26.21_E_26.22_INTERRUTTORI_SENSORI_MIXIN_E_SUONI_POI.md)
+- **Esito Collaudo**: Collaudata e validata al 100% in-game da Luca: Didgeridoo profondo e inconfondibile, sequenza F1..F6 attiva e reattiva, tasto Control destro perfettamente riconosciuto.
+
+---
+
+### 🟢 Rev MC-26.20 — Null Safety in ObjectTracker.isObjectValid() su Selezione Vuota
+- **Stato**: `[COLLAUDATA CON SUCCESSO AL 100% IN-GAME DA LUCA]`
+- **Versione Chiusura**: 26.2-1.19.4 (Data 2026-09-09)
+- **Problema Riscontrato (Esperienza Luca & Telemetria Live)**:
+  - Alla pressione del tasto per rivolgere la visuale al punto d'interesse selezionato (`ObjectTracker.lookAtCurrentObject()`), se nessun oggetto è attualmente selezionato (`currentObject == null`), il client catturava un errore non gestito: `java.lang.NullPointerException` scatenata da `isObjectValid()`.
+- **Evidenza Telemetrica (latest.log ore 00:50:19)**:
+  ```
+  [00:50:19] [Render thread/ERROR]: Error executing task on Client
+  java.lang.NullPointerException
+  	at java.base/java.util.Objects.requireNonNull(Objects.java:220)
+  	at knot//org.mcaccess.minecraftaccess.features.point_of_interest.ObjectTracker.isObjectValid(ObjectTracker.java:444)
+  	at knot//org.mcaccess.minecraftaccess.features.point_of_interest.ObjectTracker.lookAtCurrentObject(ObjectTracker.java:330)
+  ```
+- **Causa Radice**: In Java 21+, il costrutto pattern-matching `return switch (object)` presente in `isObjectValid(Object object)` (riga 444) compila implicitamente con un controllo `Objects.requireNonNull(object)` a monte. Poiché `lookAtCurrentObject()` chiama `if (!isObjectValid(currentObject))` passando `null`, lo switch lancia un'eccezione a runtime prima di poter intercettare la condizione di oggetto non selezionato.
+- **Soluzione Applicata (PRAPI)**:
+  1. Inserita guardia difensiva `if (object == null) return false;` all'inizio di `isObjectValid(Object object)`;
+  2. Consentito a `lookAtCurrentObject()` e `narrateCoordinatesOfCurrentObject()` di raggiungere regolarmente la notifica vocale NVDA: *"Nessun punto di interesse selezionato"*;
+  3. Creata la suite headless deterministica `ObjectTrackerTest.java` (4 test su 4 verdi a 0 ms; suite complessiva a 354/354 test verdi).
+- **Piani Tecnici e Rapporti di Riferimento**:
+  - [`PIANO_TECNICO_REV_MC-26.20_OBJECT_TRACKER_NULL_SAFETY.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/completati/PIANO_TECNICO_REV_MC-26.20_OBJECT_TRACKER_NULL_SAFETY.md)
+  - [`REPORT_SESSIONE_REV_MC-26.20_OBJECT_TRACKER_NULL_SAFETY.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_SESSIONE_REV_MC-26.20_OBJECT_TRACKER_NULL_SAFETY.md)
+- **Esito Collaudo**: Collaudata e validata al 100% in-game da Luca: azionamento dei tasti di puntamento su selezione vuota vocalizza regolarmente l'avviso vocale senza crash né eccezioni nei log.
+
+---
+
+### 🟢 Rev MC-26.19 — Quiete Sensoriale AutoWalk & Navigatore, Verbosità di Progressione & Silenziamento Mirino e Incudine
+- **Stato**: `[COLLAUDATA CON SUCCESSO AL 100% IN-GAME DA LUCA]`
+- **Versione Chiusura**: 26.2-1.19.3 (Data 2026-09-09)
+- **Problema Riscontrato (Esperienza Luca)**:
+  1. *Accoppiamento Monolitico Telemetria Passi*: La lettura vocale dei passi mancanti a traguardi di 5 era legata alla variabile didattica globale `narrateHints`, privando l'utente del conteggio se disattivava i suggerimenti;
+  2. *Arpeggio Invasivo del Mirino nelle Curve*: Quando l'AutoWalk sterzava per seguire la rotta, il blocco mirato variava quota fino a 20°/tick scatenando note d'arpa continue (`NOTE_BLOCK_HARP`);
+  3. *Allarme Incudine Spurio su Tracciato Sicuro (PRAPI)*: Il transiente acustico metallico dell'incudine (`ANVIL_LAND`) risuonava all'avvicinarsi a $1.0 - 1.5\text{ m}$ da cigli e discese pur essendo su una rotta A* geometricamente protetta.
+- **Causa Radice**: Assenza di un enum dedicato alla progressione in Cloth Config, mancanza di una guardia sul cue sonoro di elevazione in `NarrateCrosshair.java` durante l'AutoWalk e limitazione del silenziamento acustico anticaduta al solo xilofono di Zona 1 in `ProximityFallDetector.java`.
+- **Soluzioni Applicate (PRAPI & PRAPI-B)**:
+  1. *Verbosità Regolabile (`ProgressionFeedbackMode`)*: Introdotto enum a 4 stati in `Config.AutoWalk` (`SOUND_AND_VOICE` default amato da Luca, `SOUND_ONLY`, `VOICE_ONLY`, `OFF`), con I18N IT/EN rigidamente ordinata in ordine alfabetico crescente;
+  2. *Svincolo Telemetria in `AutoWalkMotor`*: Cadenza vocale a 5 passi autonoma e pura;
+  3. *Silenziamento Mirino*: Soppressione di `playRelativePositionSoundCue` in `NarrateCrosshair` a rotta attiva, con tutela dell'interrogazione manuale `B` via `DirectInteractionShield`;
+  4. *Silenziamento Incudine in AutoWalk*: Soppressione di `SoundEvents.ANVIL_LAND` e dell'Edge Bump durante l'AutoWalk quando `silenceFallWarningsDuringWalk` è abilitato; ripristino immediato a 0 ms dell'incudine su stallo, takeover manuale o navigazione inattiva;
+  5. *Costruttori Pubblici*: Resi pubblici i costruttori di `Config.ObstacleDetector` e `Config.NarrateCrosshair` per piena conformità headless;
+  6. *Suite Headless*: 350/350 test unitari superati a 0 ms.
+- **Piani Tecnici e Rapporti di Riferimento**:
+  - [`PIANO_TECNICO_REV_MC-26.19_QUIETE_SENSORIALE_AUTOWALK_E_NAVIGATORE.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/completati/PIANO_TECNICO_REV_MC-26.19_QUIETE_SENSORIALE_AUTOWALK_E_NAVIGATORE.md)
+  - [`REPORT_SESSIONE_REV_MC-26.19_QUIETE_SENSORIALE_AUTOWALK_E_NAVIGATORE.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_SESSIONE_REV_MC-26.19_QUIETE_SENSORIALE_AUTOWALK_E_NAVIGATORE.md)
+  - [`STRATEGIA_QUIETE_SENSORIALE_AUTOWALK_E_NAVIGATORE.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/strategie/archiviate/STRATEGIA_QUIETE_SENSORIALE_AUTOWALK_E_NAVIGATORE.md)
+- **Esito Collaudo**: Collaudata e validata al 100% in-game da Luca in due sessioni (17:28 e 00:56): marcia fluida e silenziosa, cadenza vocale perfetta a intervalli di 5 passi, arpeggio arpa spento nelle curve, incudine muta sul percorso sicuro e vigile a piedi, integrità salvataggi verificata.
+
+---
+
+### 🟢 Rev MC-26.18 — De-monolitizzazione & Architettura Duale Cadute (Prossimità 1..6 & Lungo Raggio 7..24)
+- **Stato**: `[COLLAUDATA CON SUCCESSO AL 100% IN-GAME DA LUCA]`
+- **Versione Chiusura**: 26.2-1.19.2 (Data 2026-09-08)
+- **Problema Riscontrato (Esperienza Luca)**:
+  1. *Monolitismo di FallDetector*: La classe storica (915 righe) sommava scansione orografica, controllo ciglio, gestione scale/tuffi e debouncing, rendendo opaco il coordinamento degli allarmi.
+  2. *Assenza di Pre-Allerta su Lungo Raggio*: Assenza di percezione anticipata su voragini, scarpate o burroni orografici distanti 7..24 blocchi prima di entrare nell'area di prossimità a ridosso del pericolo.
+  3. *Uscita sonora dell'incudine soffocata (PRAPI)*: Il suono `SoundEvents.ANVIL_HIT` su bus `BLOCKS` veniva facilmente mascherato dal parlato simultaneo di NVDA.
+- **Causa Radice**: Assenza di decomposizione a responsabilità singola per fasce di distanza, accoppiamento acustico spurio tra xilofono e incudine, e uso di un campione sonoro debole con bus d'attenuazione ambientale.
+- **Soluzioni Applicate (PRAPI & PRAPI-B)**:
+  1. *Decomposizione Modulare nel Package `features.safety.fall`*:
+     - `CentralFallSafetyManager`: orchestratore unico su tick client e coordinatore delle guardie;
+     - `ProximityFallDetector`: corto raggio $1..6\text{ m}$, scala a 3 zone (Zona 1 xilofono $2..6\text{ m}$, Zona 2A pre-freno $1.0..1.5\text{ m}$ con mutua esclusione acustica, Zona 2B ciglio meccanico $\le 0.85\text{ m}$);
+     - `LongRangeFallDetector`: radar orografico periodico $7..24\text{ m}$ (campanella 3.5s attenuata con curva decadimento $50\%$, proiezione vettoriale OpenAL $[2.5 .. 12.0]\text{ m}$ ed emissione diretta);
+     - `FallDetector`: facciata retrocompatibile preservata al 100%.
+  2. *Escalation Dinamica & Potenziamento Pre-Freno (PRAPI-B)*:
+     - Sostituito `SoundEvents.ANVIL_HIT` con `SoundEvents.ANVIL_LAND` (`block.anvil.land`), dotato di transiente metallico ad altissima energia penetrante attraverso la sintesi NVDA;
+     - Instradato l'evento salvavita sul bus `SoundSource.PLAYERS` (immunità da attenuazione blocchi ambientali);
+     - Implementato `isStatusEscalation` per garantire lo scatto reattivo dell'incudine all'avvicinarsi continuo alla stessa voragine.
+  3. *Quiete Sensoriale Assoluta in AutoWalk*: Soppressione totale di campanella, xilofono e annunci descrittivi durante la marcia automatica, preservando esclusivamente l'auto-sneak di emergenza.
+  4. *Suite di Test Headless*: 344 test unitari eseguiti a 0 ms (100% verdi).
+- **Piani Tecnici e Rapporti di Riferimento**:
+  - [`PIANO_TECNICO_REV_MC-26.18_ARCHITETTURA_DUALE_CADUTE.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/completati/PIANO_TECNICO_REV_MC-26.18_ARCHITETTURA_DUALE_CADUTE.md)
+  - [`REPORT_SESSIONE_REV_MC-26.18_ARCHITETTURA_DUALE_CADUTE.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_SESSIONE_REV_MC-26.18_ARCHITETTURA_DUALE_CADUTE.md)
+  - [`STRATEGIA_SISTEMA_CADUTE_PROSSIMITA_E_LUNGO_RAGGIO.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/strategie/archiviate/STRATEGIA_SISTEMA_CADUTE_PROSSIMITA_E_LUNGO_RAGGIO.md)
+- **Esito Collaudo**: Collaudata e validata con entusiasmo al 100% da Luca in tre sessioni in-game (14:38, 14:58, 15:16): incudine nitidissima e squillante, escalation progressiva perfetta, perfetta discesa su scale a pioli, zero errori nei log.
+
+---
+
+### 🟢 Rev MC-26.10 — Perfezionamento Soglia Dislivello Minimo, Disaccoppiamento Soglie Anticaduta & Pervietà Corridoio Discesa in Acqua
+- **Stato**: `[COLLAUDATA CON SUCCESSO AL 100% IN-GAME DA LUCA]`
+- **Versione Chiusura**: 26.2-1.19.1 (Data 2026-09-08)
+- **Problema Riscontrato (Esperienza Luca)**:
+  1. *Accoppiamento Monolitico*: L'uso di un'unica soglia (`depth = 4`) per l'avviso vocale e l'auto-sneak forzava a scegliere tra incollare il giocatore su dislivelli innocui di 3 blocchi (danno nullo) o perdere l'avviso preventivo su salti significativi.
+  2. *Falsi Positivi Discesa Sicura*: L'annuncio "Discesa sicura" scattava su gradini e rampe minime ($\le 2$ blocchi). Inoltre, allo spawn su sentiero di terra, la presenza di una falda acquifera sotterranea a $Y=59$ coperta da terra piena innescava una raffica di 21 annunci spuri di "Discesa sicura".
+- **Causa Radice**: Assenza di disaccoppiamento tra Zona 1 (Percezione) e Zona 2 (Intervento) in `FallDetector`, e scansione verticale verso il basso in `findDescentCandidate` cieca rispetto alla consistenza dei blocchi solidi intermedi tra il piano di cammino e l'acqua.
+- **Soluzioni Applicate (PRAPI)**:
+  1. *Disaccoppiamento Soglie (Contratto D1 & D3)*: Introdotto `warningDepth = 3` per pre-allerta vocale/sonora e `autoSneakDepth = 4` per accovacciamento meccanico sul ciglio; sui salti di 3 blocchi il giocatore sente l'avviso ma cammina e salta liberamente con `W`.
+  2. *Silenziamento Discese Minime (Contratto D2)*: Discese con $\Delta Y < warningDepthThreshold$ (1-2 blocchi) classificate come cammino calpestabile ordinario (`NOT_APPLICABLE`).
+  3. *Pervietà Corridoio Verticale Acqua (Contratto D2.1)*: Inserito controllo di pervietà continua: il ciclo di scansione della colonna d'acqua si interrompe all'istante (`break;`) se incontra un ostacolo solido con collision shape non vuota (`!probeState.getCollisionShape(level, waterProbe).isEmpty()`).
+  4. *Suite di Test (Contratto D4)*: 327 test JUnit eseguiti con successo (100% verdi).
+- **Piani Tecnici e Rapporti di Riferimento**:
+  - [`PIANO_TECNICO_REV_MC-26.10_DISACCOPPIAMENTO_SOGLIE_ANTICADUTA.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/completati/PIANO_TECNICO_REV_MC-26.10_DISACCOPPIAMENTO_SOGLIE_ANTICADUTA.md)
+  - [`REPORT_SESSIONE_REV_MC-26.10_DISACCOPPIAMENTO_SOGLIE_ANTICADUTA.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_SESSIONE_REV_MC-26.10_DISACCOPPIAMENTO_SOGLIE_ANTICADUTA.md)
+- **Esito Collaudo**: Convalidata empiricamente al 100% in-game da Luca: azzerati tutti i falsi allarmi allo spawn, perfetta fluidità sui dislivelli da 3 blocchi, protezione integra e salute a 20.0 cuori.
+
+---
 
 ### 🟢 Rev MC-26.13 — Unificazione Architetturale AutoClose a Visuale Fissa & Clean Sweep (AutoOpen & AutoClose Doors)
 - **Stato**: `[COLLAUDATA CON SUCCESSO AL 100% IN-GAME DA LUCA]`

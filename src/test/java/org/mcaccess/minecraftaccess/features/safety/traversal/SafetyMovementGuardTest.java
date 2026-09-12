@@ -217,4 +217,87 @@ class SafetyMovementGuardTest {
         assertNull(guard.getCurrentAllowedDescentId());
         assertFalse(guard.isSystemOverrideActive());
     }
+
+    @Test
+    @DisplayName("D11/D14: Con freno attivo, acquisizione lease per ladder (requiresSneak=false) rilascia lo Sneak sintetico")
+    void ladderLeaseReleasesSyntheticSneakWhenFallProtectionEngaged() {
+        List<Boolean> writes = new ArrayList<>();
+        SafetyMovementGuard guard = new SafetyMovementGuard(() -> new CrouchIntent(false, true), writes::add);
+
+        // Freno anticaduta ingaggiato -> sneak sintetico attivo (true)
+        guard.engageFallProtection();
+        assertEquals(List.of(true), writes);
+
+        // Acquisizione lease ladder con requiresSneak = false
+        guard.acquireDescentLease(LADDER_ID, false);
+
+        // Lo sneak sintetico DEVE essere rilasciato (false) per consentire la gravità vanilla!
+        assertEquals(List.of(true, false), writes, "Acquisizione lease ladder deve rilasciare lo Sneak per permettere discesa gravitazionale");
+        assertTrue(guard.isDescentAllowedFor(LADDER_ID));
+        assertTrue(guard.hasActiveDescentLease());
+        assertTrue(guard.isDescentLeaseActiveFor(LADDER_ID));
+    }
+
+    @Test
+    @DisplayName("D11/D14: Acquisizione lease per scaffolding (requiresSneak=true) mantiene lo Sneak sintetico")
+    void scaffoldingLeaseMaintainsSyntheticSneak() {
+        List<Boolean> writes = new ArrayList<>();
+        SafetyMovementGuard guard = new SafetyMovementGuard(() -> new CrouchIntent(false, true), writes::add);
+
+        guard.acquireDescentLease("scaffolding:10,10", true);
+
+        // Per scaffolding requiresSneak e' true -> crouch applicato (true)
+        assertEquals(List.of(true), writes, "Per scaffolding lo Sneak sintetico deve essere mantenuto attivo");
+        assertTrue(guard.hasActiveDescentLease());
+    }
+
+    @Test
+    @DisplayName("D11: getDefaultInstance() restituisce la medesima istanza singleton condivisa")
+    void defaultInstanceIsSharedSingleton() {
+        SafetyMovementGuard instance1 = SafetyMovementGuard.getDefaultInstance();
+        SafetyMovementGuard instance2 = SafetyMovementGuard.getDefaultInstance();
+        assertNotNull(instance1);
+        assertSame(instance1, instance2, "getDefaultInstance() deve essere il singleton condiviso runtime");
+    }
+
+    @Test
+    @DisplayName("D16: il detector generico non revoca una lease climb attiva")
+    void genericRevocationCannotCancelActiveClimbLease() {
+        List<Boolean> writes = new ArrayList<>();
+        SafetyMovementGuard guard = new SafetyMovementGuard(() -> new CrouchIntent(false, true), writes::add);
+
+        guard.acquireDescentLease(LADDER_ID, false);
+        guard.revokeValidatedDescent();
+        guard.engageFallProtection();
+
+        assertTrue(guard.isDescentLeaseActiveFor(LADDER_ID));
+        assertTrue(guard.isDescentAllowedFor(LADDER_ID));
+        assertFalse(guard.isSystemOverrideActive());
+        assertEquals(List.of(false), writes);
+    }
+
+    @Test
+    @DisplayName("D16: senza lease il presidio generico del ciglio resta invariato")
+    void genericFallProtectionStillEngagesWithoutLease() {
+        List<Boolean> writes = new ArrayList<>();
+        SafetyMovementGuard guard = new SafetyMovementGuard(() -> new CrouchIntent(false, true), writes::add);
+
+        guard.engageFallProtection();
+
+        assertTrue(guard.isSystemOverrideActive());
+        assertEquals(List.of(true), writes);
+    }
+
+    @Test
+    @DisplayName("D16: un candidato locale diverso non sostituisce la colonna della lease")
+    void differentLocalCandidateCannotReplaceLeaseColumn() {
+        SafetyMovementGuard guard = new SafetyMovementGuard(
+                () -> new CrouchIntent(false, true), ignored -> { });
+
+        guard.acquireDescentLease(LADDER_ID, false);
+        guard.allowValidatedDescent("ladder:other");
+
+        assertTrue(guard.isDescentLeaseActiveFor(LADDER_ID));
+        assertFalse(guard.isDescentAllowedFor("ladder:other"));
+    }
 }

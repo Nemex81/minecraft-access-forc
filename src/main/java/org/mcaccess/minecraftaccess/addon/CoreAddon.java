@@ -99,6 +99,7 @@ public class CoreAddon implements MinecraftAccessAddon {
         registry.register("save_waypoint", new org.mcaccess.minecraftaccess.addon.accessmenu.SaveWaypoint());
         registry.register("manage_waypoints", new org.mcaccess.minecraftaccess.addon.accessmenu.ManageWaypoints());
         registry.register("auto_walk", new org.mcaccess.minecraftaccess.addon.accessmenu.AutoWalk());
+        registry.register("auto_climb", new org.mcaccess.minecraftaccess.addon.accessmenu.AutoClimb());
         registry.register("academy_and_help", new org.mcaccess.minecraftaccess.addon.accessmenu.AcademyAndHelp());
         registry.register("quick_help", new org.mcaccess.minecraftaccess.addon.accessmenu.QuickHelp());
         registry.register("survival_resources", new org.mcaccess.minecraftaccess.addon.accessmenu.SurvivalResources());

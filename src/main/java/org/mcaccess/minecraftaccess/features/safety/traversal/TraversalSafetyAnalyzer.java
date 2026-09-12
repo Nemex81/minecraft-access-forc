@@ -39,7 +39,8 @@ public final class TraversalSafetyAnalyzer {
         Vec3 playerPos = context.playerPos();
         int playerBaseY = context.playerBaseY();
         BlockGetter level = context.level();
-        int dangerThreshold = context.dangerDropThreshold();
+        int warningThreshold = context.warningDepthThreshold();
+        int autoSneakThreshold = context.autoSneakDepthThreshold();
 
         BlockPos playerBlockPos = BlockPos.containing(playerPos.x, playerBaseY, playerPos.z);
 
@@ -52,24 +53,27 @@ public final class TraversalSafetyAnalyzer {
         BlockPos candidateEntry = isSteppingOffEdge ? entryFeetPos : entryFeetPos;
 
         // 1. Check if the entry cell or the cell immediately below is a safe descent column
-        SafeDescentCandidate candidate = findDescentCandidate(level, playerBlockPos, candidateEntry, intent, dangerThreshold);
+        SafeDescentCandidate candidate = findDescentCandidate(level, playerBlockPos, candidateEntry, intent, autoSneakThreshold);
         if (candidate != null) {
-            return TraversalSafetyResult.safeDescent(candidate, "Validated safe descent via " + candidate.type());
+            int descentDrop = playerBaseY - candidate.landingPos().getY();
+            if (descentDrop >= warningThreshold) {
+                return TraversalSafetyResult.safeDescent(candidate, "Validated safe descent via " + candidate.type());
+            }
         }
 
         // 2. If candidate is broken or invalid, check if there is an unvalidated climbable that drops into danger
-        if (hasBrokenClimbableAhead(level, candidateEntry, dangerThreshold)) {
+        if (hasBrokenClimbableAhead(level, candidateEntry, autoSneakThreshold)) {
             return TraversalSafetyResult.ambiguousOrUnsafe("Broken climbable column or unsafe drop below descent structure");
         }
 
         // 3. Otherwise evaluate standard drop depth in the entry cell
         BlockPos groundUnderStep = candidateEntry.below();
-        int drop = calculateDrop(level, groundUnderStep, dangerThreshold);
-        if (drop >= dangerThreshold) {
-            return TraversalSafetyResult.dangerousDrop(groundUnderStep, drop, "Drop depth " + drop + " exceeds threshold " + dangerThreshold);
+        int drop = calculateDrop(level, groundUnderStep, autoSneakThreshold);
+        if (drop >= autoSneakThreshold) {
+            return TraversalSafetyResult.dangerousDrop(groundUnderStep, drop, "Drop depth " + drop + " exceeds threshold " + autoSneakThreshold);
         }
 
-        return TraversalSafetyResult.notApplicable("Corridor drop is within safe walk limits (" + drop + " < " + dangerThreshold + ")");
+        return TraversalSafetyResult.notApplicable("Corridor drop is within safe walk limits (" + drop + " < " + autoSneakThreshold + ")");
     }
 
     private static @Nullable SafeDescentCandidate findDescentCandidate(
@@ -115,6 +119,11 @@ public final class TraversalSafetyAnalyzer {
             if (isSafeWater(fluid)) {
                 SafeDescentCandidate waterCol = validateWaterColumn(level, entryPos, waterProbe, dangerThreshold);
                 if (waterCol != null) return waterCol;
+            }
+            // Se prima dell'acqua si incontra un ostacolo solido impenetrabile, il corridoio verticale è sbarrato
+            BlockState probeState = level.getBlockState(waterProbe);
+            if (!probeState.getCollisionShape(level, waterProbe).isEmpty()) {
+                break;
             }
             waterProbe = waterProbe.below();
         }
@@ -212,10 +221,7 @@ public final class TraversalSafetyAnalyzer {
     }
 
     public static boolean isClimbable(@NotNull BlockState state) {
-        return state.is(BlockTags.CLIMBABLE)
-                || state.getBlock() instanceof LadderBlock
-                || state.getBlock() instanceof VineBlock
-                || state.getBlock() instanceof ScaffoldingBlock;
+        return ClimbableGeometry.isClimbable(state);
     }
 
     public static boolean isSafeWater(@NotNull FluidState fluid) {

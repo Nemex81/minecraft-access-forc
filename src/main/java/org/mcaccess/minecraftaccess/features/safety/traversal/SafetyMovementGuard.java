@@ -10,13 +10,17 @@ import org.jetbrains.annotations.Nullable;
  * have been written by this class itself.
  */
 @Slf4j
-public final class SafetyMovementGuard {
+public final class SafetyMovementGuard implements ControlledDescentPort {
 
     private boolean systemOverrideActive;
     private @Nullable String currentAllowedDescentId;
+    private @Nullable String activeLeaseColumnId;
+    private boolean leaseRequiresSneak;
     private @Nullable Boolean lastAppliedCrouch;
     private final CrouchIntentProbe intentProbe;
     private final SneakOverridePort sneakPort;
+
+    private static volatile SafetyMovementGuard defaultInstance;
 
     public SafetyMovementGuard(@NotNull CrouchIntentProbe intentProbe, @NotNull SneakOverridePort sneakPort) {
         this.intentProbe = intentProbe;
@@ -27,8 +31,31 @@ public final class SafetyMovementGuard {
         return new SafetyMovementGuard(new RawCrouchIntentProvider(), new MinecraftSneakOverridePort());
     }
 
-    /** Engages the fail-safe crouch token and invalidates every previous descent. */
+    public static SafetyMovementGuard getDefaultInstance() {
+        if (defaultInstance == null) {
+            synchronized (SafetyMovementGuard.class) {
+                if (defaultInstance == null) {
+                    defaultInstance = createDefault();
+                }
+            }
+        }
+        return defaultInstance;
+    }
+
+    public static void setDefaultInstance(@Nullable SafetyMovementGuard instance) {
+        defaultInstance = instance;
+    }
+
+    /**
+     * Engages the generic fail-safe crouch token. A validated climb lease is
+     * authoritative for the expected edge and cannot be cancelled by a
+     * proximity tick that has no horizontal movement vector (D16).
+     */
     public void engageFallProtection() {
+        if (activeLeaseColumnId != null && activeLeaseColumnId.equals(currentAllowedDescentId)) {
+            reconcileCrouchState();
+            return;
+        }
         currentAllowedDescentId = null;
         systemOverrideActive = true;
         reconcileCrouchState();
@@ -39,6 +66,10 @@ public final class SafetyMovementGuard {
      * raw-input read. Physical Shift remains authoritative.
      */
     public void allowValidatedDescent(@NotNull String descentColumnId) {
+        if (activeLeaseColumnId != null && !activeLeaseColumnId.equals(descentColumnId)) {
+            reconcileCrouchState();
+            return;
+        }
         CrouchIntent intent = intentProbe.readIntent();
         if (!intent.reliable()) {
             log.debug("Keeping fall protection active because raw crouch intent is unavailable");
@@ -53,13 +84,67 @@ public final class SafetyMovementGuard {
 
     /** Revokes a previously validated descent without altering manual crouch intent. */
     public void revokeValidatedDescent() {
+        if (activeLeaseColumnId != null && activeLeaseColumnId.equals(currentAllowedDescentId)) {
+            reconcileCrouchState();
+            return;
+        }
         currentAllowedDescentId = null;
+        reconcileCrouchState();
+    }
+
+    @Override
+    public void acquireDescentLease(@NotNull String columnId, boolean requiresSneak) {
+        this.activeLeaseColumnId = columnId;
+        this.leaseRequiresSneak = requiresSneak;
+        allowValidatedDescent(columnId);
+        if (!columnId.equals(currentAllowedDescentId)) {
+            this.activeLeaseColumnId = null;
+            this.leaseRequiresSneak = false;
+            systemOverrideActive = true;
+            reconcileCrouchState();
+        }
+    }
+
+    @Override
+    public void renewDescentLease(@NotNull String columnId) {
+        if (columnId.equals(activeLeaseColumnId)) {
+            allowValidatedDescent(columnId);
+        }
+    }
+
+    @Override
+    public void releaseDescentLease(@NotNull String columnId) {
+        if (columnId.equals(activeLeaseColumnId)) {
+            this.activeLeaseColumnId = null;
+            this.leaseRequiresSneak = false;
+            revokeValidatedDescent();
+        }
+    }
+
+    @Override
+    public boolean hasActiveDescentLease() {
+        return activeLeaseColumnId != null;
+    }
+
+    @Override
+    public boolean isDescentLeaseActiveFor(@NotNull String columnId) {
+        return columnId.equals(activeLeaseColumnId) && columnId.equals(currentAllowedDescentId);
+    }
+
+    /** Hard fail-closed revocation reserved for lifecycle or validated hazards. */
+    public void revokeActiveDescentLeaseForHazard() {
+        activeLeaseColumnId = null;
+        leaseRequiresSneak = false;
+        currentAllowedDescentId = null;
+        systemOverrideActive = true;
         reconcileCrouchState();
     }
 
     /** Clears the system token when fall protection no longer owns crouch. */
     public void clearSystemOverride() {
         currentAllowedDescentId = null;
+        activeLeaseColumnId = null;
+        leaseRequiresSneak = false;
         systemOverrideActive = false;
         reconcileCrouchState();
     }
@@ -70,8 +155,10 @@ public final class SafetyMovementGuard {
      * the system safety token.
      */
     public void suspendForGui() {
-        boolean releaseSystemCrouch = systemOverrideActive;
+        boolean releaseSystemCrouch = systemOverrideActive || leaseRequiresSneak;
         currentAllowedDescentId = null;
+        activeLeaseColumnId = null;
+        leaseRequiresSneak = false;
         systemOverrideActive = false;
 
         if (releaseSystemCrouch) {
@@ -87,13 +174,13 @@ public final class SafetyMovementGuard {
     private void reconcileCrouchState(@NotNull CrouchIntent intent) {
         if (!intent.reliable()) {
             // Unknown input must never open a descent or release an active safety token.
-            if (systemOverrideActive) {
+            if (systemOverrideActive || leaseRequiresSneak) {
                 applyIfChanged(true);
             }
             return;
         }
 
-        applyIfChanged(systemOverrideActive || intent.pressed());
+        applyIfChanged(systemOverrideActive || intent.pressed() || leaseRequiresSneak);
     }
 
     private void applyIfChanged(boolean crouching) {

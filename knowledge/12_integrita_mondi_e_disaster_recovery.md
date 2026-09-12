@@ -19,8 +19,8 @@ Prima di qualsiasi operazione a potenziale impatto distruttivo o strutturale, è
 # Esempio di snapshot istantaneo del mondo attivo
 $worldName = "Scuola di sopravvivenza mondo 2"
 $timestamp = Get-Date -Format "yyyyMMdd_HHmmss"
-$src = "C:\Users\nemex\AppData\Roaming\PrismLauncher\instances\Minecraft 26.2 Access 1.12.0\minecraft\saves\$worldName"
-$dest = "C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft archivio backup\minecraft backup\${worldName}_snapshot_${timestamp}.zip"
+$src = "C:\Users\nemex\AppData\Roaming\PrismLauncher\instances\Minecraft 26.2 Access Client\minecraft\saves\$worldName"
+$dest = "C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft archivio backup\backup istanze\${worldName}_snapshot_${timestamp}.zip"
 
 Compress-Archive -Path "$src\*" -DestinationPath $dest -Force
 ```

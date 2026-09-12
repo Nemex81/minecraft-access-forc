@@ -38,6 +38,7 @@ import org.mcaccess.minecraftaccess.features.cognitive.CognitiveEvent;
 import org.mcaccess.minecraftaccess.features.cognitive.CognitivePriority;
 import org.mcaccess.minecraftaccess.features.point_of_interest.waypoints.Waypoint;
 import org.mcaccess.minecraftaccess.features.point_of_interest.waypoints.WaypointType;
+import org.mcaccess.minecraftaccess.features.safety.traversal.ClimbableGeometry;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -59,6 +60,8 @@ class AutoWalkPathfinderTest {
     void setUp() {
         blockWorld.clear();
         level = mock(ClientLevel.class);
+        when(level.getMinY()).thenReturn(-64);
+        when(level.getMaxY()).thenReturn(320);
         when(level.getBlockState(any(BlockPos.class))).thenAnswer(invocation -> {
             BlockPos pos = invocation.getArgument(0);
             BlockState state = blockWorld.get(pos);
@@ -1319,6 +1322,217 @@ class AutoWalkPathfinderTest {
                 "La curva a L in salita deve essere permessa con LadderBlock sull'angolo esterno");
         assertTrue(AutoWalkPathfinder.isLStairTurnTransition(level, feet2, feet1, -1, innerWall, outerWithLadder),
                 "La curva a L in discesa deve essere permessa con LadderBlock sull'angolo esterno");
+    }
+
+    @Test
+    @DisplayName("Contratto D8: Risoluzione geometrica pura Top Descent Mount e facce compatibili")
+    void testTopDescentMountResolution() {
+        // Terrazza stabile a (0, 85, 0)
+        BlockPos surface = new BlockPos(0, 85, 0);
+        setSolid(surface.below()); // Pavimento solido a Y=84
+        setBlock(surface, Blocks.AIR.defaultBlockState());
+        setBlock(surface.above(), Blocks.AIR.defaultBlockState());
+
+        // Apertura a NORD: (0, 85, -1) in aria
+        BlockPos aperture = surface.north();
+        setBlock(aperture, Blocks.AIR.defaultBlockState());
+        setBlock(aperture.above(), Blocks.AIR.defaultBlockState());
+
+        // Sommità della scala a Y=84 sotto l'apertura: (0, 84, -1)
+        // Scala appoggiata a NORD (facing = SOUTH, la parete di supporto è NORTH)
+        BlockPos entry = aperture.below();
+        BlockState ladderState = Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, Direction.SOUTH);
+        setBlock(entry, ladderState);
+        setBlock(entry.north(), Blocks.STONE.defaultBlockState()); // Parete solida di supporto a NORD
+
+        // Colonna della scala da Y=84 a Y=81
+        for (int y = 83; y >= 81; y--) {
+            BlockPos rung = new BlockPos(0, y, -1);
+            setBlock(rung, ladderState);
+            setBlock(rung.north(), Blocks.STONE.defaultBlockState());
+        }
+
+        // Pavimento inferiore solido (Bottom Landing) a Y=80
+        BlockPos landingFloor = new BlockPos(0, 79, -1);
+        setSolid(landingFloor);
+        setBlock(new BlockPos(0, 80, -1), Blocks.AIR.defaultBlockState());
+
+        // 1. Approccio da SUD verso NORD (verso la scala): VALIDO
+        var transition = org.mcaccess.minecraftaccess.features.safety.traversal.ClimbTraversalAnalyzer
+                .resolveTopDescentMount(level, surface, Direction.NORTH, false);
+        assertNotNull(transition, "L'approccio a NORD verso la scala deve produrre una transizione Top Descent valida");
+        assertEquals(entry, transition.entryPos(), "La entryPos deve essere la cima della scala a Y=84");
+        assertEquals(RouteSegment.ClimbLeg.MOUNT, transition.climbLeg());
+        assertNotNull(transition.traversal());
+        assertEquals(Direction.AxisDirection.NEGATIVE, transition.traversal().direction());
+
+        // 2. Approccio da altre direzioni (es. EST verso OVEST): RIFIUTATO (faccia non compatibile)
+        var invalidTransition = org.mcaccess.minecraftaccess.features.safety.traversal.ClimbTraversalAnalyzer
+                .resolveTopDescentMount(level, surface, Direction.WEST, false);
+        assertNull(invalidTransition, "L'approccio con faccia incompatibile deve essere rifiutato");
+    }
+
+    @Test
+    @DisplayName("Contratto D8: Top Descent Mount con botola in Pass 1 vs Pass 2")
+    void testTopDescentMountTrapdoorPolicy() {
+        BlockPos surface = new BlockPos(5, 85, 5);
+        setSolid(surface.below());
+        setBlock(surface, Blocks.AIR.defaultBlockState());
+        setBlock(surface.above(), Blocks.AIR.defaultBlockState());
+
+        BlockPos aperture = surface.north();
+        setBlock(aperture.above(), Blocks.AIR.defaultBlockState());
+
+        // Scala sotto l'apertura
+        BlockPos entry = aperture.below();
+        BlockState ladderState = Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, Direction.SOUTH);
+        setBlock(entry, ladderState);
+        setBlock(entry.north(), Blocks.STONE.defaultBlockState());
+
+        // Pavimento a terra
+        setSolid(new BlockPos(5, 82, 4));
+        setBlock(new BlockPos(5, 83, 4), Blocks.AIR.defaultBlockState());
+
+        // Caso A: Botola in legno chiusa sull'apertura
+        BlockState closedWooden = Blocks.OAK_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.OPEN, false);
+        setBlock(aperture, closedWooden);
+
+        var pass1 = org.mcaccess.minecraftaccess.features.safety.traversal.ClimbTraversalAnalyzer
+                .resolveTopDescentMount(level, surface, Direction.NORTH, false);
+        assertNull(pass1, "In Pass 1 (allowClosedDoors=false), una botola lignea chiusa deve essere rifiutata");
+
+        var pass2 = org.mcaccess.minecraftaccess.features.safety.traversal.ClimbTraversalAnalyzer
+                .resolveTopDescentMount(level, surface, Direction.NORTH, true);
+        assertNotNull(pass2, "In Pass 2 (allowClosedDoors=true), una botola lignea chiusa deve essere accettata condizionalmente");
+        assertEquals(org.mcaccess.minecraftaccess.features.safety.traversal.ClimbEntryTransition.PassageRequirement.OPENABLE_WOODEN_TRAPDOOR,
+                pass2.passageRequirement());
+
+        // Caso B: Botola di ferro chiusa: rifiutata in entrambi i passaggi
+        BlockState ironTrapdoor = Blocks.IRON_TRAPDOOR.defaultBlockState().setValue(TrapDoorBlock.OPEN, false);
+        setBlock(aperture, ironTrapdoor);
+
+        assertNull(org.mcaccess.minecraftaccess.features.safety.traversal.ClimbTraversalAnalyzer
+                .resolveTopDescentMount(level, surface, Direction.NORTH, false));
+        assertNull(org.mcaccess.minecraftaccess.features.safety.traversal.ClimbTraversalAnalyzer
+                .resolveTopDescentMount(level, surface, Direction.NORTH, true));
+    }
+
+    @Test
+    @DisplayName("Contratto D8: AutoWalk end-to-end dal tetto al piano inferiore con Top Descent Mount")
+    void testTopDescentEndToEndPathfinding() {
+        // Tetto a Y=85: pavimento a Y=84
+        for (int x = -1; x <= 1; x++) {
+            for (int z = 0; z <= 2; z++) {
+                BlockPos floor = new BlockPos(x, 84, z);
+                setSolid(floor);
+                setBlock(floor.above(), Blocks.AIR.defaultBlockState());
+                setBlock(floor.above(2), Blocks.AIR.defaultBlockState());
+            }
+        }
+
+        // Piano inferiore a Y=80 (pavimento a Y=79)
+        for (int x = -2; x <= 2; x++) {
+            for (int z = -4; z <= 0; z++) {
+                BlockPos floor = new BlockPos(x, 79, z);
+                setSolid(floor);
+                setBlock(floor.above(), Blocks.AIR.defaultBlockState());
+                setBlock(floor.above(2), Blocks.AIR.defaultBlockState());
+            }
+        }
+
+        // Apertura sul tetto a (0, 85, -1)
+        BlockPos aperture = new BlockPos(0, 85, -1);
+        setBlock(aperture, Blocks.AIR.defaultBlockState());
+        setBlock(aperture.above(), Blocks.AIR.defaultBlockState());
+
+        // Scala da Y=84 a Y=81 su (0, y, -1) posizionata DOPO la pulizia del piano inferiore
+        BlockState ladderState = Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, Direction.SOUTH);
+        for (int y = 84; y >= 81; y--) {
+            BlockPos rung = new BlockPos(0, y, -1);
+            setBlock(rung, ladderState);
+            setBlock(rung.north(), Blocks.STONE.defaultBlockState()); // Parete solida
+        }
+
+        // Start sul tetto a (0, 85, 1)
+        Vec3 startVec = new Vec3(0.5, 85.0, 1.5);
+        BlockPos lowerTarget = new BlockPos(0, 80, -3);
+
+        AutoWalkPathfinder.PathResult result = AutoWalkPathfinder.findPath(level, startVec, lowerTarget, 32);
+        assertEquals(AutoWalkPathfinder.PathStatus.FOUND, result.status(),
+                "Il pathfinder deve trovare con successo il percorso sicuro dal tetto al piano inferiore scendendo la scala");
+
+        assertFalse(result.segments().isEmpty(), "Il percorso deve contenere segmenti di rotta");
+
+        // Verifica la presenza della sequenza MOUNT -> TRANSIT -> DISMOUNT
+        boolean foundMount = false;
+        boolean foundTransit = false;
+        boolean foundDismount = false;
+
+        for (RouteSegment seg : result.segments()) {
+            if (seg.isMount()) {
+                foundMount = true;
+                assertEquals(new BlockPos(0, 84, -1), seg.to(), "Il Mount deve entrare nella cima della scala a Y=84");
+                assertNotNull(seg.climbEntryTransition(), "Il Mount deve conservare la transizione geometrica completa");
+                assertEquals(Direction.NORTH, seg.climbEntryTransition().approachDirection());
+            }
+            if (seg.isTransit()) {
+                foundTransit = true;
+                assertEquals(-1, seg.to().getY() - seg.from().getY(), "Il Transit in discesa deve avere deltaY = -1");
+            }
+            if (seg.isDismount()) {
+                foundDismount = true;
+            }
+        }
+
+        assertTrue(foundMount, "La rotta deve contenere un segmento atomico MOUNT verso la cima della scala");
+        assertTrue(foundTransit, "La rotta deve contenere segmenti TRANSIT per ogni piolo");
+        assertTrue(foundDismount, "La rotta deve contenere un segmento DISMOUNT sul piano inferiore");
+    }
+
+    @Test
+    @DisplayName("Geometria Reale Belvedere: Scala facing NORTH montata sulla parete del tetto a SUD")
+    void testBelvedereRealGeometryLadderFacingNorth() {
+        // Tetto a Z >= 0: pavimento solido a Y=84, aria a Y=85 e Y=86
+        for (int x = -1; x <= 1; x++) {
+            for (int z = 0; z <= 2; z++) {
+                BlockPos floor = new BlockPos(x, 84, z);
+                setSolid(floor);
+                setBlock(floor.above(), Blocks.AIR.defaultBlockState());
+                setBlock(floor.above(2), Blocks.AIR.defaultBlockState());
+            }
+        }
+
+        // Piano inferiore a Y=80 (pavimento a Y=79)
+        for (int x = -2; x <= 2; x++) {
+            for (int z = -4; z <= 0; z++) {
+                BlockPos floor = new BlockPos(x, 79, z);
+                setSolid(floor);
+                setBlock(floor.above(), Blocks.AIR.defaultBlockState());
+                setBlock(floor.above(2), Blocks.AIR.defaultBlockState());
+            }
+        }
+
+        // Apertura sul tetto a (0, 85, -1): aria
+        BlockPos aperture = new BlockPos(0, 85, -1);
+        setBlock(aperture, Blocks.AIR.defaultBlockState());
+        setBlock(aperture.above(), Blocks.AIR.defaultBlockState());
+
+        // Scala a pioli a (0, Y, -1) appoggiata alla parete a SUD (0, Y, 0)
+        // Proprietà: facing = NORTH (guarda verso -Z, parete a +Z / SOUTH)
+        BlockState ladderNorth = Blocks.LADDER.defaultBlockState().setValue(LadderBlock.FACING, Direction.NORTH);
+        for (int y = 84; y >= 81; y--) {
+            BlockPos rung = new BlockPos(0, y, -1);
+            setBlock(rung, ladderNorth);
+            setBlock(rung.south(), Blocks.STONE.defaultBlockState()); // Parete solida a SUD
+        }
+
+        // Start sul tetto a (0, 85, 1), target al piano inferiore a (0, 80, -3)
+        Vec3 startVec = new Vec3(0.5, 85.0, 1.5);
+        BlockPos lowerTarget = new BlockPos(0, 80, -3);
+
+        AutoWalkPathfinder.PathResult result = AutoWalkPathfinder.findPath(level, startVec, lowerTarget, 32);
+        assertEquals(AutoWalkPathfinder.PathStatus.FOUND, result.status(),
+                "Il pathfinder deve trovare la rotta scendendo la scala del Belvedere orientata a NORD con supporto a SUD");
     }
 }
 

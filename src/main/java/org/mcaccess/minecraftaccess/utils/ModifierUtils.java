@@ -21,6 +21,13 @@ public final class ModifierUtils {
         Minecraft client = Minecraft.getInstance();
         if (client == null) return false;
         try {
+            Window window = client.getWindow();
+            if (window != null) {
+                if (InputConstants.isKeyDown(window, GLFW.GLFW_KEY_LEFT_CONTROL)
+                        || InputConstants.isKeyDown(window, GLFW.GLFW_KEY_RIGHT_CONTROL)) {
+                    return true;
+                }
+            }
             return client.hasControlDown();
         } catch (Exception e) {
             return false;
@@ -34,6 +41,13 @@ public final class ModifierUtils {
         Minecraft client = Minecraft.getInstance();
         if (client == null) return false;
         try {
+            Window window = client.getWindow();
+            if (window != null) {
+                if (InputConstants.isKeyDown(window, GLFW.GLFW_KEY_LEFT_ALT)
+                        || InputConstants.isKeyDown(window, GLFW.GLFW_KEY_RIGHT_ALT)) {
+                    return true;
+                }
+            }
             return client.hasAltDown();
         } catch (Exception e) {
             return false;

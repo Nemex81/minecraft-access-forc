@@ -34,6 +34,7 @@ import org.mcaccess.minecraftaccess.features.cognitive.SoundCue;
 import org.mcaccess.minecraftaccess.features.crosshair.CrosshairFeedbackManager;
 import org.mcaccess.minecraftaccess.features.crosshair.ObstacleNarrationContext;
 import org.mcaccess.minecraftaccess.utils.KeyMappingCategories;
+import org.mcaccess.minecraftaccess.utils.ModifierUtils;
 import org.mcaccess.minecraftaccess.utils.events.ClientPlayingTick;
 import org.mcaccess.minecraftaccess.utils.position.PlayerPositionUtils;
 
@@ -109,10 +110,32 @@ public class ObstacleDetector implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_V, KeyModifiers.of(KeyModifier.ALT)))
                 .overrideCategory(KeyMappingCategories.OTHER)
                 .handleWorldInput(_ -> {
+                    if (!ModifierUtils.hasAltOnly()) return false;
                     inspectObstacle();
                     return true;
                 })
                 .build();
+
+        Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "obstacle_detector.toggle_obstacle_detector"))
+                .withDefault(InputBinding.key(InputConstants.KEY_F2, KeyModifiers.of(KeyModifier.CONTROL, KeyModifier.ALT)))
+                .overrideCategory(KeyMappingCategories.OTHER)
+                .handleWorldInput(_ -> {
+                    if (!ModifierUtils.hasControlAndAlt()) return false;
+                    toggleObstacleDetector();
+                    return true;
+                })
+                .build();
+    }
+
+    public void toggleObstacleDetector() {
+        config.enabled = !config.enabled;
+        Config.getInstance().save();
+        if (config.enabled) {
+            MainClass.narrate(I18n.get("minecraft_access.obstacle_detector.on"), true);
+        } else {
+            resetState();
+            MainClass.narrate(I18n.get("minecraft_access.obstacle_detector.off"), true);
+        }
     }
 
     private void tick(Minecraft client, Player player, Level level) {

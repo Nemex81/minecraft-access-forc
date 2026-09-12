@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -29,18 +30,28 @@ import org.mcaccess.minecraftaccess.MainClass;
 public class POIGroup<T> {
     private final String nameTranslateKey;
     private final Sound sound;
+    private final BooleanSupplier soundEnabledSupplier;
 
     private final Predicate<T> predicate;
     private final List<T> items = new ArrayList<>();
 
-    public POIGroup(String nameTranslateKey, Sound sound, Predicate<T> predicate) {
+    /**
+     * Costruttore completo con controllo granulare del suono per categoria (Rev MC-26.22).
+     * @param soundEnabledSupplier supplier che restituisce false per silenziare il suono di questo gruppo.
+     */
+    public POIGroup(String nameTranslateKey, Sound sound, BooleanSupplier soundEnabledSupplier, Predicate<T> predicate) {
         this.nameTranslateKey = nameTranslateKey;
         this.sound = sound;
+        this.soundEnabledSupplier = soundEnabledSupplier;
         this.predicate = predicate;
     }
 
+    public POIGroup(String nameTranslateKey, Sound sound, Predicate<T> predicate) {
+        this(nameTranslateKey, sound, () -> true, predicate);
+    }
+
     public POIGroup(String nameTranslateKey, Predicate<T> predicate) {
-        this(nameTranslateKey, new Sound(null, 0), predicate);
+        this(nameTranslateKey, new Sound(null, 0), () -> true, predicate);
     }
 
     public String getTranslatedName() {
@@ -105,6 +116,7 @@ public class POIGroup<T> {
     }
 
     public void playSoundForGroupItems(Function<T, Vec3> mapper, float volume) {
+        if (!soundEnabledSupplier.getAsBoolean()) return; // interruttore categoria Rev MC-26.22
         LocalPlayer player = Minecraft.getInstance().player;
         net.minecraft.world.level.Level level = Minecraft.getInstance().level;
         org.mcaccess.minecraftaccess.Config.POI.WallOcclusionFeedbackMode mode = org.mcaccess.minecraftaccess.Config.getInstance().poi.wallOcclusionFeedback;

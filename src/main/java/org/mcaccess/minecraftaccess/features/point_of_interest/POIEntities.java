@@ -6,10 +6,15 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.blay09.mods.balm.client.platform.event.callback.ClientLifecycleCallback;
 import net.blay09.mods.balm.client.platform.module.BalmClientModule;
+import net.blay09.mods.kuma.api.InputBinding;
+import net.blay09.mods.kuma.api.KeyModifier;
+import net.blay09.mods.kuma.api.KeyModifiers;
+import net.blay09.mods.kuma.api.Kuma;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.Identifier;
@@ -24,6 +29,8 @@ import org.jetbrains.annotations.Nullable;
 
 import org.mcaccess.minecraftaccess.Config;
 import org.mcaccess.minecraftaccess.MainClass;
+import org.mcaccess.minecraftaccess.utils.KeyMappingCategories;
+import org.mcaccess.minecraftaccess.utils.ModifierUtils;
 import org.mcaccess.minecraftaccess.utils.condition.Interval;
 import org.mcaccess.minecraftaccess.utils.events.ClientPlayingTick;
 
@@ -71,6 +78,64 @@ public class POIEntities implements BalmClientModule {
             markedEntity = null;
             lastScanResults = new ArrayList<>();
         });
+
+        Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "poi.toggle_hostile_radar"))
+                .withDefault(InputBinding.key(InputConstants.KEY_F6, KeyModifiers.of(KeyModifier.CONTROL, KeyModifier.ALT)))
+                .overrideCategory(KeyMappingCategories.OTHER)
+                .handleWorldInput(_ -> {
+                    if (!ModifierUtils.hasControlAndAlt()) return false;
+                    toggleHostileRadar();
+                    return true;
+                })
+                .build();
+
+        // Interruttori suono radar POI Entità (Ctrl+Alt+H e P) — Rev MC-26.22
+        // Ctrl+Alt+H: silenzia il radar periodico 3s per HOSTILE (DISTINTO da F6 sentinella ravvicinata)
+        Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "poi.sound_toggle.entities.hostile"))
+                .withDefault(InputBinding.key(InputConstants.KEY_H, KeyModifiers.of(KeyModifier.CONTROL, KeyModifier.ALT)))
+                .overrideCategory(KeyMappingCategories.OTHER)
+                .handleWorldInput(_ -> {
+                    if (!ModifierUtils.hasControlAndAlt()) return false;
+                    toggleSoundHostile();
+                    return true;
+                })
+                .build();
+
+        Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "poi.sound_toggle.entities.passive"))
+                .withDefault(InputBinding.key(InputConstants.KEY_P, KeyModifiers.of(KeyModifier.CONTROL, KeyModifier.ALT)))
+                .overrideCategory(KeyMappingCategories.OTHER)
+                .handleWorldInput(_ -> {
+                    if (!ModifierUtils.hasControlAndAlt()) return false;
+                    toggleSoundPassive();
+                    return true;
+                })
+                .build();
+    }
+
+    public void toggleHostileRadar() {
+        CONFIG.hostileThreatAlerts = !CONFIG.hostileThreatAlerts;
+        Config.getInstance().save();
+        if (CONFIG.hostileThreatAlerts) {
+            MainClass.narrate(net.minecraft.client.resources.language.I18n.get("minecraft_access.threat.radar_on"), true);
+        } else {
+            MainClass.narrate(net.minecraft.client.resources.language.I18n.get("minecraft_access.threat.radar_off"), true);
+        }
+    }
+
+    public void toggleSoundHostile() {
+        CONFIG.soundEnabledHostile = !CONFIG.soundEnabledHostile;
+        Config.getInstance().save();
+        MainClass.narrate(net.minecraft.client.resources.language.I18n.get(CONFIG.soundEnabledHostile
+                ? "minecraft_access.poi.sound_toggle.entities.hostile.on"
+                : "minecraft_access.poi.sound_toggle.entities.hostile.off"), true);
+    }
+
+    public void toggleSoundPassive() {
+        CONFIG.soundEnabledPassive = !CONFIG.soundEnabledPassive;
+        Config.getInstance().save();
+        MainClass.narrate(net.minecraft.client.resources.language.I18n.get(CONFIG.soundEnabledPassive
+                ? "minecraft_access.poi.sound_toggle.entities.passive.on"
+                : "minecraft_access.poi.sound_toggle.entities.passive.off"), true);
     }
 
     private void tick(Minecraft client, Player player, Level level) {
@@ -121,29 +186,31 @@ public class POIEntities implements BalmClientModule {
         lastScanResults = currentScanResults;
 
         // Hostile Threat Sentinel: check for Enemy / Hostile entities within 6 blocks
-        long now = System.currentTimeMillis();
-        if (now - lastThreatAlertTime >= 3500) {
-            Entity closestHostile = null;
-            double minThreatDistSq = 36.0; // 6 blocks
-            for (Entity entity : currentScanResults) {
-                if (entity instanceof net.minecraft.world.entity.monster.Enemy && entity.isAlive()) {
-                    double distSq = player.distanceToSqr(entity);
-                    if (distSq <= minThreatDistSq) {
-                        minThreatDistSq = distSq;
-                        closestHostile = entity;
+        if (CONFIG.hostileThreatAlerts) {
+            long now = System.currentTimeMillis();
+            if (now - lastThreatAlertTime >= 3500) {
+                Entity closestHostile = null;
+                double minThreatDistSq = 36.0; // 6 blocks
+                for (Entity entity : currentScanResults) {
+                    if (entity instanceof net.minecraft.world.entity.monster.Enemy && entity.isAlive()) {
+                        double distSq = player.distanceToSqr(entity);
+                        if (distSq <= minThreatDistSq) {
+                            minThreatDistSq = distSq;
+                            closestHostile = entity;
+                        }
                     }
                 }
-            }
 
-            if (closestHostile != null) {
-                lastThreatAlertTime = now;
-                if (player.level() != null) {
-                    player.level().playLocalSound(closestHostile.blockPosition(), SoundEvents.NOTE_BLOCK_BASEDRUM.value(), net.minecraft.sounds.SoundSource.HOSTILE, 0.75f, 0.6f, true);
+                if (closestHostile != null) {
+                    lastThreatAlertTime = now;
+                    if (player.level() != null) {
+                        player.level().playLocalSound(closestHostile.blockPosition(), SoundEvents.NOTE_BLOCK_BASEDRUM.value(), net.minecraft.sounds.SoundSource.HOSTILE, 0.75f, 0.6f, true);
+                    }
+                    String entityName = closestHostile.getName().getString();
+                    String relPos = org.mcaccess.minecraftaccess.utils.NarrationUtils.narrateRelativePositionOfPlayerAnd(closestHostile.blockPosition());
+                    String alertMsg = net.minecraft.client.resources.language.I18n.get("minecraft_access.threat.hostile_nearby", entityName, relPos);
+                    MainClass.narrate(alertMsg, true);
                 }
-                String entityName = closestHostile.getName().getString();
-                String relPos = org.mcaccess.minecraftaccess.utils.NarrationUtils.narrateRelativePositionOfPlayerAnd(closestHostile.blockPosition());
-                String alertMsg = net.minecraft.client.resources.language.I18n.get("minecraft_access.threat.hostile_nearby", entityName, relPos);
-                MainClass.narrate(alertMsg, true);
             }
         }
     }

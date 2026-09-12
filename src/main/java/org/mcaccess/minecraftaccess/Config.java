@@ -24,6 +24,10 @@ public final class Config implements ConfigData {
     @ConfigEntry.Gui.Excluded
     private static Config instance;
 
+    public static void setInstance(Config newInstance) {
+        instance = newInstance;
+    }
+
     public boolean menuFixEnabled = true;
     @ConfigExtension.FormatString({'d', 'd', 's'})
     public String commandSuggestionNarratorFormat = "%dx%d %s";
@@ -89,14 +93,26 @@ public final class Config implements ConfigData {
     private Config() {
     }
 
+    public static Config createForTesting() {
+        Config cfg = new Config();
+        instance = cfg;
+        return cfg;
+    }
+
     static void init() {
         ConfigExtension.apply(AutoConfigClient.getGuiRegistry(Config.class));
         AutoConfig.register(Config.class, ConfigExtension::serializer);
         instance = AutoConfig.getConfigHolder(Config.class).get();
+        if (instance != null && instance.fallDetector != null) {
+            instance.fallDetector.validateAndNormalize();
+        }
         applyCognitiveConfig();
     }
 
     public static void saveConfig() {
+        if (instance != null && instance.fallDetector != null) {
+            instance.fallDetector.validateAndNormalize();
+        }
         if (instance != null && instance.cognitiveCoordinator != null) {
             instance.cognitiveCoordinator.deduplicationWindowMs = Math.clamp(
                     instance.cognitiveCoordinator.deduplicationWindowMs, 500, 5000
@@ -108,6 +124,10 @@ public final class Config implements ConfigData {
         } catch (Throwable ignored) {
             // Ignora in ambiente di test headless senza AutoConfig registrato
         }
+    }
+
+    public void save() {
+        saveConfig();
     }
 
     public static void applyCognitiveConfig() {
@@ -313,6 +333,14 @@ public final class Config implements ConfigData {
             public float volume = 0.25f;
             public boolean playSoundForOtherBlocks = true;
             public int delay = 3000;
+            // Interruttori suono per categoria (Ctrl+Alt+F7..F12 + G) — Rev MC-26.22
+            public boolean soundEnabledOre = true;
+            public boolean soundEnabledFunctional = true;
+            public boolean soundEnabledDoor = true;
+            public boolean soundEnabledPortal = true;
+            public boolean soundEnabledLadder = true;
+            public boolean soundEnabledFluid = true;
+            public boolean soundEnabledGui = true;
 
             private Blocks() {
             }
@@ -324,6 +352,18 @@ public final class Config implements ConfigData {
             public boolean playSound = true;
             public float volume = 0.25f;
             public int delay = 3000;
+            public boolean hostileThreatAlerts = true;
+            // Interruttori suono per categoria (Ctrl+Alt+H e P) — Rev MC-26.22
+            // soundEnabledHostile: silenzia il radar periodico 3s per ostili (DISTINTO da hostileThreatAlerts/F6 sentinella ravvicinata)
+            public boolean soundEnabledHostile = true;
+            public boolean soundEnabledYourPets = true;
+            public boolean soundEnabledOtherPets = true;
+            public boolean soundEnabledBoss = true;
+            public boolean soundEnabledPassive = true;
+            public boolean soundEnabledPlayer = true;
+            public boolean soundEnabledVehicle = true;
+            public boolean soundEnabledItem = true;
+            public boolean soundEnabledDisplay = true;
 
             private Entities() {
             }
@@ -389,19 +429,94 @@ public final class Config implements ConfigData {
 
     public static final class FallDetector {
         public boolean enabled = true;
-        public int range = 6;
-        public int depth = 4;
-        public float volume = 0.25f;
-        public int delay = 2500;
+        public float volume = 0.80f;
+
+        // Sotto-configurazione Corto Raggio (Prossimità 1..6)
+        public boolean proximityEnabled = true;
+        @ConfigEntry.BoundedDiscrete(min = 1, max = 6)
+        public int proximityMinRange = 1;
+        @ConfigEntry.BoundedDiscrete(min = 1, max = 6)
+        public int proximityMaxRange = 6;
+        @ConfigEntry.BoundedDiscrete(min = 2, max = 20)
+        public int warningDepth = 3;
+        @ConfigEntry.BoundedDiscrete(min = 2, max = 20)
+        public int autoSneakDepth = 4;
         public boolean autoSlowdown = true;
         public int slowdownDistance = 3;
         public boolean autoRestoreSprint = true;
         public boolean autoSneakOnEdge = true;
         public boolean playAudioCues = true;
         public boolean voiceWarning = true;
-
         @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
         public EdgeBumpFeedbackMode edgeBumpFeedbackMode = EdgeBumpFeedbackMode.SOUND_AND_VOICE;
+
+        // Sotto-configurazione Lungo Raggio (Orografia 7..24)
+        public boolean longRangeEnabled = true;
+        @ConfigEntry.BoundedDiscrete(min = 7, max = 24)
+        public int longRangeMinRange = 7;
+        @ConfigEntry.BoundedDiscrete(min = 7, max = 24)
+        public int longRangeMaxRange = 24;
+        @ConfigEntry.BoundedDiscrete(min = 2, max = 20)
+        public int longRangeDepthThreshold = 4;
+        @ConfigEntry.BoundedDiscrete(min = 1000, max = 10000)
+        public int longRangeScanInterval = 3500; // millisecondi
+        public float longRangeVolumeMultiplier = 0.80f;
+
+        // Campi deprecati preservati per compatibilità storica
+        @Deprecated
+        public int range = 6;
+        @Deprecated
+        public int depth = 4;
+        @Deprecated
+        public int delay = 2500;
+
+        /**
+         * Sanitizzazione deterministica e clamping dei confini rigidi di prossimità e lungo raggio.
+         * Risolve automaticamente eventuali inversioni dell'utente (Swap Guard) e garantisce la disgiunzione.
+         */
+        public void validateAndNormalize() {
+            volume = Math.clamp(volume, 0.1f, 1.0f);
+            longRangeVolumeMultiplier = Math.clamp(longRangeVolumeMultiplier, 0.1f, 2.0f);
+            proximityMinRange = Math.clamp(proximityMinRange, 1, 6);
+            proximityMaxRange = Math.clamp(proximityMaxRange, 1, 6);
+            longRangeMinRange = Math.clamp(longRangeMinRange, 7, 24);
+            longRangeMaxRange = Math.clamp(longRangeMaxRange, 7, 24);
+
+            if (proximityMinRange > proximityMaxRange) {
+                int tmp = proximityMinRange;
+                proximityMinRange = proximityMaxRange;
+                proximityMaxRange = tmp;
+            }
+            if (longRangeMinRange > longRangeMaxRange) {
+                int tmp = longRangeMinRange;
+                longRangeMinRange = longRangeMaxRange;
+                longRangeMaxRange = tmp;
+            }
+        }
+
+        public int getEffectiveProxMin() {
+            validateAndNormalize();
+            return proximityMinRange;
+        }
+
+        public int getEffectiveProxMax() {
+            validateAndNormalize();
+            return proximityMaxRange;
+        }
+
+        public int getEffectiveLongMin() {
+            validateAndNormalize();
+            return longRangeMinRange;
+        }
+
+        public int getEffectiveLongMax() {
+            validateAndNormalize();
+            return longRangeMaxRange;
+        }
+
+        public int getEffectiveWarningDepth() {
+            return Math.min(warningDepth, autoSneakDepth);
+        }
 
         public FallDetector() {
         }
@@ -432,7 +547,7 @@ public final class Config implements ConfigData {
         @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
         public DirectionFeedbackMode directionFeedbackMode = DirectionFeedbackMode.FOUR_DIRECTIONS;
 
-        private ObstacleDetector() {
+        public ObstacleDetector() {
         }
 
         public enum DirectionFeedbackMode {
@@ -445,8 +560,16 @@ public final class Config implements ConfigData {
 
     public static final class NarrateCrosshair {
         public boolean enabled = true;
+        private static boolean isJadeLoadedSafe() {
+            try {
+                return Balm.platform() != null && Balm.platform().isModLoaded("jade");
+            } catch (Throwable ignored) {
+                return false;
+            }
+        }
+
         @ConfigExtension.Registry(registry = WorldNarrator.class, i18n = "narrator")
-        public Identifier narrator = Identifier.fromNamespaceAndPath(MainClass.MOD_ID, Balm.platform().isModLoaded("jade") ? "jade" : "minecraft_access");
+        public Identifier narrator = Identifier.fromNamespaceAndPath(MainClass.MOD_ID, isJadeLoadedSafe() ? "jade" : "minecraft_access");
         @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
         public BlockFaceNarrationMode blockFaceNarrationMode = BlockFaceNarrationMode.DESCRIPTIVE;
         public boolean disableNarratingConsecutiveBlocks = false;
@@ -472,7 +595,7 @@ public final class Config implements ConfigData {
         @ConfigEntry.Gui.CollapsibleObject
         public Filter filter = new Filter();
 
-        private NarrateCrosshair() {
+        public NarrateCrosshair() {
         }
 
         public enum BlockFaceNarrationMode {
@@ -570,6 +693,7 @@ public final class Config implements ConfigData {
                 Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "save_waypoint"),
                 Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "manage_waypoints"),
                 Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "auto_walk"),
+                Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "auto_climb"),
                 Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "academy_and_help"),
                 Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "quick_help"),
         };
@@ -624,6 +748,9 @@ public final class Config implements ConfigData {
         public boolean voiceFeedback = true;
         public boolean playNodeSoundCue = true;
 
+        @ConfigEntry.Gui.EnumHandler(option = ConfigEntry.Gui.EnumHandler.EnumDisplayOption.BUTTON)
+        public ProgressionFeedbackMode progressionFeedbackMode = ProgressionFeedbackMode.SOUND_AND_VOICE;
+
         @ConfigEntry.BoundedDiscrete(min = 0, max = 1)
         public float audioCueVolume = 0.25f;
 
@@ -632,7 +759,25 @@ public final class Config implements ConfigData {
         public boolean silenceObstaclesDuringWalk = true;
         public boolean silenceFallWarningsDuringWalk = true;
 
+        @ConfigEntry.Gui.CollapsibleObject
+        public ClimbAssistant climbAssistant = new ClimbAssistant();
+
         public AutoWalk() {
+        }
+
+        public static final class ClimbAssistant {
+            public boolean enabled = true;
+            public boolean interactionKeyTrigger = true;
+
+            public ClimbAssistant() {
+            }
+        }
+
+        public enum ProgressionFeedbackMode {
+            SOUND_AND_VOICE,
+            SOUND_ONLY,
+            VOICE_ONLY,
+            OFF
         }
     }
 

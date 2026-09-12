@@ -58,6 +58,16 @@ public class AutoWalkManager implements BalmClientModule {
                     return true;
                 })
                 .build();
+
+        Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "other.auto_climb"))
+                .withDefault(InputBinding.key(InputConstants.KEY_S, KeyModifiers.of(KeyModifier.ALT)))
+                .overrideCategory(KeyMappingCategories.OTHER)
+                .handleWorldInput(_ -> {
+                    if (!org.mcaccess.minecraftaccess.utils.ModifierUtils.hasAltOnly()) return false;
+                    ClimbAssistantController.triggerFromKey();
+                    return true;
+                })
+                .build();
     }
 
     public void toggleSprint() {

@@ -16,6 +16,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.TrapDoorBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -314,5 +315,39 @@ public class DoorInteractionManager implements BalmClientModule {
         BlockHitResult hitResult = DoorInteractionHelper.createBlockHit(pos, Direction.UP);
         client.gameMode.useItemOn(client.player, InteractionHand.MAIN_HAND, hitResult);
         client.player.swing(InteractionHand.MAIN_HAND);
+    }
+
+    /**
+     * Richiesta cooperativa idempotente di passaggio botola per navigazione assistita (Contratto D6).
+     */
+    public static boolean requestTrapdoorPassage(
+            @Nullable Minecraft client,
+            @Nullable Level level,
+            @Nullable Player player,
+            @NotNull BlockPos trapdoorPos,
+            boolean autoClose,
+            boolean narration
+    ) {
+        if (level == null || client == null || player == null) return false;
+        BlockState state = level.getBlockState(trapdoorPos);
+        if (!(state.getBlock() instanceof TrapDoorBlock)) return false;
+        if (DoorInteractionHelper.isIronDoorOrTrapdoor(state)) return false;
+
+        long now = clock.getAsLong();
+        boolean isClosed = !state.getValue(TrapDoorBlock.OPEN);
+        if (isClosed) {
+            if (!canInteract(trapdoorPos, now)) {
+                return false; // In cooldown
+            }
+            interactWithDoor(client, trapdoorPos);
+            recentInteractions.put(trapdoorPos, now);
+            if (narration) {
+                MainClass.narrate(I18n.get("minecraft_access.door.auto_opening"), true);
+            }
+        }
+        if (autoClose) {
+            activeTrapdoorSessions.put(trapdoorPos, new TrapdoorPassageSession(trapdoorPos, now));
+        }
+        return true;
     }
 }

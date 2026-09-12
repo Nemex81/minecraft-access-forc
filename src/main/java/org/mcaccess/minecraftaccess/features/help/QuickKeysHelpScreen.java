@@ -54,6 +54,15 @@ public class QuickKeysHelpScreen extends Screen {
             MainClass.narrate(I18n.get("minecraft_access.gui.quick_help.desc_scanner"), true);
         }).width(Button.BIG_WIDTH).build());
 
+        // Category 7: Sensor Toggles (F1..F6)
+        rowHelper.addChild(Button.builder(Component.translatable("minecraft_access.gui.quick_help.cat_toggles"), _ -> {
+            MainClass.narrate(I18n.get("minecraft_access.gui.quick_help.desc_toggles"), true);
+        }).width(Button.BIG_WIDTH).build());
+
+        // Category 8: POI Sound Toggles (F7..F12 + G + H + P)
+        rowHelper.addChild(Button.builder(Component.translatable("minecraft_access.gui.quick_help.cat_poi_sound_toggles"), _ -> {
+            MainClass.narrate(I18n.get("minecraft_access.gui.quick_help.desc_poi_sound_toggles"), true);
+        }).width(Button.BIG_WIDTH).build());
 
         layout.addToContents(grid);
         layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, _ -> this.onClose())

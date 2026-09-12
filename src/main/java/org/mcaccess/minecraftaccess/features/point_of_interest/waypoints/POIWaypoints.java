@@ -27,6 +27,7 @@ import org.mcaccess.minecraftaccess.MainClass;
 import org.mcaccess.minecraftaccess.features.point_of_interest.POIGroup;
 import org.mcaccess.minecraftaccess.features.point_of_interest.waypoints.gui.SaveWaypointScreen;
 import org.mcaccess.minecraftaccess.utils.KeyMappingCategories;
+import org.mcaccess.minecraftaccess.utils.ModifierUtils;
 import org.mcaccess.minecraftaccess.utils.condition.Interval;
 import org.mcaccess.minecraftaccess.utils.events.ClientPlayingTick;
 
@@ -59,10 +60,32 @@ public class POIWaypoints implements BalmClientModule {
                 .withDefault(InputBinding.key(InputConstants.KEY_D, KeyModifiers.of(KeyModifier.ALT)))
                 .overrideCategory(KeyMappingCategories.OTHER)
                 .handleWorldInput(_ -> {
+                    if (!ModifierUtils.hasAltOnly()) return false;
                     openSaveWaypointDialog();
                     return true;
                 })
                 .build();
+
+        Kuma.createKeyMapping(Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "other.toggle_audio_beacon"))
+                .withDefault(InputBinding.key(InputConstants.KEY_F1, KeyModifiers.of(KeyModifier.CONTROL, KeyModifier.ALT)))
+                .overrideCategory(KeyMappingCategories.OTHER)
+                .handleWorldInput(_ -> {
+                    if (!ModifierUtils.hasControlAndAlt()) return false;
+                    toggleAudioBeacon();
+                    return true;
+                })
+                .build();
+    }
+
+    public void toggleAudioBeacon() {
+        Config.POI.Waypoints config = Config.getInstance().poi.waypoints;
+        config.playAudioBeacon = !config.playAudioBeacon;
+        Config.getInstance().save();
+        if (config.playAudioBeacon) {
+            MainClass.narrate(I18n.get("minecraft_access.other.audio_beacon_on"), true);
+        } else {
+            MainClass.narrate(I18n.get("minecraft_access.other.audio_beacon_off"), true);
+        }
     }
 
     public void openSaveWaypointDialog() {
