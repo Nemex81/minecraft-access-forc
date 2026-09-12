@@ -134,8 +134,10 @@ La conclusione di ogni sessione implementativa segue tassativamente una sequenza
    - Aggiornamento di `docs/content/changelog.md` con il dettaglio delle modifiche.
    - Allineamento di `docs/architecture.md` e `docs/api.md` (se modificate architetture o API).
    - Aggiornamento di `README.md`, `keybindings.md` e `features.md` (se introdotti nuovi comandi/tasti).
-7. **Aggiornamento Backup PC Portatile**: Solo dopo il collaudo manuale positivo di Luca, promozione del JAR stabile nella cartella di backup:
-   `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft archivio backup\minecraft backup\Minecraft 26.2 Access 1.12.0 pc portatile\minecraft\mods\`
+7. **Aggiornamento Backup PC Portatile**: Solo dopo il collaudo manuale positivo di Luca,
+   - **Promozione Backup JAR Stabile**: Copia del `.jar` con tag/versione aggiornata nella suite `backup istanze/`.
+   - **Esempio Percorso Suite Backup**:
+   `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft archivio backup\backup istanze\`
 8. **Archiviazione del Piano Tecnico & Report di Sessione**: Spostamento del file del piano nella cartella `docs\piani\completati\` con marcatura `[COMPLETATO, COLLAUDATO E INTEGRATO]`, migrazione automatica del Report di Sessione in `docs/report/archivio/` e aggiornamento deterministico dei link in `docs/report/ARCHIVIO_REVISIONI.md`.
 9. **Commit & Push su `origin/mymaster`**.
 10. **Chiusura con Domanda Ponte Obbligatoria**:
