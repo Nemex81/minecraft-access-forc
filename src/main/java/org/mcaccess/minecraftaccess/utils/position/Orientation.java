@@ -3,7 +3,6 @@ package org.mcaccess.minecraftaccess.utils.position;
 import java.util.Arrays;
 import java.util.Comparator;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
 

@@ -36,7 +36,6 @@ import org.mcaccess.minecraftaccess.api.WorldNarrator;
 import org.mcaccess.minecraftaccess.features.crosshair.CrosshairFeedbackManager;
 import org.mcaccess.minecraftaccess.utils.KeyMappingCategories;
 import org.mcaccess.minecraftaccess.utils.ModifierUtils;
-import org.mcaccess.minecraftaccess.utils.NarrationPriority;
 import org.mcaccess.minecraftaccess.utils.NarrationUtils;
 import org.mcaccess.minecraftaccess.utils.PlayerUtils;
 import org.mcaccess.minecraftaccess.utils.position.Orientation;
@@ -819,19 +818,6 @@ public class NumpadControls implements BalmClientModule {
                 MouseUtils.Wheel.DOWN.scroll();
             }
             lastScrollTime = now;
-        }
-    }
-
-    private void narrateCrosshairTarget() {
-        HitResult hit = PlayerUtils.crosshairTarget(20.0);
-        if (hit == null) return;
-        if (hit.getType() == HitResult.Type.BLOCK) {
-            BlockHitResult blockHit = (BlockHitResult) hit;
-            BlockPos blockPos = blockHit.getBlockPos();
-            String narration = MainClass.registry(WorldNarrator.class).get(Config.getInstance().narrateCrosshair.narrator).narrate(blockPos)
-                    + I18n.get("minecraft_access.other.words_connection")
-                    + NarrationUtils.narrateRelativePositionOfPlayerAnd(blockPos);
-            MainClass.narrate(narration, false);
         }
     }
 

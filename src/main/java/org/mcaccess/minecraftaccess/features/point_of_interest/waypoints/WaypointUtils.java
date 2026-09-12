@@ -1,6 +1,5 @@
 package org.mcaccess.minecraftaccess.features.point_of_interest.waypoints;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.BlockPos;

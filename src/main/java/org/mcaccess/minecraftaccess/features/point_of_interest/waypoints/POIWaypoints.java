@@ -3,7 +3,6 @@ package org.mcaccess.minecraftaccess.features.point_of_interest.waypoints;
 import java.util.List;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.blay09.mods.balm.client.platform.module.BalmClientModule;
 import net.blay09.mods.kuma.api.InputBinding;

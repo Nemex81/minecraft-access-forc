@@ -34,7 +34,6 @@ public final class CrosshairFeedbackManager {
     private static @Nullable Integer currentDistance = null;
     private static long lastNarrationTime = 0;
     private static long lastDistanceNarrationTime = 0;
-    private static final long DEBOUNCE_GRACE_PERIOD_MS = 80;
 
     private static java.util.function.BiConsumer<String, Boolean> narrationConsumer = MainClass::narrate;
     private static java.util.function.Consumer<org.mcaccess.minecraftaccess.features.cognitive.CognitiveEvent> cognitiveEventConsumer = org.mcaccess.minecraftaccess.features.cognitive.CognitiveCoordinator::submitEvent;

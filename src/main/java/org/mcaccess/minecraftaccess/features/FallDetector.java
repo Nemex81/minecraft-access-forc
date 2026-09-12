@@ -1,7 +1,5 @@
 package org.mcaccess.minecraftaccess.features;
 
-import java.util.Objects;
-
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.blay09.mods.balm.client.platform.module.BalmClientModule;
@@ -16,7 +14,6 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import org.mcaccess.minecraftaccess.MainClass;
 import org.mcaccess.minecraftaccess.features.cognitive.CognitiveEvent;
 import org.mcaccess.minecraftaccess.features.cognitive.CognitivePriority;
 import org.mcaccess.minecraftaccess.features.cognitive.SoundCue;

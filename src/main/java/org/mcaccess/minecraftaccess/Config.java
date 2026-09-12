@@ -464,10 +464,13 @@ public final class Config implements ConfigData {
 
         // Campi deprecati preservati per compatibilità storica
         @Deprecated
+        @ConfigEntry.Gui.Excluded
         public int range = 6;
         @Deprecated
+        @ConfigEntry.Gui.Excluded
         public int depth = 4;
         @Deprecated
+        @ConfigEntry.Gui.Excluded
         public int delay = 2500;
 
         /**

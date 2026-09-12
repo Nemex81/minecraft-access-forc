@@ -7,7 +7,7 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import net.minecraft.resources.Identifier;
 
-class IdentifierAdapter extends TypeAdapter<Identifier> {
+public class IdentifierAdapter extends TypeAdapter<Identifier> {
     @Override
     public void write(JsonWriter out, Identifier value) throws IOException {
         out.value(value.toString());
