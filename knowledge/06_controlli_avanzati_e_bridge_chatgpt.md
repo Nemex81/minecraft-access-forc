@@ -18,9 +18,16 @@ La mod implementa una mappatura completa per eliminare qualsiasi uso del mouse:
 | **`B`** | **Lettura Istantanea Mirino (Mano Sinistra)**: Vocalizzazione atomica a richiesta di blocco/entità, distanza e orientamento secondo Cloth Config | `features/crosshair/CrosshairFeedbackManager.java` |
 | **`Alt + B`** | **Tracciatore Risorse Base** (Scansione 3D Legno, Pietra esposta, Cibo con la mano sinistra) | `features/survival_tracker/SurvivalResourceTracker.java` |
 | **`Alt + W`** | **Auto-Walk Navigatore**: Avvia / arresta la marcia automatica verso il bersaglio attivo | `features/autowalk/AutoWalkManager.java` |
+| **`Alt + S`** | **Climb Assistant (Scalata Tattica)**: Avvia salita/discesa assistita sulla scala di fronte con arresto automatico sul piano stabile | `features/autowalk/ClimbAssistantController.java` |
 | **`Ctrl + Alt + W`** | **Alterna Corsa/Camminata Navigatore**: Commuta sprint/walk nell'AutoWalk con annuncio vocale | `features/autowalk/AutoWalkManager.java` |
 | **`Alt + Page Up`** | **Aumenta Volume Passi Giocatore** (+10%, fino a 300%) | `features/PlayerStepSound.java` |
 | **`Alt + Page Down`** | **Riduci Volume Passi Giocatore** (-10%, fino a 0%) | `features/PlayerStepSound.java` |
+
+### A.2. Assistente Tattico di Scalata (`Alt + S` & Tasto Interazione) — Rev MC-26.23
+L'Assistente di Scalata consente di salire o scendere scale a pioli, impalcature e rampicanti senza dover pilotare manualmente i tasti WASD:
+- **Attivazione Diretta (`Alt + S`)**: Se il giocatore è davanti o su una scala, avvia istantaneamente la salita o la discesa verso il primo pianerottolo sicuro.
+- **Intercettazione Tasto Interazione (Tasto Destro / Apertura Porte)**: Intercetta il click se il mirino punta una scala a pioli entro $2.5\text{ m}$. Se il giocatore è accovacciato (`isShiftKeyDown`), l'intercettazione è bypassata per consentire il piazzamento manuale di blocchi.
+- **Invariante di Unità Esecutiva**: Sia l'AutoWalk ordinario sia il Climb Assistant condividono al 100% lo stesso assemblatore di rotta (`ClimbRouteAssembler`) e lo stesso motore cinematico puro (`ClimbKinematics`), garantendo parità assoluta di comportamento.
 
 ### B. Batteria Interruttori Sensori Contigui (`Ctrl + Alt + F1 .. F6`)
 Sequenza ordinata e contigua per attivare/disattivare a richiesta i singoli sottosistemi sensoriali, con annuncio vocale di stato e persistenza automatica. Il Mixin `KeyboardHandlerMixin` neutralizza le azioni vanilla di F1..F6 (Debug Screen, cambio prospettiva) quando `Ctrl+Alt` è premuto (Rev MC-26.22):

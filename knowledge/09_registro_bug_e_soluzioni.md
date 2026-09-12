@@ -573,5 +573,26 @@ Questo registro documenta i problemi tecnici complessi risolti nel tempo, preser
   3. *Svuotamento Accumulatori F1 e F5*: In `MinecraftMixin.java`, inserita iniezione a `@At("HEAD")` su `handleKeybinds()` che svuota a vuoto i click pendenti (`while (this.options.keyTogglePerspective.consumeClick())` e `while (this.options.keyToggleGui.consumeClick())`) prima che raggiungano la logica Vanilla.
 - **Verifica e Collaudo**: Compilazione e test verdi al 100%, avvio pulito del gioco, zero interferenze visive durante l'azionamento dei tasti rapidi confermato da Luca in-game.
 
+---
+
+### Record 43 — Stallo Dismount Ascendente su Botole/Tetti e Falso Blocco a Terra in Discesa Scale (Rev MC-26.23)
+- **Data**: 2026-09-12
+- **Versione di Riferimento**: Minecraft 26.2 (Fabric / Java 25)
+- **Moduli Coinvolti**: `ClimbKinematics.java`, `ClimbLandingProbe.java`, `ClimbContactProbe.java`, `AutoWalkMotor.java`
+- **Sintomi**:
+  1. *Stallo Salita su Sommità*: Scalando una scala a pioli verso un tetto o botola, il personaggio saliva regolarmente ma si bloccava in cima con *"Movimento bloccato sulla scala"* e scivolava all'indietro.
+  2. *Falso Allarme a Terra in Discesa*: In discesa, il personaggio atterrava sul pavimento ma la FSM restava in transito per 1.5s prima di interrompersi con *"Movimento bloccato sulla scala"* anziché annunciare *"Raggiunto piano stabile"*.
+- **Causa Radice**:
+  1. *Dismount Simmetrico Complanare*: L'oracolo `evaluateDismount` richiedeva che il pavimento di sbarco fosse già alla quota dei piedi ($\pm 0.08\text{ m}$). In salita, la scala termina 1 blocco sotto il tetto ($Y_{landing} - 1.12\text{ m}$): il mancato appoggio spegneva la propulsione `keyUp`, lasciando cadere il giocatore.
+  2. *Corridoio Rigido al Suolo & Landing Nominalmente Disallineato*: In discesa, all'atterraggio a terra, il personaggio si trovava a $Z = -42.20$, appena fuori dalla colonna $1 \times 1\text{ m}$ ($[-42.0, -41.0]$), invalidando `bottomCrossing`, mentre il landing nominale era calcolato a quota inferiore. La FSM non controllava se il giocatore era già fisicamente a terra (`playerOnGround`).
+  3. *Tolleranza Velocità Verticale Vanilla*: `ClimbLandingProbe` imponeva `abs(velocityY) <= 0.03`, ma a terra la fisica di Minecraft restituisce costantemente `Motion.y = -0.0784000015 m/tick`.
+- **Soluzione Definitiva (Contratti D30..D41)**:
+  1. *Dismount Ascendente Biforcato (D33)*: Introdotta la distinzione direzionale `snapshot.isAscent()`. In salita, divide la manovra in *Sollevamento Residuo* (`keyUp=true` continuo verso la scala finché $Y \ge Y_{landing} - 0.20\text{ m}$) e *Trasferimento* (rotazione verso il blocco di sbarco `targetYaw` con avanzamento attivo e stabilizzazione su 2 tick).
+  2. *Dismount Discendente con Grounding Immediato (D34)*: Aggiunta la condizione `snapshot.playerOnGround()` sull'ultimo piolo in discesa (`isLastTransitRung()`), promuovendo all'istante la FSM a `DISMOUNT` con `SUPPORTED_LANDING` e notifica vocale di arrivo sul piano stabile.
+  3. *Calibrazione Tolleranza Cinetica*: Impostato `VELOCITY_EPSILON = 0.085` per assorbire deterministicamente la costante gravitazionale vanilla.
+  4. *Bonifica D41*: Eliminato lo stato orfano `REACQUIRE` e il metodo morto `evaluateReacquire()`.
+- **Verifica e Collaudo**: 396/396 test headless verdi a 0 ms; collaudo in-game alla Torre del Belvedere convalidato al 100% da Luca sia in salita che in discesa.
+
+
 
 

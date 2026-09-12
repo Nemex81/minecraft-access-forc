@@ -220,3 +220,34 @@ Per prevenire qualsiasi falso allarme vocale e garantire la massima precisione n
 
 3. **Quiete Sensoriale e Interazione con AutoWalk**:
    - In marcia autonoma (`MovementCoordinator.isAutoWalkActive()`), il radar a lungo raggio è disattivato al $100\%$ e la prossimità sopprime xilofono, voce e rallentamento sprint, mantenendo solo l'auto-sneak salvavita estremo a $d \le 0.85\text{ m}$.
+
+---
+
+## 14. Cinematica Voxel di Scalata & Discesa Scale (Rev MC-26.23)
+
+1. **Geometria Voxel della Colonna Arrampicabile (`LadderBlock` / `ClimbableGeometry`)**:
+   - Le scale a pioli montate a parete (`WALL_MOUNTED`) hanno uno spessore di soli $3\text{ pixel}$ ($0.1875\text{ m}$) addossati alla parete solida di supporto, lasciando un corridoio d'aria di $0.8125\text{ m}$.
+   - Il volume della colonna include l'inviluppo verticale $1 \times 1\text{ m}$ in pianta ($X, Z$) esteso per tutta l'altezza dei pioli ($Y_{bottom} .. Y_{top}$).
+   - **Varco Superiore e Botole**: In corrispondenza dell'apertura del solaio/tetto a $Y_{top} + 1$, il passaggio dell'AABB ($0.6 \times 1.8\text{ m}$) è consentito se la botola è assente o aperta. Le botole in ferro sono escluse da qualsiasi interazione automatica.
+
+2. **Asimmetria FSM Direzionale del Dismount Voxel (Salita vs Discesa)**:
+   - **Salita (Dislivello Positivo $+1\text{ m}$)**:
+     - Una scala a pioli termina al blocco $Y_{top}$; il pavimento calpestabile di arrivo si trova a $Y_{landing} = Y_{top} + 1$.
+     - Quando i piedi raggiungono l'ultimo piolo ($Y \approx Y_{landing} - 1.12\text{ m}$), è vietato spegnere la propulsione: il dismount deve biforcarsi in:
+       * *Sollevamento Residuo*: mantenere `keyUp=true` verso la parete di supporto finché i piedi non superano la soglia critica ($Y \ge Y_{landing} - 0.20\text{ m}$);
+       * *Trasferimento*: ruotare la visuale verso il blocco calpestabile di sbarco (`targetYaw`) e applicare `keyUp=true` verso il pianerottolo;
+       * *Stabilizzazione*: confermare l'atterraggio (`Outcome.COMPLETED`) solo dopo 2 tick consecutivi stabili al suolo (`onGround=true`).
+   - **Discesa (Discesa Gravitazionale Naturale & Sbarco al Suolo)**:
+     - Ingresso dall'alto tramite rilevamento continuo di varco (`sweptCrossing` su AABB), orientando lo sguardo a $180^\circ$ rispetto alla parete e azzerando la spinta orizzontale non appena catturato;
+     - Discesa naturale controllata (`GRAVITY_DESCENT`): divieto assoluto di applicare `W` o `S` durante il transito verticale, per prevenire lanci incontrollati oltre i parapetti della balconata;
+     - Sbarco a terra: scatta non appena il personaggio tocca il pavimento (`playerOnGround=true`) in corrispondenza dell'ultimo piolo (`isLastTransitRung()`), senza vincoli rigidi sul corridoio orizzontale $1 \times 1\text{ m}$.
+
+3. **Grounding della Fisica Vanilla & Tolleranze Cinetico-Gravitazionali**:
+   - In Minecraft il vettore di movimento verticale grezzo a terra prima dell'integrazione del tick non è zero, ma un valore costante di attrito gravitazionale:
+     $$\text{Motion.y} = -0.0784000015\text{ m/tick}$$
+   - Nei probe di stabilità (`ClimbLandingProbe`), la tolleranza cinetica per dichiarare il giocatore fermo deve essere calibrata con $\epsilon \ge 0.085\text{ m/tick}$ (`VELOCITY_EPSILON`), altrimenti una condizione `abs(velocityY) <= 0.03` non scatterà mai in-game.
+
+4. **Lease Esclusiva Anticaduta (`SafetyMovementGuard` / `ControlledDescentPort`)**:
+   - Durante l'intera manovra di discesa (`ALIGN -> APPROACH -> CAPTURE_WAIT -> TRANSIT -> DISMOUNT`), il motore acquisisce e rinnova a ogni tick una lease su `ControlledDescentPort`.
+   - La lease inibisce incondizionatamente il falso freno di emergenza del `ProximityFallDetector` sulla colonna attiva, permettendo la discesa senza strappi o blocchi artificiali.
+
