@@ -17,7 +17,7 @@ Questo file costituisce l'**Hub Centrale di Contesto e Governance** del progetto
 
 1. **Protocollo 1 — Progettazione** *(Strategy, Contracts & Architecture — Fase 0 & Sotto-Fase 1A)*:
 
-   - *Rete Documentale a 4 Nodi Comunicanti (Pointer Hub DRY)*: Strategia Cognitiva (`docs/strategie/`) <-> Piano Tecnico (`docs/piani/`) <-> Report di Sessione (`docs/report/archivio/`) <-> Registro Revisioni RRU (`REGISTRO_REVISIONI.md` / `ARCHIVIO_REVISIONI.md`);
+   - *Rete Documentale Comunicante a 5 Nodi (Pointer Hub DRY)*: Catena operativa (`Idea/RFC` -> `Strategia` -> `Piano` -> `Report` -> `Voce RRU`) conforme allo [Standard di Tassonomia Documentale](file:///C:/Users/nemex/OneDrive/progetti%20dei%20frati/antigravity%20master%20governance%20e%20jolly%20universali/knowledge_globale/03_architettura_e_metodologie/standard_tassonomia_documentale_e_auto_deduzione.md);
 
    - *Fase 0 (Strategia Cognitiva UPCS)*: Elaborazione del modello mentale, delle invarianti inviolabili e dialettica avversariale in `docs/strategie/attive/` per compiti complessi o architetturali;
 
