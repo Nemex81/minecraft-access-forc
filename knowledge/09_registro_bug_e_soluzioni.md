@@ -593,6 +593,23 @@ Questo registro documenta i problemi tecnici complessi risolti nel tempo, preser
   4. *Bonifica D41*: Eliminato lo stato orfano `REACQUIRE` e il metodo morto `evaluateReacquire()`.
 - **Verifica e Collaudo**: 396/396 test headless verdi a 0 ms; collaudo in-game alla Torre del Belvedere convalidato al 100% da Luca sia in salita che in discesa.
 
+---
 
-
-
+### Record 44 — De-Risking GUI Campi Legacy Config & Bonifica Checkstyle Import Inutilizzati (Rev MC-26.24)
+- **Data**: 2026-09-12
+- **Versione di Riferimento**: v26.2-1.21.1 (Fabric / Java 25)
+- **Riferimenti Git**: commit di implementazione `3fae9fff`, integrato in `feat/cognitive-orchestrator`; commit documentale di chiusura `a9c3f150`.
+- **Moduli Coinvolti**: `Config.java`, `IdentifierAdapter.java`, `NumpadControls.java`, `CrosshairFeedbackManager.java`, 19 classi sorgente per bonifica import, `LegacyConfigSerializationTest.java`
+- **Contesto & Esigenza**:
+  1. *Campi Legacy*: I campi `range`, `depth` e `delay` nella sezione `FallDetector` di `Config.java` non erano più utilizzati dalla logica di gioco moderna (sostituita dai detector modulari di prossimità e lungo raggio), ma risultavano ancora visibili e modificabili nella schermata Cloth Config.
+  2. *Codice Morto Certificato*: Presenza del metodo orfano `narrateCrosshairTarget()` in `NumpadControls.java`, della costante `DEBOUNCE_GRACE_PERIOD_MS` in `CrosshairFeedbackManager.java` e di 30 import orfani certificati dal report XML di Checkstyle.
+- **Risoluzione Implementata**:
+  1. *De-Risking Campi Config*: Apposta l'annotazione `@ConfigEntry.Gui.Excluded` su `range`, `depth`, `delay` in `Config.java`. I campi rimangono membri ordinari non transient per garantire la piena deserializzazione e riscrittura Gson dei file `config.json` preesistenti senza alterazioni di schema.
+  2. *Bonifica Chirurgica*: Rimossi il metodo orfano in `NumpadControls`, la costante in `CrosshairFeedbackManager` e i 30 import inutilizzati su 19 file sorgente.
+  3. *Test Seam Determinizzato & Deroga Locale*: Creato `LegacyConfigSerializationTest.java` con 4 profili JSON di prova (campi presenti, assenti, valori limite) e verifica riflessiva dell'annotazione. Su autorizzazione esplicita di Luca, l'adattatore `IdentifierAdapter` è stato reso `public` come deroga locale documentata per verificare il round-trip mediante una configurazione Gson equivalente a quella produttiva, condividendo l'adattatore produttivo.
+- **Evidenze di Validazione**:
+  1. *Statica e CI*: 0 violazioni `UnusedImports` nel report Checkstyle differenziale; 401/401 test JUnit superati senza fallimenti o errori; nessuna chiamata a `Thread.sleep` rilevata nella suite. Il nuovo test Gson usa directory temporanee isolate e non introduce attese temporali.
+  2. *Collaudo Pratico In-Game*: Verificato da Luca da tastiera con screen reader NVDA sulle due istanze autorizzate (profilo client locale con salvataggi e profilo server di rete):
+     - Menu Cloth Config: le tre voci deprecate non risultano più presenti nell'interfaccia;
+     - Caricamento mondo: salvataggi singleplayer letti correttamente senza corruzioni di configurazione;
+     - Rilevatori e mirino: funzionamento regolare verificato in-game.
