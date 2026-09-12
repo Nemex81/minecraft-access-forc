@@ -7,10 +7,10 @@
 - **Esito Classificazione**: CONFERMATA
 - **Intento Operativo**: REFACTORING
 - **Ambito**: PROGETTO:minecraft-access
-- **Stato Documento**: IN REVISIONE
-- **Stato Lavoro**: NON AVVIATO
-- **Gate Operativo**: CONSULTIVO
-- **Evidenza del Gate**: Sessione congiunta Antigravity-GPT-Luca del 2026-09-12 per bonifica mirata e de-risking configurazioni
+- **Stato Documento**: ARCHIVIATA
+- **Stato Lavoro**: COMPLETATO
+- **Gate Operativo**: CHIUSO POST-COLLAUDO
+- **Evidenza del Gate**: Collaudo pratico superato con successo da Luca il 2026-09-12; Rev MC-26.24 registrata; versione v26.2-1.21.1 assegnata.
 - **Partecipanti e Ruoli**:
   - **Responsabile Decisionale**: Luca
   - **Coordinatore Operativo**: Antigravity
@@ -19,10 +19,10 @@
   - **Collaudatore Finale**: Luca
 - **Modalità Operativa**: TRIADE
 - **Documenti Correlati**:
-  - prepara: docs/piani/attivi/PIANO_TECNICO_BONIFICA_CODICE_MORTO_E_CONFIG.md
-  - handover: docs/report/REPORT_HANDOVER_STRATEGIA_BONIFICA_CODICE_MORTO.md
-- **Riferimenti Git**: d4c23b0ce1a213b73c6b86f6a70648f27b84b124
-- **Ultimo Aggiornamento**: 2026-09-12 10:15 Europe/Rome
+  - archivio-piano: docs/piani/completati/PIANO_TECNICO_BONIFICA_CODICE_MORTO_E_CONFIG.md
+  - archivio-report: docs/report/archivio/REPORT_HANDOVER_STRATEGIA_BONIFICA_CODICE_MORTO.md
+- **Riferimenti Git**: test/bonifica-codice-morto-e-config -> feat/cognitive-orchestrator
+- **Ultimo Aggiornamento**: 2026-09-12 12:58 Europe/Rome
 
 ---
 

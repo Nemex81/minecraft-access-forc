@@ -7,22 +7,22 @@
 - **Esito Classificazione**: CONFERMATA
 - **Intento Operativo**: COORDINAMENTO-CHIUSURA
 - **Ambito**: PROGETTO:minecraft-access
-- **Stato Documento**: IN REVISIONE
-- **Stato Lavoro**: IN VERIFICA
-- **Gate Operativo**: CONSULTIVO
-- **Evidenza del Gate**: Integrazione delle 3 correzioni vincolanti richieste da GPT nella Sezione 4 del presente report
+- **Stato Documento**: COMPLETATO
+- **Stato Lavoro**: COLLAUDATO E CONFERMATO
+- **Gate Operativo**: CHIUSO POST-COLLAUDO
+- **Evidenza del Gate**: Collaudo pratico in-game superato con successo da Luca su entrambe le istanze PrismLauncher il 2026-09-12. Assegnata versione v26.2-1.21.1 (Patch).
 - **Partecipanti e Ruoli**:
   - **Responsabile Decisionale**: Luca
   - **Coordinatore Operativo**: Antigravity
-  - **Esecutore Previsto**: NON APPLICABILE
+  - **Esecutore Previsto**: Antigravity
   - **Revisori**: GPT / Codex
   - **Collaudatore Finale**: Luca
 - **Modalità Operativa**: TRIADE
 - **Documenti Correlati**:
-  - convalida: docs/strategie/attive/STRATEGIA_BONIFICA_CODICE_MORTO_E_CONFIG.md
-  - prepara: docs/piani/attivi/PIANO_TECNICO_BONIFICA_CODICE_MORTO_E_CONFIG.md
-- **Riferimenti Git**: d4c23b0ce1a213b73c6b86f6a70648f27b84b124
-- **Ultimo Aggiornamento**: 2026-09-12 10:22 Europe/Rome
+  - archiviazione: docs/report/archivio/REPORT_HANDOVER_STRATEGIA_BONIFICA_CODICE_MORTO.md
+  - revisione: docs/report/ARCHIVIO_REVISIONI.md (Rev MC-26.24)
+- **Riferimenti Git**: test/bonifica-codice-morto-e-config (3fae9fff) -> feat/cognitive-orchestrator
+- **Ultimo Aggiornamento**: 2026-09-12 12:58 Europe/Rome
 
 ---
 
@@ -393,3 +393,36 @@ Il **merge in `feat/cognitive-orchestrator` non è autorizzato in questa fase**.
 Anche il **deploy su PrismLauncher resta non autorizzato** e separato dal presente gate. Antigravity deve quindi limitarsi al commit sul branch di test, documentarne identificativo ed esito nel report e arrestarsi nuovamente in attesa del collaudo pratico e dell'esplicita autorizzazione di Luca al merge.
 
 GPT / Codex ha aggiornato esclusivamente il presente report; non ha modificato codice o test e non ha eseguito build, commit, merge o deploy.
+
+---
+
+## 🚀 22. Esecuzione Commit su Ramo di Test & Deploy su Entrambe le Istanze di Gioco (Antigravity — 2026-09-12 12:00)
+
+In conformità alle direttive e all'autorizzazione esplicita di Luca (*"si confermo tutto ma aggiorna entrambe le mie istanze di gioco. procedi pure"*):
+
+### 1. Commit Git Eseguito sul Ramo Isolato
+- **Branch**: `test/bonifica-codice-morto-e-config`
+- **Hash Commit**: `3fae9fff`
+- **Messaggio**: `refactor: bonifica codice morto, 30 import inutilizzati e de-risking config legacy`
+- **Oggetti tracciati**: 27 file modificati/creati (inclusi i documenti ASTRALIS allineati e il test `LegacyConfigSerializationTest.java`).
+- **Branch di produzione `feat/cognitive-orchestrator`**: Intatto e sigillato, in attesa del collaudo pratico di Luca.
+
+### 2. Compilazione del Modulo JAR
+- Eseguito `.\gradlew.bat --no-daemon --no-watch-fs shadowJar`: **BUILD SUCCESSFUL**.
+- Generato: `build/libs/minecraft-access-26.2-1.21.0.SNAPSHOT.jar`.
+
+### 3. Deploy Eseguito su Entrambe le Istanze di PrismLauncher
+Il nuovo artefatto compilato è stato distribuito con successo sostituendo la versione precedente in:
+1. `C:\Users\nemex\AppData\Roaming\PrismLauncher\instances\Minecraft 26.2 Access - Server Tenuta\minecraft\mods\`
+2. `C:\Users\nemex\AppData\Roaming\PrismLauncher\instances\Minecraft 26.2 Access Client\minecraft\mods\`
+
+### 4. Stato del Gate: Collaudo Pratico In-Game
+Tutte le operazioni automatiche e preliminari sono concluse. Il sistema è in **Stop Obbligatorio** a disposizione di Luca per il test manuale in-game di Minecraft. Il merge sul ramo principale avverrà solo dopo la sua conferma positiva.
+
+---
+
+## ✅ 23. Collaudo Pratico Superato & Chiusura Formale (Luca & Antigravity — 2026-09-12 12:55)
+
+1. **Esito Collaudo Luca**: Convalida positiva al 100% su entrambe le istanze PrismLauncher (Server Tenuta e Client Singleplayer).
+2. **Versionamento AVF**: Adottata formalmente la versione `v26.2-1.21.1` (Patch).
+3. **Chiusura**: Autorizzato il merge in `feat/cognitive-orchestrator`, l'archiviazione a catena dei documenti e l'avvio della chiusura tecnica.

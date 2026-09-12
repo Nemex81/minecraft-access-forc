@@ -4,7 +4,7 @@
 - **Autore:** Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA) & Antigravity
 - **Revisori:** Luca / Antigravity / GPT Codex / ChatGPT
 - **Data Ultimo Aggiornamento:** 2026-09-12
-- **Stato:** [ARCHIVIO STORICO PERENNE — 32 REVISIONI COLLAUDATE CON SUCCESSO]
+- **Stato:** [ARCHIVIO STORICO PERENNE — 33 REVISIONI COLLAUDATE CON SUCCESSO]
 - **Registro Attivo Correlato:** [`docs/report/REGISTRO_REVISIONI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/REGISTRO_REVISIONI.md)
 
 Questo documento costituisce la memoria storica e forense perenne di tutte le anomalie, correzioni e rifiniture collaudate e chiuse con successo nel ciclo di vita di Minecraft Access. Ciascuna voce archiviata mantiene la sintesi del problema, la causa radice, la soluzione adottata e i collegamenti diretti ai relativi Piani Tecnici e Report di Sessione archiviati.
@@ -12,6 +12,22 @@ Questo documento costituisce la memoria storica e forense perenne di tutte le an
 ---
 
 ## 🏛️ STORICO REVISIONI COLLAUDATE CON SUCCESSO (CICLO 26.2)
+
+### 🟢 Rev MC-26.24 — Bonifica Codice Morto Certificato, 30 Import e De-Risking Configurazione Legacy
+- **Stato**: `[COLLAUDATA CON SUCCESSO AL 100% IN-GAME DA LUCA]`
+- **Versione Chiusura**: 26.2-1.21.1 (Data 2026-09-12)
+- **Sintesi**:
+  - Apposizione di `@ConfigEntry.Gui.Excluded` su `range`, `depth`, `delay` in `Config.java` per nasconderli dalla GUI Cloth Config proteggendo la reversibilità della serializzazione Gson e l'integrità dei profili esistenti su disco;
+  - Test seam deterministico `LegacyConfigSerializationTest` isolato su `@TempDir` con `IdentifierAdapter` produttivo condiviso (profili A, B, C, D e riflessivo superati);
+  - Rimozione del metodo orfano `narrateCrosshairTarget()` in `NumpadControls.java` e della costante orfana `DEBOUNCE_GRACE_PERIOD_MS` in `CrosshairFeedbackManager.java`;
+  - Rimozione chirurgica di 30 import inutilizzati certificati da Checkstyle su 19 file sorgente (`UnusedImports = 0`).
+- **Esito Collaudo**: Luca ha confermato il pieno e corretto funzionamento in-game su entrambe le istanze PrismLauncher (`Server Tenuta` e `Client`), con suite 401/401 test verdi.
+- **Riferimenti**:
+  - [`REPORT_HANDOVER_STRATEGIA_BONIFICA_CODICE_MORTO.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_HANDOVER_STRATEGIA_BONIFICA_CODICE_MORTO.md)
+  - [`PIANO_TECNICO_BONIFICA_CODICE_MORTO_E_CONFIG.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/completati/PIANO_TECNICO_BONIFICA_CODICE_MORTO_E_CONFIG.md)
+  - [`STRATEGIA_BONIFICA_CODICE_MORTO_E_CONFIG.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/strategie/archiviate/STRATEGIA_BONIFICA_CODICE_MORTO_E_CONFIG.md)
+
+---
 
 ### 🟢 Rev MC-26.23 — AutoWalk Verticale & Assistente Tattico di Scalata (Climb Assistant)
 - **Stato**: `[COLLAUDATA CON SUCCESSO AL 100% IN-GAME DA LUCA]`

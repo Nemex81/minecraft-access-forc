@@ -7,10 +7,10 @@
 - **Esito Classificazione**: CONFERMATA
 - **Intento Operativo**: REFACTORING
 - **Ambito**: PROGETTO:minecraft-access
-- **Stato Documento**: REVISIONATO
-- **Stato Lavoro**: IMPLEMENTATO — IN ATTESA DI CONVALIDA
-- **Gate Operativo**: STOP OBBLIGATORIO POST-1B
-- **Evidenza del Gate**: Autorizzazione esplicita di Luca del 2026-09-12 10:47; Sotto-Fase 1B implementata con successo sul branch `test/bonifica-codice-morto-e-config`; suite completa con 401 test superati senza fallimenti o errori; Checkstyle differenziale con `UnusedImports = 0`, zero violazioni nel nuovo test e nessun incremento rispetto alle 1444 diagnostiche preesistenti non correlate.
+- **Stato Documento**: COMPLETATO
+- **Stato Lavoro**: COMPLETATO
+- **Gate Operativo**: CHIUSO POST-COLLAUDO
+- **Evidenza del Gate**: Convalida in-game positiva di Luca del 2026-09-12 su entrambe le istanze; suite automatica superata al 100% (401 test); Checkstyle conforme. Versione v26.2-1.21.1 (Patch).
 - **Partecipanti e Ruoli**:
   - **Responsabile Decisionale**: Luca
   - **Coordinatore Operativo**: Antigravity
@@ -19,10 +19,10 @@
   - **Collaudatore Finale**: Luca
 - **Modalità Operativa**: TRIADE
 - **Documenti Correlati**:
-  - deriva-da: docs/strategie/attive/STRATEGIA_BONIFICA_CODICE_MORTO_E_CONFIG.md
-  - allegato-di: docs/report/REPORT_HANDOVER_STRATEGIA_BONIFICA_CODICE_MORTO.md
-- **Riferimenti Git**: test/bonifica-codice-morto-e-config (originato da HEAD `d4c23b0ce...`)
-- **Ultimo Aggiornamento**: 2026-09-12 11:52 Europe/Rome
+  - archiviazione-strategia: docs/strategie/archiviate/STRATEGIA_BONIFICA_CODICE_MORTO_E_CONFIG.md
+  - archiviazione-report: docs/report/archivio/REPORT_HANDOVER_STRATEGIA_BONIFICA_CODICE_MORTO.md
+- **Riferimenti Git**: test/bonifica-codice-morto-e-config -> feat/cognitive-orchestrator
+- **Ultimo Aggiornamento**: 2026-09-12 12:58 Europe/Rome
 
 ---
 
@@ -40,7 +40,7 @@
 - `[x]` **Contratto S3**: verifica Checkstyle differenziale (violazioni `UnusedImports` a 0 nel report XML, nessun incremento di altri errori, conformità test).
 - `[x]` **Contratto S4**: esecuzione suite JUnit completa superata al 100% senza regressioni (401 test passati).
 - `[x]` **Revisione Diff Lineare**: ispezione finale `git diff` limitata ai 23 file sorgente tracciati (+4 righe, -48 righe) oltre al nuovo file di test `LegacyConfigSerializationTest.java`.
-- `[/]` **Stop Obbligatorio & Gating**: arresto completo post-1B in attesa della convalida di Luca prima di commit o deploy.
+- `[x]` **Stop Obbligatorio & Gating**: collaudo pratico in-game superato con successo da Luca il 2026-09-12 su entrambe le istanze. Gate chiuso e autorizzazione al merge concessa.
 
 ---
 

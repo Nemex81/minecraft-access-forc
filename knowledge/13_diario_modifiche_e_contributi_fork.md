@@ -8,6 +8,28 @@
 Questo documento costituisce il **Diario Ufficiale delle Modifiche del Fork Personale in lingua Italiana**.
 Poiché il `README.md` pubblico e la documentazione del repository upstream rimangono in lingua Inglese per la community internazionale con la sola sezione `## [Unreleased]`, tutte le novità, i refactoring e i miglioramenti sviluppati sui nostri rami (`mymaster`, `dev`) vengono tracciati qui secondo la disciplina AVF (`V.A.R[.M]`).
 
+## 🚀 [v26.2-1.21.1] — 2026-09-12 (Rev. MC-26.24: Bonifica Codice Morto Certificato, 30 Import e De-Risking Configurazione Legacy)
+
+### 🧹 Rev MC-26.24: Bonifica Codice Morto Certificato, 30 Import e De-Risking Configurazione Legacy
+- **De-risking Superficie GUI Config (`Config.java`)**:
+  - Apposta l'annotazione `@ConfigEntry.Gui.Excluded` sui campi deprecati `range`, `depth`, `delay` in `Config.FallDetector`.
+  - Rimozione visiva da Cloth Config a tutela dell'utente, preservando intatta la serializzazione reversibile Gson su disco e la compatibilità dei profili esistenti.
+  - Reso accessibile `IdentifierAdapter.java` (`public`) come componente di supporto condiviso.
+- **Test Seam Deterministico Round-Trip Gson (`LegacyConfigSerializationTest`)**:
+  - Creato test seam isolato su directory temporanea JUnit (`@TempDir`) che valida l'adattatore e le impostazioni formali di `ConfigExtension.serializer(...)`.
+  - Certificata la perfetta reversibilità e preservazione dei dati sui 4 profili chiave: Profilo A (valori reali 6, 5, 2500), Profilo B (valori alternativi 7, 3, 2500), Profilo C (valori limite a 0), Profilo D (assenza campi legacy con campi duali custom e default di classe).
+  - Test riflessivo di verifica assenza modificatore `transient` ed effettiva presenza dell'esclusione GUI.
+- **Pulizia Codice Morto & Import Inutilizzati Checkstyle**:
+  - Eliminato metodo orfano `narrateCrosshairTarget()` in `NumpadControls.java`.
+  - Eliminata costante orfana `DEBOUNCE_GRACE_PERIOD_MS` in `CrosshairFeedbackManager.java`.
+  - Rimossi chirurgicamente 30 import inutilizzati certificati da Checkstyle su 19 file sorgente.
+  - Verifica differenziale superata con `UnusedImports = 0` e nessun incremento delle altre diagnostiche.
+- **Suite di Test & Validazione In-Game**:
+  - 401/401 test JUnit 5 verdi al 100%.
+  - Collaudo in-game superato con successo su entrambe le istanze PrismLauncher (`Server Tenuta` e `Client`) da Luca.
+
+---
+
 ## 🚀 [v26.2-1.21.0] — 2026-09-12 (Rev. MC-26.23: AutoWalk Verticale & Assistente Tattico di Scalata Climb Assistant)
 
 ### 🧗 Rev MC-26.23: AutoWalk Verticale & Assistente Tattico di Scalata (Climb Assistant)
