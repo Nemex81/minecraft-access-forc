@@ -693,6 +693,7 @@ public final class Config implements ConfigData {
                 Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "save_waypoint"),
                 Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "manage_waypoints"),
                 Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "auto_walk"),
+                Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "auto_climb"),
                 Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "academy_and_help"),
                 Identifier.fromNamespaceAndPath(MainClass.MOD_ID, "quick_help"),
         };
@@ -758,7 +759,18 @@ public final class Config implements ConfigData {
         public boolean silenceObstaclesDuringWalk = true;
         public boolean silenceFallWarningsDuringWalk = true;
 
+        @ConfigEntry.Gui.CollapsibleObject
+        public ClimbAssistant climbAssistant = new ClimbAssistant();
+
         public AutoWalk() {
+        }
+
+        public static final class ClimbAssistant {
+            public boolean enabled = true;
+            public boolean interactionKeyTrigger = true;
+
+            public ClimbAssistant() {
+            }
         }
 
         public enum ProgressionFeedbackMode {

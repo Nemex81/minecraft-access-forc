@@ -33,6 +33,8 @@ public class RouteNavigator {
 
     private List<BlockPos> currentPath = List.of();
 
+    private List<RouteSegment> currentSegments = List.of();
+
     @Getter
     private int currentPathIndex = 0;
 
@@ -47,6 +49,35 @@ public class RouteNavigator {
 
     @Getter
     private long routeRevisionId = 0L;
+
+    /**
+     * Restituisce i segmenti tipizzati della rotta in forma immutabile.
+     */
+    public List<RouteSegment> getCurrentSegments() {
+        return currentSegments;
+    }
+
+    /**
+     * Restituisce il segmento correntemente attivo tra il nodo precedente e quello corrente.
+     */
+    public @Nullable RouteSegment getCurrentSegment() {
+        if (currentSegments.isEmpty() || currentPathIndex <= 0) {
+            return null;
+        }
+        int segIndex = currentPathIndex - 1;
+        if (segIndex < currentSegments.size()) {
+            return currentSegments.get(segIndex);
+        }
+        return null;
+    }
+
+    /**
+     * Verifica se il segmento attivo è di tipo arrampicata (CLIMB).
+     */
+    public boolean isCurrentSegmentClimb() {
+        RouteSegment seg = getCurrentSegment();
+        return seg != null && seg.isClimb();
+    }
 
     /**
      * Segnala il completamento del primo segmento e del disimpegno iniziale.
@@ -65,12 +96,42 @@ public class RouteNavigator {
     /**
      * Installa una nuova rotta conservando la radice e posizionando il cursore operativo su path.get(1).
      */
-    void installRoute(PathResult result, Vec3 playerPos) {
+    public void installRoute(PathResult result, Vec3 playerPos) {
+        installRoute(result, playerPos, this.targetObject);
+    }
+
+    /**
+     * Installa atomicamente una nuova rotta con bersaglio, nodi, segmenti e revisione (Contratto D3).
+     */
+    public void installRoute(PathResult result, Vec3 playerPos, @Nullable Object target) {
+        this.targetObject = target != null ? target : result.targetGoalPos();
         this.currentPath = List.copyOf(result.path());
         this.currentGoalPos = result.targetGoalPos();
         this.startPosContinuous = playerPos;
         this.rootBlockPos = !this.currentPath.isEmpty() ? this.currentPath.get(0) : null;
         this.routeRevisionId++;
+
+        List<RouteSegment> segments = result.segments();
+        if (this.currentPath.size() >= 2) {
+            if (segments.size() == this.currentPath.size() - 1) {
+                this.currentSegments = List.copyOf(segments);
+            } else if (segments.isEmpty()) {
+                // Adattamento retrocompatibile per rotte senza segmenti espliciti
+                java.util.List<RouteSegment> synth = new java.util.ArrayList<>(this.currentPath.size() - 1);
+                for (int i = 0; i < this.currentPath.size() - 1; i++) {
+                    synth.add(RouteSegment.walk(this.currentPath.get(i), this.currentPath.get(i + 1)));
+                }
+                this.currentSegments = List.copyOf(synth);
+            } else {
+                // Mismatch tra nodi e segmenti: rifiuto rotta sicuro
+                log.warn("Mismatch nodi/segmenti in installRoute: nodi={}, segmenti={}. Rotta rifiutata.",
+                        this.currentPath.size(), segments.size());
+                clearRoute();
+                return;
+            }
+        } else {
+            this.currentSegments = List.of();
+        }
 
         if (result.status() == PathStatus.FOUND && this.currentPath.size() >= 2) {
             this.currentPathIndex = 1;
@@ -146,6 +207,30 @@ public class RouteNavigator {
     }
 
     /**
+     * Avanza il cursore di un piolo lungo la rotta di scalata con validazione atomica di indice e revisione (Contratto D3).
+     *
+     * @param expectedIndex Indice atteso prima dell'avanzamento.
+     * @param expectedRevisionId Revisione della rotta attesa.
+     * @return true se il cursore e' avanzato con successo.
+     */
+    public boolean advanceClimbWaypoint(int expectedIndex, long expectedRevisionId) {
+        if (this.routeRevisionId != expectedRevisionId || this.currentPathIndex != expectedIndex) {
+            log.warn("Mismatch di avanzamento scalata: atteso idx={}, rev={}; corrente idx={}, rev={}",
+                    expectedIndex, expectedRevisionId, this.currentPathIndex, this.routeRevisionId);
+            return false;
+        }
+        return advanceWaypoint();
+    }
+
+    /**
+     * Restituisce il ruolo cinematico (MOUNT, TRANSIT, DISMOUNT) del segmento attivo, se di tipo CLIMB.
+     */
+    public @Nullable RouteSegment.ClimbLeg getCurrentClimbLeg() {
+        RouteSegment seg = getCurrentSegment();
+        return seg != null ? seg.climbLeg() : null;
+    }
+
+    /**
      * Verifica se la rotta è attiva (ha nodi e non è ancora terminata).
      */
     public boolean hasActiveRoute() {
@@ -213,6 +298,7 @@ public class RouteNavigator {
         this.targetObject = null;
         this.currentGoalPos = null;
         this.currentPath = List.of();
+        this.currentSegments = List.of();
         this.currentPathIndex = 0;
         this.startPosContinuous = Vec3.ZERO;
         this.rootBlockPos = null;
@@ -224,6 +310,13 @@ public class RouteNavigator {
      * Imposta manualmente un percorso immutabile (ad uso test unitari headless o coordinate fisse).
      */
     public void setTestRoute(List<BlockPos> path, @Nullable BlockPos goalPos, @Nullable Object target) {
+        setTestRoute(path, List.of(), goalPos, target);
+    }
+
+    /**
+     * Imposta manualmente un percorso e i suoi segmenti immutabili (ad uso test unitari headless).
+     */
+    public void setTestRoute(List<BlockPos> path, List<RouteSegment> segments, @Nullable BlockPos goalPos, @Nullable Object target) {
         this.currentPath = List.copyOf(path);
         this.currentGoalPos = goalPos;
         this.targetObject = target;
@@ -231,9 +324,19 @@ public class RouteNavigator {
         this.rootBlockPos = path.isEmpty() ? null : path.get(0);
         this.routeRevisionId++;
         if (path.size() >= 2) {
+            if (segments.size() == path.size() - 1) {
+                this.currentSegments = List.copyOf(segments);
+            } else {
+                java.util.List<RouteSegment> synth = new java.util.ArrayList<>(path.size() - 1);
+                for (int i = 0; i < path.size() - 1; i++) {
+                    synth.add(RouteSegment.walk(path.get(i), path.get(i + 1)));
+                }
+                this.currentSegments = List.copyOf(synth);
+            }
             this.currentPathIndex = 1;
             this.firstSegmentPending = true;
         } else {
+            this.currentSegments = List.of();
             this.currentPathIndex = 0;
             this.firstSegmentPending = false;
         }

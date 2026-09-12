@@ -1,5 +1,6 @@
 package org.mcaccess.minecraftaccess.features.autowalk;
 
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -52,6 +53,11 @@ public class MovementCoordinator {
     public static final String SEMANTIC_DOOR_OPENED = "autowalk:door_opened";
     public static final String SEMANTIC_PROGRESS = "autowalk:progress";
     public static final String SEMANTIC_STEP_NODE = "autowalk:step_node";
+    public static final String SEMANTIC_CLIMB_START_UP = "climb:start_up";
+    public static final String SEMANTIC_CLIMB_START_DOWN = "climb:start_down";
+    public static final String SEMANTIC_CLIMB_LANDING = "climb:landing";
+    public static final String SEMANTIC_CLIMB_STUCK = "climb:stuck";
+    public static final String SEMANTIC_CLIMB_INTERRUPTED = "climb:interrupted";
 
     @Getter
     private final RouteNavigator navigator;
@@ -584,6 +590,31 @@ public class MovementCoordinator {
     }
 
     /**
+     * Avvia una sessione tattica con percorso e segmenti pre-calcolati (es. Climb Assistant - Contratto D4).
+     */
+    public void startTacticalRoute(
+            @Nullable Minecraft client,
+            @Nullable LocalPlayer player,
+            List<BlockPos> path,
+            List<RouteSegment> segments,
+            BlockPos goalPos,
+            String targetDescription
+    ) {
+        if (player == null || path == null || path.size() < 2) return;
+        PathResult result = PathResult.found(path, path.size() - 1, goalPos, 0, segments);
+        navigator.installRoute(result, player.position(), goalPos);
+        motor.start(player.position(), player.onGround(), player.getY());
+
+        long now = System.currentTimeMillis();
+        Config.AutoWalk config = getAutoWalkConfig();
+        BlockPos playerPos = player.blockPosition();
+        int distInt = path.size() - 1;
+        int stepsInt = navigator.getRemainingSteps();
+        CognitiveEvent event = createStartEvent(targetDescription, distInt, stepsInt, playerPos, config.audioCueVolume, now);
+        postEvent(event, true);
+    }
+
+    /**
      * Annulla la marcia corrente, rilascia i comandi fisici ed emette l'evento o notifica di cancellazione.
      */
     public void cancel(boolean narrate, @Nullable String reasonKey) {
@@ -866,6 +897,27 @@ public class MovementCoordinator {
             @Override
             public void onRepathRequested() {
                 // Silenzioso: ricalcolo dinamico interno in corso
+            }
+
+            @Override
+            public void onClimbStart(boolean isUp, @Nullable org.mcaccess.minecraftaccess.features.safety.traversal.ClimbTraversal traversal) {
+                String key = isUp ? "minecraft_access.climb.start_up" : "minecraft_access.climb.start_down";
+                postDirectVoice(messageResolver.get(key), true);
+            }
+
+            @Override
+            public void onClimbLanding(BlockPos landingPos) {
+                postDirectVoice(messageResolver.get("minecraft_access.climb.landing"), true);
+            }
+
+            @Override
+            public void onClimbStuck() {
+                postDirectVoice(messageResolver.get("minecraft_access.climb.stuck"), true);
+            }
+
+            @Override
+            public void onClimbInterrupted() {
+                postDirectVoice(messageResolver.get("minecraft_access.climb.interrupted"), true);
             }
         };
     }

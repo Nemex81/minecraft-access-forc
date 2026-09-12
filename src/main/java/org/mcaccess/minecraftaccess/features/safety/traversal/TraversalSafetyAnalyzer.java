@@ -221,10 +221,7 @@ public final class TraversalSafetyAnalyzer {
     }
 
     public static boolean isClimbable(@NotNull BlockState state) {
-        return state.is(BlockTags.CLIMBABLE)
-                || state.getBlock() instanceof LadderBlock
-                || state.getBlock() instanceof VineBlock
-                || state.getBlock() instanceof ScaffoldingBlock;
+        return ClimbableGeometry.isClimbable(state);
     }
 
     public static boolean isSafeWater(@NotNull FluidState fluid) {

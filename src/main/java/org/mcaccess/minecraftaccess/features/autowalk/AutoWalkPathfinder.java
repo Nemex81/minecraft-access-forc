@@ -29,6 +29,7 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +37,10 @@ import org.slf4j.LoggerFactory;
 import org.mcaccess.minecraftaccess.features.ObstacleDetectionUtils;
 import org.mcaccess.minecraftaccess.features.point_of_interest.BlockPos3d;
 import org.mcaccess.minecraftaccess.features.point_of_interest.waypoints.Waypoint;
+import org.mcaccess.minecraftaccess.features.safety.traversal.ClimbEntryTransition;
+import org.mcaccess.minecraftaccess.features.safety.traversal.ClimbTraversal;
+import org.mcaccess.minecraftaccess.features.safety.traversal.ClimbTraversalAnalyzer;
+import org.mcaccess.minecraftaccess.features.safety.traversal.ClimbableGeometry;
 
 public final class AutoWalkPathfinder {
     private static final Logger LOGGER = LoggerFactory.getLogger(AutoWalkPathfinder.class);
@@ -62,26 +67,31 @@ public final class AutoWalkPathfinder {
             List<BlockPos> path,
             double totalDistance,
             @Nullable BlockPos targetGoalPos,
-            int exploredNodes
+            int exploredNodes,
+            List<RouteSegment> segments
     ) {
-        public PathResult(PathStatus status, List<BlockPos> path, double totalDistance, @Nullable BlockPos targetGoalPos) {
-            this(status, path, totalDistance, targetGoalPos, 0);
+        public double cost() {
+            return totalDistance;
         }
 
-        public static PathResult outOfRange(double dist) {
-            return new PathResult(PathStatus.OUT_OF_RANGE, List.of(), dist, null, 0);
-        }
-
-        public static PathResult noPath() {
-            return new PathResult(PathStatus.NO_PATH, List.of(), 0, null, 0);
+        public @Nullable BlockPos reachedGoal() {
+            return targetGoalPos;
         }
 
         public static PathResult noPath(int exploredNodes) {
-            return new PathResult(PathStatus.NO_PATH, List.of(), 0, null, exploredNodes);
+            return new PathResult(PathStatus.NO_PATH, List.of(), Double.POSITIVE_INFINITY, null, exploredNodes, List.of());
+        }
+
+        public static PathResult noPath() {
+            return noPath(0);
+        }
+
+        public static PathResult outOfRange(double directDist) {
+            return new PathResult(PathStatus.OUT_OF_RANGE, List.of(), directDist, null, 0, List.of());
         }
 
         public static PathResult searchBudgetExhausted(int exploredNodes) {
-            return new PathResult(PathStatus.SEARCH_BUDGET_EXHAUSTED, List.of(), 0, null, exploredNodes);
+            return new PathResult(PathStatus.SEARCH_BUDGET_EXHAUSTED, List.of(), 0, null, exploredNodes, List.of());
         }
 
         public static PathResult searchBudgetExhausted() {
@@ -89,15 +99,19 @@ public final class AutoWalkPathfinder {
         }
 
         public static PathResult alreadyAtTarget(BlockPos pos) {
-            return new PathResult(PathStatus.ALREADY_AT_TARGET, List.of(pos), 0, pos, 0);
+            return new PathResult(PathStatus.ALREADY_AT_TARGET, List.of(pos), 0, pos, 0, List.of());
         }
 
-        public static PathResult found(List<BlockPos> path, double distance, BlockPos goal, int exploredNodes) {
-            return new PathResult(PathStatus.FOUND, path, distance, goal, exploredNodes);
+        public static PathResult found(List<BlockPos> path, double totalDistance, BlockPos goal, int exploredNodes, List<RouteSegment> segments) {
+            return new PathResult(PathStatus.FOUND, path, totalDistance, goal, exploredNodes, segments);
         }
 
-        public static PathResult found(List<BlockPos> path, double distance, BlockPos goal) {
-            return found(path, distance, goal, 0);
+        public static PathResult found(List<BlockPos> path, double totalDistance, BlockPos goal, int exploredNodes) {
+            return found(path, totalDistance, goal, exploredNodes, List.of());
+        }
+
+        public static PathResult found(List<BlockPos> path, double totalDistance, BlockPos goal) {
+            return found(path, totalDistance, goal, 0, List.of());
         }
     }
 
@@ -109,8 +123,57 @@ public final class AutoWalkPathfinder {
             @Nullable PathNode parent,
             @Nullable Direction fromDir,
             boolean isWater,
-            int verticalDelta // 0 = flat, +1 = step up, -1/-2/-3 = drop down
+            int verticalDelta, // 0 = flat, +1 = step up, -1/-2/-3 = drop down, +N/-N = climb
+            @Nullable RouteSegment.SegmentType moveType,
+            @Nullable RouteSegment.ClimbLeg climbLeg,
+            @Nullable ClimbTraversal climbData,
+            @Nullable ClimbEntryTransition.PassageRequirement passageRequirement,
+            @Nullable ClimbEntryTransition climbEntryTransition
     ) implements Comparable<PathNode> {
+        public PathNode(
+                BlockPos pos, double gCost, double hCost, double fCost,
+                @Nullable PathNode parent, @Nullable Direction fromDir,
+                boolean isWater, int verticalDelta,
+                @Nullable RouteSegment.SegmentType moveType,
+                @Nullable RouteSegment.ClimbLeg climbLeg,
+                @Nullable ClimbTraversal climbData,
+                @Nullable ClimbEntryTransition.PassageRequirement passageRequirement
+        ) {
+            this(pos, gCost, hCost, fCost, parent, fromDir, isWater, verticalDelta,
+                    moveType, climbLeg, climbData, passageRequirement, null);
+        }
+        public PathNode(
+                BlockPos pos,
+                double gCost,
+                double hCost,
+                double fCost,
+                @Nullable PathNode parent,
+                @Nullable Direction fromDir,
+                boolean isWater,
+                int verticalDelta,
+                @Nullable RouteSegment.SegmentType moveType,
+                @Nullable ClimbTraversal climbData
+        ) {
+            this(pos, gCost, hCost, fCost, parent, fromDir, isWater, verticalDelta, moveType,
+                    moveType == RouteSegment.SegmentType.CLIMB ? RouteSegment.ClimbLeg.TRANSIT : null,
+                    climbData, null, null);
+        }
+
+        public PathNode(
+                BlockPos pos,
+                double gCost,
+                double hCost,
+                double fCost,
+                @Nullable PathNode parent,
+                @Nullable Direction fromDir,
+                boolean isWater,
+                int verticalDelta
+        ) {
+            this(pos, gCost, hCost, fCost, parent, fromDir, isWater, verticalDelta,
+                    verticalDelta == 0 ? RouteSegment.SegmentType.WALK : (verticalDelta > 0 ? RouteSegment.SegmentType.STEP_UP : RouteSegment.SegmentType.DROP_DOWN),
+                    null);
+        }
+
         @Override
         public int compareTo(PathNode o) {
             int cmp = Double.compare(this.fCost, o.fCost);
@@ -290,6 +353,58 @@ public final class AutoWalkPathfinder {
         return goals;
     }
 
+    public enum LocomotionMode {
+        WALK,
+        CLIMB_UP,
+        CLIMB_DOWN
+    }
+
+    public record SearchStateKey(
+            @NotNull BlockPos pos,
+            @NotNull LocomotionMode mode,
+            @Nullable String columnId
+    ) {
+        public static SearchStateKey walk(@NotNull BlockPos pos) {
+            return new SearchStateKey(pos, LocomotionMode.WALK, null);
+        }
+
+        public static SearchStateKey climbUp(@NotNull BlockPos pos, @NotNull String columnId) {
+            return new SearchStateKey(pos, LocomotionMode.CLIMB_UP, columnId);
+        }
+
+        public static SearchStateKey climbDown(@NotNull BlockPos pos, @NotNull String columnId) {
+            return new SearchStateKey(pos, LocomotionMode.CLIMB_DOWN, columnId);
+        }
+
+        public static SearchStateKey fromNode(@NotNull PathNode node) {
+            if (node.moveType == RouteSegment.SegmentType.CLIMB && node.climbLeg != RouteSegment.ClimbLeg.DISMOUNT) {
+                if (node.climbData != null) {
+                    LocomotionMode mode = node.climbData.direction() == Direction.AxisDirection.POSITIVE
+                            ? LocomotionMode.CLIMB_UP
+                            : LocomotionMode.CLIMB_DOWN;
+                    return new SearchStateKey(node.pos, mode, node.climbData.columnId());
+                }
+                LocomotionMode mode = node.verticalDelta >= 0 ? LocomotionMode.CLIMB_UP : LocomotionMode.CLIMB_DOWN;
+                return new SearchStateKey(node.pos, mode, node.pos.getX() + ":" + node.pos.getZ());
+            }
+            return walk(node.pos);
+        }
+
+        public static SearchStateKey fromMove(@NotNull NeighborMove move) {
+            if (move.moveType == RouteSegment.SegmentType.CLIMB && move.climbLeg != RouteSegment.ClimbLeg.DISMOUNT) {
+                if (move.climbData != null) {
+                    LocomotionMode mode = move.climbData.direction() == Direction.AxisDirection.POSITIVE
+                            ? LocomotionMode.CLIMB_UP
+                            : LocomotionMode.CLIMB_DOWN;
+                    return new SearchStateKey(move.targetPos, mode, move.climbData.columnId());
+                }
+                LocomotionMode mode = move.verticalDelta >= 0 ? LocomotionMode.CLIMB_UP : LocomotionMode.CLIMB_DOWN;
+                return new SearchStateKey(move.targetPos, mode, move.targetPos.getX() + ":" + move.targetPos.getZ());
+            }
+            return walk(move.targetPos);
+        }
+    }
+
     private static PathResult computeAStar(
             Level level,
             Vec3 startVec,
@@ -301,14 +416,15 @@ public final class AutoWalkPathfinder {
             int maxExploredNodes
     ) {
         PriorityQueue<PathNode> openSet = new PriorityQueue<>();
-        Map<BlockPos, Double> bestGCost = new HashMap<>();
-        Set<BlockPos> closedSet = new HashSet<>();
+        Map<SearchStateKey, Double> bestGCost = new HashMap<>();
+        Set<SearchStateKey> closedSet = new HashSet<>();
 
         double startH = calculateHeuristic(startPos, primaryTargetPos);
-        PathNode startNode = new PathNode(startPos, 0.0, startH, startH, null, null, isInWater(level, startPos), 0);
+        PathNode startNode = new PathNode(startPos, 0.0, startH, startH, null, null, isInWater(level, startPos), 0, RouteSegment.SegmentType.WALK, null, null, null);
 
+        SearchStateKey startKey = SearchStateKey.fromNode(startNode);
         openSet.add(startNode);
-        bestGCost.put(startPos, 0.0);
+        bestGCost.put(startKey, 0.0);
 
         int exploredCount = 0;
 
@@ -316,23 +432,29 @@ public final class AutoWalkPathfinder {
             PathNode current = openSet.poll();
             exploredCount++;
 
-            if (validGoals.contains(current.pos)) {
+            boolean isClimbTransit = (current.moveType == RouteSegment.SegmentType.CLIMB && current.climbLeg != RouteSegment.ClimbLeg.DISMOUNT);
+            if (validGoals.contains(current.pos) && !isClimbTransit) {
                 List<BlockPos> path = reconstructPath(current);
-                return PathResult.found(path, current.gCost, current.pos, exploredCount);
+                List<RouteSegment> rawSegments = reconstructSegments(current);
+                List<RouteSegment> segments = ClimbRouteAssembler.normalizeRouteSegments(level, path, rawSegments, allowClosedDoors);
+                double geometricDistance = calculateGeometricDistance(path);
+                return PathResult.found(path, current.gCost, current.pos, exploredCount, segments);
             }
 
-            closedSet.add(current.pos);
+            SearchStateKey currentKey = SearchStateKey.fromNode(current);
+            closedSet.add(currentKey);
 
             boolean isRootNode = (current.parent == null);
 
-            for (NeighborMove move : getValidNeighbors(level, startVec, current.pos, maxRange, startPos, allowClosedDoors, isRootNode)) {
-                if (closedSet.contains(move.targetPos)) continue;
+            for (NeighborMove move : getValidNeighbors(level, startVec, current.pos, maxRange, startPos, allowClosedDoors, isRootNode, current)) {
+                SearchStateKey moveKey = SearchStateKey.fromMove(move);
+                if (closedSet.contains(moveKey)) continue;
 
                 double moveCost = calculateStepCost(level, startVec, current, move, allowClosedDoors);
                 double tentativeG = current.gCost + moveCost;
 
-                if (tentativeG < bestGCost.getOrDefault(move.targetPos, Double.MAX_VALUE)) {
-                    bestGCost.put(move.targetPos, tentativeG);
+                if (tentativeG < bestGCost.getOrDefault(moveKey, Double.MAX_VALUE)) {
+                    bestGCost.put(moveKey, tentativeG);
                     double h = calculateHeuristic(move.targetPos, primaryTargetPos);
                     PathNode neighborNode = new PathNode(
                             move.targetPos,
@@ -342,7 +464,12 @@ public final class AutoWalkPathfinder {
                             current,
                             move.direction,
                             move.isWater,
-                            move.verticalDelta
+                            move.verticalDelta,
+                            move.moveType,
+                            move.climbLeg,
+                            move.climbData,
+                            move.passageRequirement,
+                            move.climbEntryTransition
                     );
                     openSet.add(neighborNode);
                 }
@@ -361,8 +488,32 @@ public final class AutoWalkPathfinder {
             Direction direction,
             int verticalDelta,
             boolean isWater,
-            boolean isDiagonal
+            boolean isDiagonal,
+            RouteSegment.SegmentType moveType,
+            @Nullable RouteSegment.ClimbLeg climbLeg,
+            @Nullable ClimbTraversal climbData,
+            @Nullable ClimbEntryTransition.PassageRequirement passageRequirement,
+            @Nullable ClimbEntryTransition climbEntryTransition
     ) {
+        NeighborMove(BlockPos targetPos, Direction direction, int verticalDelta, boolean isWater, boolean isDiagonal,
+                     RouteSegment.SegmentType moveType, @Nullable RouteSegment.ClimbLeg climbLeg,
+                     @Nullable ClimbTraversal climbData,
+                     @Nullable ClimbEntryTransition.PassageRequirement passageRequirement) {
+            this(targetPos, direction, verticalDelta, isWater, isDiagonal, moveType,
+                    climbLeg, climbData, passageRequirement, null);
+        }
+        NeighborMove(BlockPos targetPos, Direction direction, int verticalDelta, boolean isWater, boolean isDiagonal,
+                     RouteSegment.SegmentType moveType, @Nullable ClimbTraversal climbData) {
+            this(targetPos, direction, verticalDelta, isWater, isDiagonal, moveType,
+                    moveType == RouteSegment.SegmentType.CLIMB ? RouteSegment.ClimbLeg.TRANSIT : null,
+                    climbData, null, null);
+        }
+
+        NeighborMove(BlockPos targetPos, Direction direction, int verticalDelta, boolean isWater, boolean isDiagonal) {
+            this(targetPos, direction, verticalDelta, isWater, isDiagonal,
+                    verticalDelta == 0 ? RouteSegment.SegmentType.WALK : (verticalDelta > 0 ? RouteSegment.SegmentType.STEP_UP : RouteSegment.SegmentType.DROP_DOWN),
+                    null);
+        }
     }
 
     static List<NeighborMove> getValidNeighbors(
@@ -374,7 +525,72 @@ public final class AutoWalkPathfinder {
             boolean allowClosedDoors,
             boolean isRootNode
     ) {
+        return getValidNeighbors(level, startVec, pos, maxRange, origin, allowClosedDoors, isRootNode, null);
+    }
+
+    static List<NeighborMove> getValidNeighbors(
+            Level level,
+            Vec3 startVec,
+            BlockPos pos,
+            int maxRange,
+            BlockPos origin,
+            boolean allowClosedDoors,
+            boolean isRootNode,
+            @Nullable PathNode currentNode
+    ) {
         List<NeighborMove> neighbors = new ArrayList<>(12);
+
+        // Se il nodo corrente si trova all'interno di una colonna di scalata con traversal strutturato (Contratto D4)
+        if (currentNode != null && currentNode.moveType == RouteSegment.SegmentType.CLIMB
+                && currentNode.climbLeg != RouteSegment.ClimbLeg.DISMOUNT
+                && currentNode.climbData != null) {
+            ClimbTraversal traversal = currentNode.climbData;
+
+            if (traversal.isDescent()) {
+                // Discesa lungo la colonna
+                if (pos.getY() > traversal.columnBottomPos().getY()) {
+                    BlockPos downPos = pos.below();
+                    if (isWithinBounds(downPos, origin, maxRange, level) && isPassable(level, downPos, allowClosedDoors)) {
+                        neighbors.add(new NeighborMove(downPos, Direction.DOWN, -1, isInWater(level, downPos), false,
+                                RouteSegment.SegmentType.CLIMB, RouteSegment.ClimbLeg.TRANSIT, traversal, null,
+                                currentNode.climbEntryTransition));
+                    }
+                } else {
+                    // Ha raggiunto la base della colonna: emetti DISMOUNT verso bottom landing
+                    BlockPos landingPos = traversal.landingPos();
+                    if (isWithinBounds(landingPos, origin, maxRange, level)) {
+                        int deltaY = landingPos.getY() - pos.getY();
+                        Direction landingDir = (landingPos.getX() != pos.getX() || landingPos.getZ() != pos.getZ())
+                                ? Direction.from2DDataValue((int) Math.round(Math.atan2(landingPos.getZ() - pos.getZ(), landingPos.getX() - pos.getX()) / (Math.PI / 2)) & 3)
+                                : Direction.DOWN;
+                        neighbors.add(new NeighborMove(landingPos, landingDir, deltaY, isInWater(level, landingPos), false,
+                                RouteSegment.SegmentType.CLIMB, RouteSegment.ClimbLeg.DISMOUNT, traversal, null,
+                                currentNode.climbEntryTransition));
+                    }
+                }
+                return neighbors;
+            } else if (traversal.isAscent()) {
+                // Salita lungo la colonna
+                if (pos.getY() < traversal.columnTopPos().getY()) {
+                    BlockPos upPos = pos.above();
+                    if (isWithinBounds(upPos, origin, maxRange, level) && isPassable(level, upPos, allowClosedDoors) && isClearHeadroom(level, upPos.above())) {
+                        neighbors.add(new NeighborMove(upPos, Direction.UP, 1, isInWater(level, upPos), false,
+                                RouteSegment.SegmentType.CLIMB, RouteSegment.ClimbLeg.TRANSIT, traversal, null,
+                                currentNode.climbEntryTransition));
+                    }
+                } else {
+                    // Ha raggiunto la cima della colonna: emetti DISMOUNT verso top landing
+                    BlockPos landingPos = traversal.landingPos();
+                    if (isWithinBounds(landingPos, origin, maxRange, level)) {
+                        int deltaY = landingPos.getY() - pos.getY();
+                        neighbors.add(new NeighborMove(landingPos, Direction.UP, deltaY, isInWater(level, landingPos), false,
+                                RouteSegment.SegmentType.CLIMB, RouteSegment.ClimbLeg.DISMOUNT, traversal, null,
+                                currentNode.climbEntryTransition));
+                    }
+                }
+                return neighbors;
+            }
+        }
 
         // 1. Orthogonal Horizontal Steps (North, South, East, West)
         for (Direction dir : Direction.Plane.HORIZONTAL) {
@@ -411,7 +627,43 @@ public final class AutoWalkPathfinder {
             }
         }
 
+        // 3. Vertical Climb Moves (Contratto D1)
+        checkAndAddClimbMoves(level, pos, origin, maxRange, neighbors, allowClosedDoors);
+
         return neighbors;
+    }
+
+    private static void checkAndAddClimbMoves(
+            Level level,
+            BlockPos pos,
+            BlockPos origin,
+            int maxRange,
+            List<NeighborMove> moves,
+            boolean allowClosedDoors
+    ) {
+        boolean currentIsClimbable = ClimbableGeometry.isClimbable(level.getBlockState(pos));
+
+        // 1. Salita verticale (+1 Y)
+        BlockPos upPos = pos.above(1);
+        if (isWithinBounds(upPos, origin, maxRange, level)) {
+            boolean targetIsClimbable = ClimbableGeometry.isClimbable(level.getBlockState(upPos));
+            if (currentIsClimbable || targetIsClimbable) {
+                if (isPassable(level, upPos, allowClosedDoors) && isClearHeadroom(level, upPos.above())) {
+                    moves.add(new NeighborMove(upPos, Direction.UP, 1, isInWater(level, upPos), false, RouteSegment.SegmentType.CLIMB, null));
+                }
+            }
+        }
+
+        // 2. Discesa verticale (-1 Y)
+        BlockPos downPos = pos.below(1);
+        if (isWithinBounds(downPos, origin, maxRange, level)) {
+            boolean targetIsClimbable = ClimbableGeometry.isClimbable(level.getBlockState(downPos));
+            if (currentIsClimbable || targetIsClimbable) {
+                if (isPassable(level, downPos, allowClosedDoors)) {
+                    moves.add(new NeighborMove(downPos, Direction.DOWN, -1, isInWater(level, downPos), false, RouteSegment.SegmentType.CLIMB, null));
+                }
+            }
+        }
     }
 
     private static void checkAndAddMoves(
@@ -434,6 +686,39 @@ public final class AutoWalkPathfinder {
                 moves.add(move);
             }
             return;
+        }
+
+        // A.2 Mount Climbable (Entering a ladder/scaffolding at same Y)
+        if (!isDiag && ClimbableGeometry.isClimbable(level.getBlockState(to)) && isPassable(level, to, allowClosedDoors) && isClearHeadroom(level, to.above())) {
+            NeighborMove move = new NeighborMove(to, dir, 0, isInWater(level, to), false, RouteSegment.SegmentType.WALK, null);
+            if (!isRootNode || allowClosedDoors || getRootMoveIntersectedClosedDoor(level, startVec, from, move) == null) {
+                moves.add(move);
+            }
+            return;
+        }
+
+        // A.3 Top Descent Mount (Ingresso in discesa nella cima di una scala sottostante - Contratto D3)
+        if (!isDiag && dir != null) {
+            ClimbEntryTransition topMount = ClimbTraversalAnalyzer.resolveTopDescentMount(level, from, dir, allowClosedDoors);
+            if (topMount != null) {
+                int deltaY = topMount.entryPos().getY() - from.getY();
+                NeighborMove move = new NeighborMove(
+                        topMount.entryPos(),
+                        dir,
+                        deltaY,
+                        isInWater(level, topMount.entryPos()),
+                        false,
+                        RouteSegment.SegmentType.CLIMB,
+                        RouteSegment.ClimbLeg.MOUNT,
+                        topMount.traversal(),
+                        topMount.passageRequirement(),
+                        topMount
+                );
+                if (!isRootNode || allowClosedDoors || getRootMoveIntersectedClosedDoor(level, startVec, from, move) == null) {
+                    moves.add(move);
+                }
+                return;
+            }
         }
 
         // B. Step-Up Move (+1 Y)
@@ -1100,10 +1385,21 @@ public final class AutoWalkPathfinder {
         return ObstacleDetectionUtils.isSolid(level, pos);
     }
 
-    private static boolean isWithinBounds(BlockPos pos, BlockPos origin, int maxRange) {
+    private static boolean isWithinBounds(BlockPos pos, BlockPos origin, int maxRange, @Nullable Level level) {
         int dx = Math.abs(pos.getX() - origin.getX());
         int dz = Math.abs(pos.getZ() - origin.getZ());
-        return dx <= maxRange && dz <= maxRange;
+        int dy = Math.abs(pos.getY() - origin.getY());
+        if (dx > maxRange || dz > maxRange || dy > maxRange) {
+            return false;
+        }
+        if (level != null) {
+            return pos.getY() >= level.getMinY() && pos.getY() < level.getMaxY();
+        }
+        return true;
+    }
+
+    private static boolean isWithinBounds(BlockPos pos, BlockPos origin, int maxRange) {
+        return isWithinBounds(pos, origin, maxRange, null);
     }
 
     static double calculateStepCost(Level level, PathNode current, NeighborMove move, boolean allowClosedDoors) {
@@ -1112,6 +1408,26 @@ public final class AutoWalkPathfinder {
     }
 
     static double calculateStepCost(Level level, Vec3 startVec, PathNode current, NeighborMove move, boolean allowClosedDoors) {
+        if (move.moveType == RouteSegment.SegmentType.CLIMB) {
+            double dist;
+            if (move.climbLeg == RouteSegment.ClimbLeg.MOUNT) {
+                // Costo combinato: avvicinamento orizzontale (1.0) + ingresso verticale controllato in scala (1.83) = 2.83 (Contratto D7)
+                dist = 2.83;
+            } else if (move.verticalDelta != 0) {
+                // Contratto D1: Costo fisico normalizzato per scalata (rapporto velocità orizzontale/verticale 4.3 / 2.35 ~= 1.83)
+                dist = 1.83;
+            } else {
+                dist = 1.0;
+            }
+            if (move.isWater) {
+                dist += WATER_PENALTY;
+            }
+            if (allowClosedDoors && move.passageRequirement == ClimbEntryTransition.PassageRequirement.OPENABLE_WOODEN_TRAPDOOR) {
+                dist += CLOSED_DOOR_PENALTY;
+            }
+            return dist;
+        }
+
         double dist = move.isDiagonal ? 1.414 : 1.0;
 
         if (move.verticalDelta > 0) {
@@ -1180,5 +1496,31 @@ public final class AutoWalkPathfinder {
         }
         Collections.reverse(path);
         return path;
+    }
+
+    private static List<RouteSegment> reconstructSegments(PathNode endNode) {
+        List<RouteSegment> segments = new ArrayList<>();
+        PathNode curr = endNode;
+        while (curr != null && curr.parent != null) {
+            RouteSegment.SegmentType type = curr.moveType != null ? curr.moveType : RouteSegment.SegmentType.WALK;
+            if (type == RouteSegment.SegmentType.CLIMB) {
+                RouteSegment.ClimbLeg leg = curr.climbLeg != null ? curr.climbLeg : RouteSegment.ClimbLeg.TRANSIT;
+                segments.add(RouteSegment.climb(curr.parent.pos, curr.pos, leg, curr.climbData, curr.climbEntryTransition));
+            } else {
+                segments.add(new RouteSegment(curr.parent.pos, curr.pos, type, null, null));
+            }
+            curr = curr.parent;
+        }
+        Collections.reverse(segments);
+        return segments;
+    }
+
+    private static double calculateGeometricDistance(List<BlockPos> path) {
+        if (path == null || path.size() < 2) return 0.0;
+        double dist = 0.0;
+        for (int i = 0; i < path.size() - 1; i++) {
+            dist += Math.sqrt(path.get(i).distSqr(path.get(i + 1)));
+        }
+        return dist;
     }
 }

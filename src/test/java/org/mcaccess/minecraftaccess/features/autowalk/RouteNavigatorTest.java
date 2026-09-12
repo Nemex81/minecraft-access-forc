@@ -130,4 +130,35 @@ class RouteNavigatorTest {
         // Target è BlockPos, non Entity -> non richiede repath dinamico entità
         assertFalse(navigator.shouldRepathForEntity());
     }
+
+    @Test
+    @DisplayName("Segmenti tipizzati: retrocompatibilità sintesi automatica e tracciamento segmento corrente")
+    void testTypedSegmentsSynthesized() {
+        BlockPos n0 = new BlockPos(0, 64, 0);
+        BlockPos n1 = new BlockPos(1, 64, 0);
+        BlockPos n2 = new BlockPos(2, 64, 0);
+        navigator.setTestRoute(List.of(n0, n1, n2), n2, n2);
+
+        assertEquals(2, navigator.getCurrentSegments().size());
+        assertNotNull(navigator.getCurrentSegment());
+        assertEquals(RouteSegment.SegmentType.WALK, navigator.getCurrentSegment().type());
+        assertFalse(navigator.isCurrentSegmentClimb());
+
+        navigator.advanceWaypoint();
+        assertNotNull(navigator.getCurrentSegment());
+        assertEquals(n1, navigator.getCurrentSegment().from());
+        assertEquals(n2, navigator.getCurrentSegment().to());
+    }
+
+    @Test
+    @DisplayName("Segmenti tipizzati espliciti e rilevamento segmento CLIMB")
+    void testExplicitClimbSegments() {
+        BlockPos n0 = new BlockPos(0, 64, 0);
+        BlockPos n1 = new BlockPos(0, 65, 0);
+        RouteSegment climbSeg = RouteSegment.climb(n0, n1, null);
+        navigator.setTestRoute(List.of(n0, n1), List.of(climbSeg), n1, n1);
+
+        assertTrue(navigator.isCurrentSegmentClimb());
+        assertEquals(RouteSegment.SegmentType.CLIMB, navigator.getCurrentSegment().type());
+    }
 }

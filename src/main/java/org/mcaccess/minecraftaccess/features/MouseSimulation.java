@@ -119,6 +119,9 @@ public class MouseSimulation implements BalmClientModule {
         }
 
         if (keyRightMouseButton.isDown() && !keyRightMouseButton.wasDown()) {
+            if (client.gui.screen() == null && org.mcaccess.minecraftaccess.features.autowalk.ClimbAssistantController.tryIntercept(client)) {
+                return;
+            }
             MouseUtils.Key.RIGHT.press();
         } else if (!keyRightMouseButton.isDown() && keyRightMouseButton.wasDown()) {
             MouseUtils.Key.RIGHT.release();

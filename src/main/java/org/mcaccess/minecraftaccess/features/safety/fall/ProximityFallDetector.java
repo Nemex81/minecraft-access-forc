@@ -145,7 +145,7 @@ public class ProximityFallDetector {
 
     public ProximityFallDetector() {
         this(Clock.systemDefaultZone(), Config.getInstance() != null && Config.getInstance().fallDetector != null
-                ? Config.getInstance().fallDetector : new Config.FallDetector(), SafetyMovementGuard.createDefault());
+                ? Config.getInstance().fallDetector : new Config.FallDetector(), SafetyMovementGuard.getDefaultInstance());
     }
 
     public ProximityFallDetector(Clock clock, Config.FallDetector config, SafetyMovementGuard movementGuard) {
