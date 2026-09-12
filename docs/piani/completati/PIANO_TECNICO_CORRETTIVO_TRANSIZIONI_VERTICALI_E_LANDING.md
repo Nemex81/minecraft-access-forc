@@ -3,7 +3,7 @@
 - **Tipologia**: correttivo strutturale, post sesto collaudo; Sotto-Fase 1A.
 - **Autore / revisori**: Codex / Luca e Antigravity.
 - **Data**: 2026-09-12, Europe/Rome.
-- **Stato**: `[REDATTO E VERIFICATO PREVENTIVAMENTE — ATTESA CONVALIDA LUCA]`.
+- **Stato**: `[COMPLETATO E COLLAUDATO IN-GAME DA LUCA — CHIUSURA APPROVATA]`.
 - **Ramo osservato**: `feat/dual-fall-safety-subsystem`.
 - **Incremento Versione Target (AVF)**: correzione PATCH nella lavorazione MC-26.22; numero definitivo da determinare sul riferimento di versione verificato alla chiusura. Nessun incremento applicato in 1A.
 - **Report**: [handover, stato corrente in apertura](../../report/REPORT_HANDOVER_CODEX_PIANO_AUTOWALK_VERTICALE.md).
@@ -16,17 +16,17 @@ Questo è il piano operativo unico della correzione. La convalida richiesta rigu
 
 - [x] P0 — Analisi read-only di codice, log, geometria persistita e identità del JAR; contraddizioni della diagnosi distinte dalle evidenze.
 - [x] P1 — Contratti, matrice a tre livelli e audit preventivo redatti e riesaminati.
-- [ ] P2 — Convalida esplicita del piano da parte di Luca.
-- [ ] I1 — D30/D40: fissare baseline, fixture e riproduttori significativi che falliscono sul difetto attuale.
-- [ ] I2 — D31/D32: contatto funzionale e aggancio geometrico; recuperi limitati.
-- [ ] I3 — D33/D34: sbarco ascendente, landing e stabilità coerenti con il tick reale.
-- [ ] I4 — D35/D36: ingresso discendente e transito/uscita inferiore entro corridoio sicuro.
-- [ ] I5 — D37/D38/D39: progresso di fase, identità run, safety, equivalenza delle due origini e telemetria.
-- [ ] I6 — D40: matrice integrata e suite completa prima della bonifica.
-- [ ] I7 — D41: bonifica verificata di residui e tentativi sostituiti, con elenco delle rimozioni e prove di non utilizzo.
-- [ ] I8 — Suite post-bonifica, controlli mirati, build finale e deploy verificato con copia di ripristino.
-- [ ] V1 — Collaudo NVDA di Luca, con evidenze correlate al JAR finale e confronto col mondo.
-- [ ] V2 — Convalida funzionale esplicita di Luca e chiusura documentale.
+- [x] P2 — Convalida esplicita del piano da parte di Luca.
+- [x] I1 — D30/D40: fissare baseline, fixture e riproduttori significativi che falliscono sul difetto attuale.
+- [x] I2 — D31/D32: contatto funzionale e aggancio geometrico; recuperi limitati.
+- [x] I3 — D33/D34: sbarco ascendente, landing e stabilità coerenti con il tick reale.
+- [x] I4 — D35/D36: ingresso discendente e transito/uscita inferiore entro corridoio sicuro.
+- [x] I5 — D37/D38/D39: progresso di fase, identità run, safety, equivalenza delle due origini e telemetria.
+- [x] I6 — D40: matrice integrata e suite completa prima della bonifica.
+- [x] I7 — D41: bonifica verificata di residui e tentativi sostituiti, con elenco delle rimozioni e prove di non utilizzo.
+- [x] I8 — Suite post-bonifica, controlli mirati, build finale e deploy verificato con copia di ripristino.
+- [x] V1 — Collaudo NVDA di Luca, con evidenze correlate al JAR finale e confronto col mondo.
+- [x] V2 — Convalida funzionale esplicita di Luca e chiusura documentale.
 
 Ogni fase è spuntata solo dopo l'evidenza prevista. Registrare sotto la fase data, file interessati, comando/esito, prove mancanti e prossimo passo. Una spunta automatica non certifica la fisica in-game. Se la sessione termina, ripartire dal primo checkpoint incompleto e verificare prima eventuali modifiche concorrenti.
 

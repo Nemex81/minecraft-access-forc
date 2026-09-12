@@ -8,6 +8,27 @@
 Questo documento costituisce il **Diario Ufficiale delle Modifiche del Fork Personale in lingua Italiana**.
 Poiché il `README.md` pubblico e la documentazione del repository upstream rimangono in lingua Inglese per la community internazionale con la sola sezione `## [Unreleased]`, tutte le novità, i refactoring e i miglioramenti sviluppati sui nostri rami (`mymaster`, `dev`) vengono tracciati qui secondo la disciplina AVF (`V.A.R[.M]`).
 
+## 🚀 [v26.2-1.21.0] — 2026-09-12 (Rev. MC-26.23: AutoWalk Verticale & Assistente Tattico di Scalata Climb Assistant)
+
+### 🧗 Rev MC-26.23: AutoWalk Verticale & Assistente Tattico di Scalata (Climb Assistant)
+- **Cinematica Verticale e Motore Unificato (`ClimbKinematics`)**:
+  - Estesa la navigazione automatica AutoWalk ai collegamenti verticali tramite scale a pioli, impalcature e rampicanti.
+  - Creato l'assistente tattico di scalata semimanuale (`Alt+S`, tasto interazione con bypass su `Sneak`, voce dedicata in Access Menu) che riusa deterministicamente lo stesso motore di calcolo di AutoWalk.
+  - FSM deterministica a stati discreti: `ALIGN -> APPROACH -> CAPTURE_WAIT -> TRANSIT -> DISMOUNT`.
+  - Discesa controllata a gravità naturale (`GRAVITY_DESCENT`) con lease esclusiva su `SafetyMovementGuard` e `ControlledDescentPort` per prevenire falsi allarmi del freno anticaduta.
+  - Sbarco ascendente biforcato con spinta di sollevamento residua (`keyUp=true`) e transfer verso il blocco calpestabile di destinazione.
+  - Sbarco discendente deterministico con rilevazione immediata del contatto a terra (`playerOnGround=true`) sull'ultimo piolo e annuncio vocale *"Raggiunto piano stabile"*.
+- **Probe Geometrici & Rilevamento Volumetrico**:
+  - `ClimbContactProbe`: campionamento continuo AABB e rilevamento attraversamento varco (`sweptCrossing`) dall'alto senza attriti o incastri sull'orlo.
+  - `ClimbLandingProbe`: tolleranza dinamica della fisica vanilla (`VELOCITY_EPSILON = 0.085`) per gestire il valore grezzo `Motion.y = -0.0784` a terra.
+- **Bonifica Codice Obsoleto (D41)**:
+  - Eliminato lo stato orfano `REACQUIRE` e il metodo non referenziato `evaluateReacquire()` in conformità al canone di igiene evolutiva.
+- **Suite di Test & Validazione**:
+  - 396/396 test JUnit 5 verdi a 0 ms.
+  - Collaudo in-game completo condotto da Luca alla Torre del Belvedere con successo al 100% in salita e discesa sia automatica che manuale.
+
+---
+
 ## 🚀 [v26.2-1.20.0] — 2026-09-09 (Rev. MC-26.21 & Rev. MC-26.22: Interruttori Sensori F1..F6, Didgeridoo, Control Destro, Neutralizzazione Mixin Vanilla & Batteria Suoni POI per Categoria)
 
 ### 🎛️ Rev MC-26.21: Batteria Interruttori Sensori Contigui (Ctrl+Alt+F1..F6), Univocità Acustica Didgeridoo & Supporto Simmetrico Control Destro

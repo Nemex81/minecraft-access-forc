@@ -67,8 +67,7 @@ public class AutoWalkMotor {
         APPROACH,
         CAPTURE_WAIT,
         TRANSIT,
-        DISMOUNT,
-        REACQUIRE
+        DISMOUNT
     }
 
     public enum StuckAction {

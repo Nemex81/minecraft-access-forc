@@ -189,7 +189,6 @@ public final class ClimbKinematics {
             case MOUNT, ALIGN, APPROACH, CAPTURE_WAIT -> evaluateMount(snapshot);
             case TRANSIT -> evaluateTransit(snapshot);
             case DISMOUNT -> evaluateDismount(snapshot);
-            case REACQUIRE -> evaluateReacquire(snapshot);
         };
     }
 
@@ -389,13 +388,14 @@ public final class ClimbKinematics {
         boolean isAscent = snapshot.isAscent();
         ClimbableGeometry.ClimbType climbType = traversal.climbType();
 
-        // D26: il fondo e il landing della traversal hanno priorita' sul watchdog.
+        // D26 & D34: il fondo, il landing della traversal o il contatto col suolo hanno priorita' sul watchdog.
         if (!isAscent && snapshot.isLastTransitRung()
-                && (snapshot.contactResult().bottomCrossing()
+                && (snapshot.playerOnGround()
+                || snapshot.contactResult().bottomCrossing()
                 || snapshot.contactResult().state() == ClimbContactProbe.ContactState.BELOW_COLUMN
                 || snapshot.landingResult().supported())) {
             Float landingYaw = yawToward(snapshot.playerPos(), traversal.landingPos());
-            ClimbContactProbe.ReasonCode reason = snapshot.landingResult().supported()
+            ClimbContactProbe.ReasonCode reason = (snapshot.playerOnGround() || snapshot.landingResult().supported())
                     ? ClimbContactProbe.ReasonCode.SUPPORTED_LANDING
                     : ClimbContactProbe.ReasonCode.BOTTOM_CROSSING;
             return new ClimbDecision(
@@ -700,28 +700,6 @@ public final class ClimbKinematics {
                 Outcome.CONTINUE,
                 0,
                 ClimbContactProbe.ReasonCode.NONE
-        );
-    }
-
-    private static ClimbDecision evaluateReacquire(ClimbSnapshot snapshot) {
-        if (snapshot.contactResult().state() == ClimbContactProbe.ContactState.OUTSIDE
-                || snapshot.contactResult().state() == ClimbContactProbe.ContactState.BELOW_COLUMN) {
-            return new ClimbDecision(
-                    AutoWalkMotor.ClimbSubPhase.REACQUIRE, false, false, null,
-                    false, 0, 0, snapshot.playerPos().y(),
-                    snapshot.recoveryAttempts(), LeaseAction.RELEASE,
-                    Outcome.STUCK_ABORT, 0,
-                    ClimbContactProbe.ReasonCode.OUTSIDE_COLUMN_ABORT
-            );
-        }
-        Float supportYaw = snapshot.traversal().wallFacing() != null
-                ? snapshot.traversal().wallFacing().toYRot()
-                : null;
-        return new ClimbDecision(
-                AutoWalkMotor.ClimbSubPhase.TRANSIT, false, false, supportYaw,
-                false, 0, 0, snapshot.playerPos().y(),
-                snapshot.recoveryAttempts() + 1, LeaseAction.ACQUIRE_RENEW,
-                Outcome.CONTINUE
         );
     }
 

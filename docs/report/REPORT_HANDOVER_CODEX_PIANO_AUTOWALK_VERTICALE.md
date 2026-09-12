@@ -226,3 +226,28 @@ Tutti i dettagli cinematici, i calcoli geometrici e la proposta correttiva sono 
   1. `C:\Users\nemex\AppData\Roaming\PrismLauncher\instances\Minecraft 26.2 Access - Server Tenuta\minecraft\mods`
   2. `C:\Users\nemex\AppData\Roaming\PrismLauncher\instances\Minecraft 26.2 Access 1.12.0\minecraft\mods`
 
+---
+
+## 7. Rifinitura Atterraggio a Terra, Bonifica D41 & Chiusura Definitiva (2026-09-12 ore 03:00)
+
+### 7.1 Esito del 7° Collaudo Live di Luca alla Torre Belvedere
+- **Salita scala (Rotte 5)**: 100% successo.
+  - Sequenza: `MOUNT -> TRANSIT -> DISMOUNT` con sollevamento residuo e transfer verso il tetto a $Y=85.00$.
+  - Atterraggio stabile e annuncio vocale: *"Raggiunto piano stabile"*, *"Arrivato a destinazione: casa tetto torre belvedere"*.
+- **Discesa scala (Rotta 7)**: 100% successo funzionale.
+  - Sequenza d'ingresso: `ALIGN -> APPROACH -> CAPTURE_WAIT -> TRANSIT` via `SWEPT_CROSSING` senza alcun attrito o blocco sul bordo.
+  - Transito verticale controllato fino al suolo del terrazzino/balconata a quota $Y=82.50$ con `onGround=true`.
+  - Micro-anomalia terminale risolta: all'atterraggio a terra, `evaluateTransit` attendeva un dismount per corridoio stretto; con l'integrazione di `snapshot.playerOnGround()` sull'ultimo piolo in discesa (`isLastTransitRung()`), la transizione a `DISMOUNT` con `SUPPORTED_LANDING` scatta all'istante al contatto con il suolo.
+
+### 7.2 Esecuzione Bonifica Codice Obsoleto (Contratto D41)
+1. **Rimozione stato orfano `REACQUIRE`**:
+   - Eliminato `REACQUIRE` dall'enum `AutoWalkMotor.ClimbSubPhase`.
+   - Eliminato il ramo morto e non referenziato `evaluateReacquire()` in `ClimbKinematics.java`.
+2. **Archiviazione Documentale**:
+   - Spuntati al 100% tutti i checkpoint da P0 a V2 in [`PIANO_TECNICO_CORRETTIVO_TRANSIZIONI_VERTICALI_E_LANDING.md`](../piani/completati/PIANO_TECNICO_CORRETTIVO_TRANSIZIONI_VERTICALI_E_LANDING.md).
+   - Piano tecnico spostato da `docs/piani/attivi/` a `docs/piani/completati/`.
+   - Tre piani predecessori storici conservati in `docs/piani/superati/MC-26.22/`.
+3. **Validazione Finale**:
+   - Test suite: 100% verde (`BUILD SUCCESSFUL`).
+   - JAR finale compilato e deployato: SHA-256 `B40CC3F3F87B94B14173B8DF89A138E3EA7879E47C16506ACB8523705D627823`.
+

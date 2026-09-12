@@ -3,8 +3,8 @@
 - **Progetto:** Minecraft Access (Fork 26.2 / 1.21.x)
 - **Autore:** Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA) & Antigravity
 - **Revisori:** Luca / Antigravity / GPT Codex / ChatGPT
-- **Data Ultimo Aggiornamento:** 2026-09-09
-- **Stato:** [ARCHIVIO STORICO PERENNE — 30 REVISIONI COLLAUDATE CON SUCCESSO]
+- **Data Ultimo Aggiornamento:** 2026-09-12
+- **Stato:** [ARCHIVIO STORICO PERENNE — 31 REVISIONI COLLAUDATE CON SUCCESSO]
 - **Registro Attivo Correlato:** [`docs/report/REGISTRO_REVISIONI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/REGISTRO_REVISIONI.md)
 
 Questo documento costituisce la memoria storica e forense perenne di tutte le anomalie, correzioni e rifiniture collaudate e chiuse con successo nel ciclo di vita di Minecraft Access. Ciascuna voce archiviata mantiene la sintesi del problema, la causa radice, la soluzione adottata e i collegamenti diretti ai relativi Piani Tecnici e Report di Sessione archiviati.
@@ -12,6 +12,33 @@ Questo documento costituisce la memoria storica e forense perenne di tutte le an
 ---
 
 ## 🏛️ STORICO REVISIONI COLLAUDATE CON SUCCESSO (CICLO 26.2)
+
+### 🟢 Rev MC-26.23 — AutoWalk Verticale & Assistente Tattico di Scalata (Climb Assistant)
+- **Stato**: `[COLLAUDATA CON SUCCESSO AL 100% IN-GAME DA LUCA]`
+- **Versione Chiusura**: 26.2-1.21.0 (Data 2026-09-12)
+- **Problema Riscontrato (Esperienza Luca)**:
+  1. *Assenza Navigazione Verticale in AutoWalk*: AutoWalk non era in grado di gestire dislivelli verticali serviti da scale a pioli, impalcature o rampicanti, bloccandosi ai piedi o alla sommità;
+  2. *Assenza Assistente Tattico Scalata*: Mancanza di un meccanismo rapido per salire o scendere da una scala a pioli con arresto automatico sul pianerottolo stabile senza dover dosare manualmente i tasti;
+  3. *Incastro Sommità / Dismount Salita*: Nella fase di uscita in cima alla scala, la FSM disattivava prematuramente `keyUp`, lasciando il personaggio scivolare indietro per gravità;
+  4. *Falso Blocco a Terra in Discesa*: Al termine della discesa, il personaggio atterrava sul pavimento ma la FSM rimaneva in transito per tolleranze rigide sul bounding box della colonna, emettendo un falso messaggio di blocco da watchdog anziché confermare il raggiungimento del piano stabile.
+- **Causa Radice**: Assenza di un motore unificato a stati finiti (FSM) per la cinematica verticale; disaccoppiamento assente tra presa vanilla e collisione; oracolo di sbarco ascendente privo di spinta residua per raggiungere il dislivello positivo del piano calpestabile; condizione di dismount in discesa legata unicamente al corridoio XZ senza considerare il contatto con il suolo (`playerOnGround`).
+- **Soluzioni Applicate (PRAPI & Contratti D0..D41)**:
+  1. *Motore Condiviso Headless & Cinematica Pura (`ClimbKinematics`)*:
+     - Gestione integrata per AutoWalk e Climb Assistant (`Alt+S` e tasto interazione con bypass su `Sneak`);
+     - Transizione d'ingresso controllata da quota e AABB (`ALIGN -> APPROACH -> CAPTURE_WAIT -> TRANSIT`);
+     - Discesa naturale gravitazionale controllata con lease protetta su `SafetyMovementGuard` / `ControlledDescentPort` (zero override impropri del freno anticaduta);
+     - Dismount ascendente biforcato con sollevamento residuo e transfer direzionale verso il landing;
+     - Dismount discendente deterministico con rilevazione immediata del contatto al suolo (`snapshot.playerOnGround()`);
+  2. *Probe Geometrici (`ClimbContactProbe`, `ClimbLandingProbe`, `ClimbTraversalAnalyzer`)*:
+     - Campionamento continuo AABB volumetrico, swept path e tolleranza dinamica per la fisica vanilla (`-0.0784 m/tick`);
+  3. *Bonifica Codice Obsoleto (D41)*:
+     - Rimozione dello stato orfano `REACQUIRE` e dei metodi legacy non referenziati;
+  4. *Suite di Test Headless*: 396/396 test verdi a 0 ms.
+- **Piani Tecnici e Rapporti di Riferimento**:
+  - [`PIANO_TECNICO_CORRETTIVO_TRANSIZIONI_VERTICALI_E_LANDING.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/completati/PIANO_TECNICO_CORRETTIVO_TRANSIZIONI_VERTICALI_E_LANDING.md)
+  - [`REPORT_HANDOVER_CODEX_PIANO_AUTOWALK_VERTICALE.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/REPORT_HANDOVER_CODEX_PIANO_AUTOWALK_VERTICALE.md)
+  - [`STRATEGIA_AUTOWALK_VERTICALE_E_CLIMB_ASSISTANT.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/strategie/attive/STRATEGIA_AUTOWALK_VERTICALE_E_CLIMB_ASSISTANT.md)
+- **Esito Collaudo**: Collaudata e validata al 100% in-game da Luca alla Torre del Belvedere sia per salita che per discesa, sia via AutoWalk che manuale, con perfetto sbarco, zero cadute e annuncio vocale corretto (*"Raggiunto piano stabile"*).
 
 ### 🟢 Rev MC-26.22 — Neutralizzazione Mixin Tasti Vanilla F1..F6 & Batteria Interruttori Suoni Radar POI per Categoria
 - **Stato**: `[COLLAUDATA CON SUCCESSO AL 100% IN-GAME DA LUCA]`
