@@ -1,6 +1,6 @@
 # Piano Tecnico Correttivo Formale MC-26.22 — Ingresso e cinematica AutoWalk in discesa dall'alto
 
-> Documento storico superato, conservato il 2026-09-12 senza dichiarazione di collaudo concluso. Riferimento operativo corrente: `docs/piani/attivi/PIANO_TECNICO_CORRETTIVO_TRANSIZIONI_VERTICALI_E_LANDING.md`. Il sesto collaudo ha invalidato l'accettazione cinematica; i 393 test verdi restano evidenza storica, non convalida funzionale. Stati e checklist sottostanti descrivono la precedente iterazione.
+> Documento storico superato, conservato il 2026-09-12 senza dichiarazione di collaudo concluso. Riferimento conclusivo: `docs/piani/completati/PIANO_TECNICO_CORRETTIVO_TRANSIZIONI_VERTICALI_E_LANDING.md`. Il sesto collaudo ha invalidato l'accettazione cinematica; i 393 test verdi restano evidenza storica, non convalida funzionale. Stati e checklist sottostanti descrivono la precedente iterazione.
 
 - **ID revisione**: MC-26.22, iterazione correttiva 5 (post quinto collaudo in-game delle 20:00 CEST)
 - **Tipologia**: correzione cinematica contatto geometrico, transizione FSM e dismount per l'AutoWalk verticale
@@ -9,9 +9,9 @@
 - **Data e ora**: 2026-09-11 ore 21:00 CEST
 - **Stato operativo**: `[ITERAZIONE 5 — IMPLEMENTAZIONE COMPLETATA — 388 TEST VERDI — DEPLOY VERIFICATO — PRONTO PER IL 6° COLLAUDO IN-GAME]`
 - **Ramo locale osservato**: `feat/dual-fall-safety-subsystem`
-- **Strategia master**: `docs/strategie/attive/STRATEGIA_AUTOWALK_VERTICALE_E_CLIMB_ASSISTANT.md`
+- **Strategia master archiviata**: `docs/strategie/archiviate/STRATEGIA_AUTOWALK_VERTICALE_E_CLIMB_ASSISTANT.md`
 - **Piano correttivo precedente**: `docs/piani/superati/MC-26.22/PIANO_TECNICO_CORRETTIVO_SCALATA_VERTICALE.md`
-- **Handover aggiornato**: `docs/report/REPORT_HANDOVER_CODEX_PIANO_AUTOWALK_VERTICALE.md`
+- **Handover aggiornato**: `docs/report/archivio/REPORT_HANDOVER_CODEX_PIANO_AUTOWALK_VERTICALE.md`
 - **Registro RRU**: `docs/report/REGISTRO_REVISIONI.md`, revisione MC-26.22
 
 ---

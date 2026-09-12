@@ -22,8 +22,8 @@ Tutte le sessioni operative e gli script fanno riferimento ai seguenti percorsi 
 | **Repository Sorgenti (Git / Sviluppo)** | `c:\Users\nemex\OneDrive\Documenti\GitHub\minecraft-access` | Albero dei sorgenti Java, Mixin, assets I18N, configurazioni Gradle, schede `knowledge/` e documentazione in `docs/`. |
 | **Cartella Master Archivio & Backup** | `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft archivio backup\` | Sede di archiviazione storica, progetti edilizi, prompt e canali ChatGPT. |
 | **Cartella Backup Istanze & Mondi** | `C:\Users\nemex\OneDrive\progetti dei frati\accessible games\minecraft archivio backup\minecraft backup\` | Sede esclusiva per backup `.zip` dei mondi e istanze pronte. |
-| **Istanza Attiva PrismLauncher** | `c:\Users\nemex\AppData\Roaming\PrismLauncher\instances\Minecraft 26.2 Access 1.12.0\minecraft\` | Ambiente di gioco locale sul PC gaming. |
-| **Mod Installata Attiva** | `.../minecraft/mods/minecraft-access-1.12.0.jar` | File JAR attivo eseguito da PrismLauncher. |
+| **Istanza Attiva PrismLauncher** | `c:\Users\nemex\AppData\Roaming\PrismLauncher\instances\Minecraft 26.2 Access Client\minecraft\` | Ambiente di gioco locale sul PC gaming. |
+| **Mod Installata Attiva** | `.../minecraft/mods/minecraft-access-26.2-1.21.0.jar` | File JAR attivo eseguito da PrismLauncher. |
 | **Log di Gioco a Runtime** | `.../minecraft/logs/latest.log` | File di log consultato per la diagnostica runtime. |
 | **Configurazione Comandi In-Game** | `.../minecraft/options.txt` | Keybinding e preferenze utente di Minecraft. |
 

@@ -1,13 +1,13 @@
 # Strategia Correttiva: Risoluzione Regressione Dismount Salita & Perfezionamento Discesa Verticale
 
-> Rettifica operativa Codex del 2026-09-12: la diagnosi e la proposta sottostanti sono integrate dai contratti D30–D41 del [piano corrente](../../piani/attivi/PIANO_TECNICO_CORRETTIVO_TRANSIZIONI_VERTICALI_E_LANDING.md), in attesa di convalida Luca. Il piano distingue presa, trasferimento e stabilità, corregge l'interpretazione della velocità di fine tick e vincola l'uso di W alla geometria. Il testo precedente resta fonte storica, non istruzione implementativa autonoma.
+> **Stato archivio**: strategia storica archiviata dopo chiusura e collaudo positivo della Rev MC-26.23. La diagnosi e la proposta sottostanti sono integrate dai contratti D30–D41 del [piano tecnico completato](../../piani/completati/PIANO_TECNICO_CORRETTIVO_TRANSIZIONI_VERTICALI_E_LANDING.md). Il testo precedente resta fonte storica, non istruzione implementativa autonoma.
 # Progetto: Minecraft Access (Fork 26.2 / 1.21.x)
 # Autore: Antigravity (AI Pair Programmer Primario) & Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA)
 # Data: 2026-09-12
 # Framework: ASTRALIS v3.0.4 — Protocolli 1, 2, 4 e 12 (Inner Codex Pattern)
 # Riferimento Revisione RRU: docs/report/REGISTRO_REVISIONI.md (Rev MC-26.22)
-# Report di Handover Master: docs/report/REPORT_HANDOVER_CODEX_PIANO_AUTOWALK_VERTICALE.md
-# Piano Tecnico Corrente (1A, attesa convalida): docs/piani/attivi/PIANO_TECNICO_CORRETTIVO_TRANSIZIONI_VERTICALI_E_LANDING.md
+# Report di Handover Master archiviato: docs/report/archivio/REPORT_HANDOVER_CODEX_PIANO_AUTOWALK_VERTICALE.md
+# Piano Tecnico completato: docs/piani/completati/PIANO_TECNICO_CORRETTIVO_TRANSIZIONI_VERTICALI_E_LANDING.md
 # Piano precedente superato: docs/piani/superati/MC-26.22/PIANO_TECNICO_CORRETTIVO_DISCESA_AUTOWALK.md
 
 ---
@@ -143,6 +143,6 @@ La correzione ingegneristica si articola in 4 pilastri:
 ---
 
 ## 🔗 6. RETE DOCUMENTALE & POINTER DRY
-- **Report di Handover Primario**: [`docs/report/REPORT_HANDOVER_CODEX_PIANO_AUTOWALK_VERTICALE.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/REPORT_HANDOVER_CODEX_PIANO_AUTOWALK_VERTICALE.md) (Appendice 4.6).
+- **Report di Handover Primario archiviato**: [`docs/report/archivio/REPORT_HANDOVER_CODEX_PIANO_AUTOWALK_VERTICALE.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/archivio/REPORT_HANDOVER_CODEX_PIANO_AUTOWALK_VERTICALE.md) (Appendice 4.6).
 - **Registro Revisioni RRU**: [`docs/report/REGISTRO_REVISIONI.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/report/REGISTRO_REVISIONI.md) (Rev MC-26.22).
 - **Piano Tecnico Formale**: [`docs/piani/superati/MC-26.22/PIANO_TECNICO_CORRETTIVO_DISCESA_AUTOWALK.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/piani/superati/MC-26.22/PIANO_TECNICO_CORRETTIVO_DISCESA_AUTOWALK.md).

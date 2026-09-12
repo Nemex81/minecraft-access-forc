@@ -1,6 +1,6 @@
 # Piano Tecnico Correttivo Formale MC-26.22 — AutoWalk Verticale e Climb Assistant
 
-> Documento storico superato, conservato il 2026-09-12 senza dichiarazione di collaudo concluso. Riferimento operativo corrente: `docs/piani/attivi/PIANO_TECNICO_CORRETTIVO_TRANSIZIONI_VERTICALI_E_LANDING.md`. Stati e checklist sottostanti descrivono la precedente iterazione; restano consultabili le specifiche architetturali non sostituite dal nuovo piano.
+> Documento storico superato, conservato il 2026-09-12 senza dichiarazione di collaudo concluso. Riferimento conclusivo: `docs/piani/completati/PIANO_TECNICO_CORRETTIVO_TRANSIZIONI_VERTICALI_E_LANDING.md`. Stati e checklist sottostanti descrivono la precedente iterazione; restano consultabili le specifiche architetturali non sostituite dal nuovo piano.
 
 - **ID revisione**: MC-26.22
 - **Tipologia**: Correttivo strutturale con estensione implementativa del sottosistema AutoWalk
@@ -12,8 +12,8 @@
 - **Ramo osservato**: `feat/dual-fall-safety-subsystem`
 - **Target AVF**: incremento **MINOR** (`M + 1`) per nuova capacità utente; il numero numerico esatto resta da calcolare in Fase 3 da un riferimento Git leggibile e pulito
 - **Audit Protocollo 12**: completato sul piano; non costituisce validazione di codice o runtime
-- **Strategia correlata**: `docs/strategie/attive/STRATEGIA_AUTOWALK_VERTICALE_E_CLIMB_ASSISTANT.md`
-- **Handover correlato**: `docs/report/REPORT_HANDOVER_CODEX_PIANO_AUTOWALK_VERTICALE.md`
+- **Strategia correlata archiviata**: `docs/strategie/archiviate/STRATEGIA_AUTOWALK_VERTICALE_E_CLIMB_ASSISTANT.md`
+- **Handover correlato**: `docs/report/archivio/REPORT_HANDOVER_CODEX_PIANO_AUTOWALK_VERTICALE.md`
 - **Registro RRU**: `docs/report/REGISTRO_REVISIONI.md`, voce Rev MC-26.22
 
 ---

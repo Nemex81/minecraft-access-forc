@@ -3,9 +3,11 @@
 # Data: 2026-09-11
 # Framework: ASTRALIS v3.0.4 — Protocollo 1 & Protocollo 12 (Inner Codex Pattern)
 # Rete Documentale DRY:
-#   - Report Handover Codex: docs/report/REPORT_HANDOVER_CODEX_PIANO_AUTOWALK_VERTICALE.md
+#   - Report Handover Codex archiviato: docs/report/archivio/REPORT_HANDOVER_CODEX_PIANO_AUTOWALK_VERTICALE.md
 #   - Registro Revisioni RRU: docs/report/REGISTRO_REVISIONI.md
-#   - Piano Tecnico Corrente (1A, attesa convalida): docs/piani/attivi/PIANO_TECNICO_CORRETTIVO_TRANSIZIONI_VERTICALI_E_LANDING.md
+#   - Piano Tecnico completato: docs/piani/completati/PIANO_TECNICO_CORRETTIVO_TRANSIZIONI_VERTICALI_E_LANDING.md
+
+> **Stato archivio**: strategia storica archiviata dopo chiusura e collaudo positivo della Rev MC-26.23. La fonte operativa finale è il piano tecnico completato.
 #   - Baseline storica: docs/piani/superati/MC-26.22/PIANO_TECNICO_AUTOWALK_VERTICALE_E_CLIMB_ASSISTANT.md
 
 ---

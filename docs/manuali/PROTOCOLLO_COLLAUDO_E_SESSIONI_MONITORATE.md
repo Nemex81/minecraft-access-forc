@@ -18,7 +18,7 @@ Il collaudo in-game è un'attività coordinata a due vie:
 
 ### Ruolo di Antigravity (Senior AI Pair Programmer & Diagnostico Live)
 - Monitora in tempo reale il file di log del client:
-  `C:\Users\nemex\AppData\Roaming\PrismLauncher\instances\Minecraft 26.2 Access 1.12.0\minecraft\logs\latest.log`
+  `C:\Users\nemex\AppData\Roaming\PrismLauncher\instances\Minecraft 26.2 Access Client\minecraft\logs\latest.log`
 - Isola eventuali eccezioni silenti, avvisi Mixin o conflitti di binding.
 - Verifica la corretta esecuzione dei vettori di raycast voxel e dei nodi del pathfinder.
 - Fornisce assistenza e spiegazioni immediate su coordinate, altezze o comportamenti anomali del mondo.

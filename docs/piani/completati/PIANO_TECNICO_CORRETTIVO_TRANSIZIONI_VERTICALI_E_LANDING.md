@@ -6,9 +6,9 @@
 - **Stato**: `[COMPLETATO E COLLAUDATO IN-GAME DA LUCA — CHIUSURA APPROVATA]`.
 - **Ramo osservato**: `feat/dual-fall-safety-subsystem`.
 - **Incremento Versione Target (AVF)**: correzione PATCH nella lavorazione MC-26.22; numero definitivo da determinare sul riferimento di versione verificato alla chiusura. Nessun incremento applicato in 1A.
-- **Report**: [handover, stato corrente in apertura](../../report/REPORT_HANDOVER_CODEX_PIANO_AUTOWALK_VERTICALE.md).
+- **Report**: [handover archiviato e stato finale](../../report/archivio/REPORT_HANDOVER_CODEX_PIANO_AUTOWALK_VERTICALE.md).
 - **Registro**: [REGISTRO_REVISIONI.md, MC-26.22](../../report/REGISTRO_REVISIONI.md).
-- **Strategie**: [approfondimento Antigravity](../../strategie/attive/STRATEGIA_CORRETTIVA_DISMOUNT_SALITA_E_DISCESA.md) e [architettura generale](../../strategie/attive/STRATEGIA_AUTOWALK_VERTICALE_E_CLIMB_ASSISTANT.md).
+- **Strategie archiviate**: [approfondimento Antigravity](../../strategie/archiviate/STRATEGIA_CORRETTIVA_DISMOUNT_SALITA_E_DISCESA.md) e [architettura generale](../../strategie/archiviate/STRATEGIA_AUTOWALK_VERTICALE_E_CLIMB_ASSISTANT.md).
 
 ## 0. Autorità, perimetro e checkpoint riprendibili
 

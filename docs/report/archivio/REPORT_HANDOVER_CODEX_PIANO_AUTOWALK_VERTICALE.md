@@ -1,11 +1,13 @@
-# Handover MC-26.22 — Stato corrente e storico delle revisioni verticali
+# Handover MC-26.22 — Stato finale archiviato delle revisioni verticali
+
+> **Stato archivio**: documento archiviato dopo conferma di Luca del collaudo positivo finale. Il sistema risulta funzionante in salita e discesa, sia con AutoWalk sia con Climb Assistant semi-automatico. Non è più un report operativo attivo.
 
 ## Aggiornamento Codex — 2026-09-12 — Piano correttivo post sesto collaudo
 
-- **Stato**: piano 1A redatto e verificato preventivamente; attesa convalida di Luca. Il sesto collaudo ha rilevato regressioni: le precedenti attestazioni automatiche non chiudono la revisione.
+- **Stato storico intermedio**: il sesto collaudo aveva rilevato regressioni e aveva richiesto il piano D30-D41. La revisione è poi stata completata e collaudata con successo, come indicato nello stato archivio e nelle sezioni finali del documento.
 - **Diagnosi integrata**: confermato lo spegnimento prematuro in salita; aggiunti stabilità errata sul valore grezzo -0.0784, recuperi riarmati dal salto, presa funzionale distinta dalla collisione e ingresso frenabile sulla sommità portante della ladder. Nel log esaminato: 36 recuperi della rotta 37, sette aborti DISMOUNT, nessun evento di ingresso discendente; per quest'ultimo resta una verifica geometrica preventiva.
-- **Piano e direttive**: [nuovo piano tecnico, D30–D41](../piani/attivi/PIANO_TECNICO_CORRETTIVO_TRANSIZIONI_VERTICALI_E_LANDING.md), con motore condiviso, transizioni direzionali, stabilità da moto osservato, watchdog di fase, matrice integrata e bonifica obbligatoria dopo la sostituzione, prima della suite/build finali. Antigravity attende la convalida del piano; in esecuzione aggiorna ogni checkpoint con evidenze.
-- **Registro e storia**: [REGISTRO_REVISIONI.md, MC-26.22](REGISTRO_REVISIONI.md) aggiornato allo stato reale. I tre piani precedenti sono conservati in `docs/piani/superati/MC-26.22/`, senza dichiararli completati; rimandi aggiornati. Nessun codice, test, configurazione o JAR modificato in questa consegna. Il prossimo collaudo seguirà l'implementazione convalidata.
+- **Piano e direttive**: [piano tecnico completato, D30–D41](../../piani/completati/PIANO_TECNICO_CORRETTIVO_TRANSIZIONI_VERTICALI_E_LANDING.md), con motore condiviso, transizioni direzionali, stabilità da moto osservato, watchdog di fase, matrice integrata e bonifica obbligatoria dopo la sostituzione, prima della suite/build finali.
+- **Registro e storia**: [ARCHIVIO_REVISIONI.md, MC-26.23](../ARCHIVIO_REVISIONI.md) contiene la voce breve conclusiva. I tre piani precedenti sono conservati in `docs/piani/superati/MC-26.22/`, mentre il piano finale è in `docs/piani/completati/`.
 
 ---
 
@@ -17,7 +19,7 @@
 # Autore & Committente: Luca (Sviluppatore Senior Non Vedente con Screen Reader NVDA)
 # Data: 2026-09-11 (Aggiornato post 4° Collaudo Live ore 18:42..18:43)
 # Framework: ASTRALIS v3.0.4 — Protocolli 1, 4, 5 e 12 (Inner Codex Pattern)
-# Riferimento Strategico Master: docs/strategie/attive/STRATEGIA_AUTOWALK_VERTICALE_E_CLIMB_ASSISTANT.md
+# Riferimento Strategico Master archiviato: docs/strategie/archiviate/STRATEGIA_AUTOWALK_VERTICALE_E_CLIMB_ASSISTANT.md
 # Piano Tecnico Corrente: docs/piani/superati/MC-26.22/PIANO_TECNICO_CORRETTIVO_DISCESA_AUTOWALK.md
 # Registro Revisioni RRU: docs/report/REGISTRO_REVISIONI.md
 
@@ -198,7 +200,7 @@ Nel 6° collaudo condotto da Luca alla Torre Belvedere:
 
 ### 5.4 Documento di Approfondimento Strategico Master
 Tutti i dettagli cinematici, i calcoli geometrici e la proposta correttiva sono formalizzati in:  
-[`docs/strategie/attive/STRATEGIA_CORRETTIVA_DISMOUNT_SALITA_E_DISCESA.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/strategie/attive/STRATEGIA_CORRETTIVA_DISMOUNT_SALITA_E_DISCESA.md).
+[`docs/strategie/archiviate/STRATEGIA_CORRETTIVA_DISMOUNT_SALITA_E_DISCESA.md`](file:///c:/Users/nemex/OneDrive/Documenti/GitHub/minecraft-access/docs/strategie/archiviate/STRATEGIA_CORRETTIVA_DISMOUNT_SALITA_E_DISCESA.md).
 
 ---
 

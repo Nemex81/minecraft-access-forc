@@ -1,6 +1,6 @@
 # Piano Tecnico Correttivo Formale MC-26.22 — FSM di scalata verticale
 
-> Documento storico superato, conservato il 2026-09-12 senza dichiarazione di collaudo concluso. Riferimento operativo corrente: `docs/piani/attivi/PIANO_TECNICO_CORRETTIVO_TRANSIZIONI_VERTICALI_E_LANDING.md`. Stati e checklist sottostanti descrivono la precedente iterazione; restano consultabili le specifiche architetturali non sostituite dal nuovo piano.
+> Documento storico superato, conservato il 2026-09-12 senza dichiarazione di collaudo concluso. Riferimento conclusivo: `docs/piani/completati/PIANO_TECNICO_CORRETTIVO_TRANSIZIONI_VERTICALI_E_LANDING.md`. Stati e checklist sottostanti descrivono la precedente iterazione; restano consultabili le specifiche architetturali non sostituite dal nuovo piano.
 
 - **ID revisione**: MC-26.22, iterazione correttiva successiva al primo collaudo in-game
 - **Tipologia**: correzione strutturale della cinematica AutoWalk Verticale e Climb Assistant
@@ -10,9 +10,9 @@
 - **Data e ora**: 2026-09-11 12:09 CEST
 - **Stato operativo**: `[SOTTO-FASE 1A CORRETTIVA REDATTA — IN ATTESA DI CONVALIDA DI LUCA]`
 - **Ramo locale osservato**: `feat/dual-fall-safety-subsystem`
-- **Strategia master**: `docs/strategie/attive/STRATEGIA_AUTOWALK_VERTICALE_E_CLIMB_ASSISTANT.md`
+- **Strategia master archiviata**: `docs/strategie/archiviate/STRATEGIA_AUTOWALK_VERTICALE_E_CLIMB_ASSISTANT.md`
 - **Piano tecnico precedente**: `docs/piani/superati/MC-26.22/PIANO_TECNICO_AUTOWALK_VERTICALE_E_CLIMB_ASSISTANT.md`
-- **Handover e RCA**: `docs/report/REPORT_HANDOVER_CODEX_PIANO_AUTOWALK_VERTICALE.md`
+- **Handover e RCA**: `docs/report/archivio/REPORT_HANDOVER_CODEX_PIANO_AUTOWALK_VERTICALE.md`
 - **Registro RRU**: `docs/report/REGISTRO_REVISIONI.md`, revisione MC-26.22
 
 ---
